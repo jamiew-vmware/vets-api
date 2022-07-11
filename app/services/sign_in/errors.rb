@@ -23,9 +23,7 @@ module SignIn
     class CodeInvalidError < StandardError; end
     class UserAttributesMalformedError < StandardError; end
     class MalformedParamsError < StandardError; end
-    class TokenSessionMismatch < StandardError; end
     class AuthorizeInvalidType < StandardError; end
-    class CallbackInvalidType < StandardError; end
     class CodeVerifierMalformedError < StandardError; end
     class UserAccountNotFoundError < StandardError; end
     class SessionNotFoundError < StandardError; end
@@ -35,5 +33,6 @@ module SignIn
     class InvalidAcrError < StandardError; end
     class InvalidTypeError < StandardError; end
     class InvalidCredentialLevelError < StandardError; end
+    class InvalidCredentialInfoError < StandardError; end
   end
 end

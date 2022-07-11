@@ -12,9 +12,6 @@ RSpec.describe 'V2::PreCheckInsController', type: :request do
     allow(Flipper).to receive(:enabled?).with('check_in_experience_pre_check_in_enabled').and_return(true)
     allow(Flipper).to receive(:enabled?).with('check_in_experience_custom_cookie_for_low_auth').and_return(true)
     allow(Flipper).to receive(:enabled?).with('check_in_experience_lorota_security_updates_enabled').and_return(false)
-    allow(Flipper).to receive(:enabled?).with(:check_in_experience_emergency_contact_enabled).and_return(true)
-    allow(Flipper).to receive(:enabled?)
-      .with(:check_in_experience_demographics_confirmation_enabled).and_return(true)
     allow(Flipper).to receive(:enabled?)
       .with(:check_in_experience_no_demographics_confirmation_for_unverified_enabled)
       .and_return(true)
@@ -132,10 +129,13 @@ RSpec.describe 'V2::PreCheckInsController', type: :request do
           'appointmentIEN' => '460',
           'clinicName' => 'Family Wellness',
           'checkedInTime' => '',
+          'checkInSteps' => {},
           'startTime' => '2021-12-23T08:30:00',
           'clinicPhoneNumber' => '555-555-5555',
           'clinicFriendlyName' => 'Health Wellness',
+          'clinicIen' => '500',
           'facility' => 'VEHU DIVISION',
+          'kind' => 'clinic',
           'checkInWindowStart' => '2021-12-23T08:00:00.000-05:00',
           'checkInWindowEnd' => '2021-12-23T08:40:00.000-05:00',
           'eligibility' => 'ELIGIBLE',
@@ -274,10 +274,13 @@ RSpec.describe 'V2::PreCheckInsController', type: :request do
           'appointmentIEN' => '460',
           'clinicName' => 'Family Wellness',
           'checkedInTime' => '',
+          'checkInSteps' => {},
           'startTime' => '2021-12-23T08:30:00',
           'clinicPhoneNumber' => '555-555-5555',
           'clinicFriendlyName' => 'Health Wellness',
+          'clinicIen' => '500',
           'facility' => 'VEHU DIVISION',
+          'kind' => 'clinic',
           'checkInWindowStart' => '2021-12-23T08:00:00.000-05:00',
           'checkInWindowEnd' => '2021-12-23T08:40:00.000-05:00',
           'eligibility' => 'ELIGIBLE',
