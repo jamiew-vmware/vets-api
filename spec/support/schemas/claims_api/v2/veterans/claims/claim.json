@@ -73,7 +73,7 @@
             "type": "string",
             "description": "Name of document"
           },
-          "uploaded_at": {
+          "uploadedAt": {
             "type": "string",
             "format": "date",
             "description": "Date and time document was uploaded"
@@ -85,11 +85,6 @@
       "type": "string",
       "description": "Name of claim type",
       "example": "Appeals Control"
-    },
-    "poa": {
-      "type": "string",
-      "description": "The current organization or individual representing the Veteran on a claim",
-      "example": "American Legion"
     }
   }
 }

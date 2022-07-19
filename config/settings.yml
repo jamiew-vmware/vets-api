@@ -9,7 +9,7 @@ web_origin: http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,ht
 web_origin_regex: \Ahttps?:\/\/www\.va\.gov\z
 
 logingov:
-  client_id: urn:gov:gsa:openidconnect.profiles:sp:sso:va:dev_signin
+  client_id: https://sqa.eauth.va.gov/isam/sps/saml20sp/saml20
   redirect_uri: http://localhost:3000/v0/sign_in/callback
   logout_redirect_uri: http://localhost:3001
   client_cert_path: spec/fixtures/sign_in/oauth.crt
@@ -601,8 +601,7 @@ claims_api:
   schema_dir: config/schemas
   slack:
     webhook_url: https://example.com
-  claims_pending_reporting:
-    threshold: ~
+  claims_error_reporting:
     environment_name: ~
   v2_docs:
     enabled: false
@@ -972,6 +971,7 @@ flipper:
     - brandyn.sullins@govcio.com # Brandyn Sullins - Front End Engineer - GCIO
     - andrew.rodiek@gmail.com # Andrew Rodiek - Front End Engineer - GCIO
     - karan.krishnani@thoughtworks.com # Virtual Agent Chatbot
+    - aherzberg5@gmail.com # email tied to production id.me account
 
 bgs:
   application: ~
