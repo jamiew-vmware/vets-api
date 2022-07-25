@@ -54,8 +54,8 @@ sign_in:
   jwt_encode_key: 'spec/fixtures/sign_in/privatekey.pem'
   redirect_uri: 'vamobile://login-success'
   web_redirect_uri: 'http://localhost:3001/auth/login/callback'
-  enable_anti_csrf: false
   cookies_secure: false
+  info_cookie_domain: localhost
 
 lockbox:
   master_key: "0d78eaf0e90d4e7b8910c9112e16e66d8b00ec4054a89aa426e32712a13371e9"
@@ -972,6 +972,7 @@ flipper:
     - andrew.rodiek@gmail.com # Andrew Rodiek - Front End Engineer - GCIO
     - karan.krishnani@thoughtworks.com # Virtual Agent Chatbot
     - aherzberg5@gmail.com # email tied to production id.me account
+    - jtmills09@live.com # Josh Mills - Front End Engineer
 
 bgs:
   application: ~
@@ -1069,6 +1070,11 @@ lighthouse:
     url: https://sandbox-api.va.gov
     api_key: fake_key
 
+mail_automation:
+  url: https://viccs-api-test.ibm-intelligent-automation.com
+  client_id: va_gov_test
+  client_secret: fake_key
+
 forms:
   url: https://sandbox-api.va.gov/services/va_forms/v0/
   mock: false
@@ -1117,6 +1123,7 @@ vanotify:
     va_gov:
       api_key: fake_secret
       template_id:
+        burial_claim_confirmation_email_template_id: burial_claim_confirmation_email_template_id
         ch31_vbms_form_confirmation_email: ch31_vbms_fake_template_id
         ch31_central_mail_form_confirmation_email: ch31_central_mail_fake_template_id
         contact_info_change: fake_template_id

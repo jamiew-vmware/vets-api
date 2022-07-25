@@ -73,35 +73,35 @@ Rails.application.reloader.to_prepare do
       acrs = client_id == 'logingov' ? %w[ial1 ial2 min] : %w[loa1 loa3 min]
       acrs.each do |acr|
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_AUTHORIZE_ATTEMPT_SUCCESS, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, acr:#{acr}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "acr:#{acr}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_AUTHORIZE_ATTEMPT_FAILURE, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, acr:#{acr}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "acr:#{acr}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_SUCCESS, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, acr:#{acr}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "acr:#{acr}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_FAILURE, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, acr:#{acr}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "acr:#{acr}"])
       end
       %w[1 3].each do |loa|
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_TOKEN_SUCCESS, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_TOKEN_FAILURE, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_REFRESH_SUCCESS, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_REFRESH_FAILURE, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_REVOKE_SUCCESS, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_REVOKE_FAILURE, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_INTROSPECT_SUCCESS, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_INTROSPECT_FAILURE, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_REVOKE_ALL_SESSIONS_SUCCESS, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_REVOKE_ALL_SESSIONS_FAILURE, 0,
-                         tags: ["csp:#{type}, client_id:#{client_id}, loa:#{loa}"])
+                         tags: ["type:#{type}", "client_id:#{client_id}", "loa:#{loa}"])
       end
     end
   end
@@ -135,15 +135,17 @@ Rails.application.reloader.to_prepare do
   StatsD.increment("#{Caseflow::Service::STATSD_KEY_PREFIX}.get_appeals.fail", 0)
 
   # init 1010ez
-  %w[submit_form health_check].each do |method|
+  %w[submit_form health_check submit_form_short_form].each do |method|
     %w[total fail].each do |type|
       StatsD.increment("#{HCA::Service::STATSD_KEY_PREFIX}.#{method}.#{type}", 0)
     end
   end
 
-  StatsD.increment("#{HCA::Service::STATSD_KEY_PREFIX}.submission_attempt", 0)
-  StatsD.increment("#{HCA::Service::STATSD_KEY_PREFIX}.validation_error", 0)
-  StatsD.increment("#{HCA::Service::STATSD_KEY_PREFIX}.failed_wont_retry", 0)
+  %w[submission_attempt validation_error failed_wont_retry].each do |stat|
+    key = "#{HCA::Service::STATSD_KEY_PREFIX}.#{stat}"
+    StatsD.increment(key, 0)
+    StatsD.increment("#{key}_short_form", 0)
+  end
 
   # init mulesoft
   %w[create_submission upload_attachments do_post].each do |method|

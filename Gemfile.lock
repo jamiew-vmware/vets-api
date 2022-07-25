@@ -65,10 +65,10 @@ GIT
 
 GIT
   remote: https://github.com/department-of-veterans-affairs/vets-json-schema
-  revision: f74ef701671e1e8c1300b60c42eddf0f1c474e65
+  revision: f72711e27e0f9831b0afef481954c62263f32260
   branch: master
   specs:
-    vets_json_schema (20.20.5)
+    vets_json_schema (20.20.7)
       multi_json (~> 1.0)
       script_utils (= 0.0.4)
 
@@ -138,7 +138,7 @@ GEM
   remote: https://enterprise.contribsys.com/
   specs:
     Ascii85 (1.1.0)
-    aasm (5.2.0)
+    aasm (5.3.0)
       concurrent-ruby (~> 1.0)
     actioncable (6.1.6.1)
       actionpack (= 6.1.6.1)
@@ -215,13 +215,13 @@ GEM
     attr_extras (6.2.5)
     awesome_print (1.9.2)
     aws-eventstream (1.2.0)
-    aws-partitions (1.589.0)
-    aws-sdk-core (3.131.0)
+    aws-partitions (1.608.0)
+    aws-sdk-core (3.131.3)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.525.0)
       aws-sigv4 (~> 1.1)
-      jmespath (~> 1.0)
-    aws-sdk-kms (1.57.0)
+      jmespath (~> 1, >= 1.6.1)
+    aws-sdk-kms (1.58.0)
       aws-sdk-core (~> 3, >= 3.127.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-s3 (1.114.0)
@@ -619,7 +619,7 @@ GEM
     octokit (4.21.0)
       faraday (>= 0.9)
       sawyer (~> 0.8.0, >= 0.5.3)
-    oj (3.13.16)
+    oj (3.13.17)
     okcomputer (1.18.4)
     olive_branch (4.0.1)
       multi_json
@@ -762,7 +762,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    restforce (5.3.0)
+    restforce (5.3.1)
       faraday (>= 0.9.0, <= 1.10.0)
       faraday_middleware (>= 0.8.8, <= 2.0)
       hashie (>= 1.2.0, < 6.0)
@@ -813,17 +813,17 @@ GEM
     rswag-ui (2.5.1)
       actionpack (>= 3.1, < 7.1)
       railties (>= 3.1, < 7.1)
-    rubocop (1.31.2)
+    rubocop (1.32.0)
       json (~> 2.3)
       parallel (~> 1.10)
       parser (>= 3.1.0.0)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml (>= 3.2.5, < 4.0)
-      rubocop-ast (>= 1.18.0, < 2.0)
+      rubocop-ast (>= 1.19.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.18.0)
+    rubocop-ast (1.19.1)
       parser (>= 3.1.1.0)
     rubocop-junit-formatter (0.1.4)
     rubocop-rails (2.15.2)
