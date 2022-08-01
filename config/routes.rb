@@ -46,6 +46,7 @@ Rails.application.routes.draw do
 
     resources :medical_copays, only: %i[index show]
     get 'medical_copays/get_pdf_statement_by_id/:statement_id', to: 'medical_copays#get_pdf_statement_by_id'
+    post 'medical_copays/send_new_statements_notifications', to: 'medical_copays#send_new_statements_notifications'
 
     resources :apps, only: %i[index show]
     scope_default = { category: 'unknown_category' }
@@ -332,6 +333,7 @@ Rails.application.routes.draw do
       get 'status'
       get 'download_coe'
       get 'documents'
+      get 'document_download'
       post 'submit_coe_claim'
       post 'document_upload'
     end
@@ -374,9 +376,14 @@ Rails.application.routes.draw do
     resources :higher_level_reviews, only: %i[create show]
 
     namespace :notice_of_disagreements do
-      get 'contestable_issues(/:benefit_type)', to: 'contestable_issues#index'
+      get 'contestable_issues', to: 'contestable_issues#index'
     end
     resources :notice_of_disagreements, only: %i[create show]
+
+    namespace :supplemental_claims do
+      get 'contestable_issues(/:benefit_type)', to: 'contestable_issues#index'
+    end
+    resources :supplemental_claims, only: %i[create show]
   end
 
   root 'v0/example#index', module: 'v0'
@@ -389,8 +396,7 @@ Rails.application.routes.draw do
     mount AppsApi::Engine, at: '/apps'
     mount VBADocuments::Engine, at: '/vba_documents'
     mount AppealsApi::Engine, at: '/appeals'
-    mount ClaimsApi::Engine, at: '/claims', as: 'legacy_claims'
-    mount ClaimsApi::Engine, at: '/benefits'
+    mount ClaimsApi::Engine, at: '/claims'
     mount Veteran::Engine, at: '/veteran'
     mount VAForms::Engine, at: '/va_forms'
     mount VeteranVerification::Engine, at: '/veteran_verification'
@@ -401,6 +407,7 @@ Rails.application.routes.draw do
   mount CheckIn::Engine, at: '/check_in'
   mount CovidResearch::Engine, at: '/covid-research'
   mount CovidVaccine::Engine, at: '/covid_vaccine'
+  mount DebtsApi::Engine, at: '/debts_api'
   mount DhpConnectedDevices::Engine, at: '/dhp_connected_devices'
   mount FacilitiesApi::Engine, at: '/facilities_api'
   mount HealthQuest::Engine, at: '/health_quest'
@@ -415,6 +422,7 @@ Rails.application.routes.draw do
   require 'sidekiq/pro/web' if Gem.loaded_specs.key?('sidekiq-pro')
   require 'sidekiq-ent/web' if Gem.loaded_specs.key?('sidekiq-ent')
   require 'github_authentication/sidekiq_web'
+  require 'github_authentication/coverband_reporters_web'
 
   mount Sidekiq::Web, at: '/sidekiq'
 
@@ -423,6 +431,8 @@ Rails.application.routes.draw do
   mount TestUserDashboard::Engine, at: '/test_user_dashboard' if Settings.test_user_dashboard.env == 'staging'
 
   mount Flipper::UI.app(Flipper.instance) => '/flipper', constraints: Flipper::AdminUserConstraint.new
+
+  mount Coverband::Reporters::Web.new, at: '/coverband', constraints: GithubAuthentication::CoverbandReportersWeb.new
 
   # This globs all unmatched routes and routes them as routing errors
   match '*path', to: 'application#routing_error', via: %i[get post put patch delete]

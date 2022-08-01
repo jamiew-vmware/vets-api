@@ -36,7 +36,8 @@ module ClaimsApi
               auth_headers: auth_headers,
               form_data: form_attributes,
               current_poa: current_poa_code,
-              header_md5: header_md5
+              header_md5: header_md5,
+              cid: token.payload['cid']
             }
             attributes.merge!({ source_data: source_data }) unless token.client_credentials_token?
 
@@ -65,6 +66,7 @@ module ClaimsApi
         #
         # @return [JSON] Claim record
         def upload
+          validate_document_provided
           validate_documents_content_type
           validate_documents_page_size
           find_poa_by_id
