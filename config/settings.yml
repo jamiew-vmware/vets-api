@@ -57,6 +57,7 @@ sign_in:
   client_redirect_uris:
     mobile: 'vamobile://login-success'
     web: 'http://localhost:3001/auth/login/callback'
+    web_logout: 'http://localhost:3001'
     mobile_test: 'http://localhost:4001/auth/sis/login-success'
 
 lockbox:
@@ -254,6 +255,11 @@ dhp:
     scope: 'heartrate activity nutrition sleep'
     code_challenge: ''
     code_verifier: ''
+  s3:
+    aws_access_key_id: ''
+    aws_secret_access_key: ''
+    bucket: ''
+    region: 'us-gov-west-1'
 
 # Settings for modules/appeals_api
 modules_appeals_api:
@@ -344,7 +350,8 @@ modules_appeals_api:
 onsite_notifications:
   public_key: ~
   template_ids:
-    - "f9947b27-df3b-4b09-875c-7f76594d766d"
+    - "f9947b27-df3b-4b09-875c-7f76594d766d" # staging    - debt notification
+    - "7efc2b8b-e59a-4571-a2ff-0fd70253e973" # production - debt notification
 
 vre_counseling:
   prefill: true
@@ -906,7 +913,7 @@ flipper:
     - lisa.zapson@adhocteam.us
     - lance.sanchez@gcio.com
     - mattgardner@navapbc.com
-    - mdewey@governmentcio.com
+    - mark.dewey@va.gov
     - metrowebz@gmail.com
     - micah@adhocteam.us
     - michel.mcdonald@adhocteam.us
@@ -915,6 +922,7 @@ flipper:
     - michael.pelz-sherman@gcio.com
     - michelle.middaugh@adhocteam.us
     - n.ratana@gmail.com
+    - nathaniel.buck@gmail.com # AFS - My Education Benefits
     - narin@adhocteam.us
     - patrick.bateman@va.gov
     - patrick@adhocteam.us

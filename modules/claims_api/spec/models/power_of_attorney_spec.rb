@@ -59,7 +59,7 @@ RSpec.describe ClaimsApi::PowerOfAttorney, type: :model do
       pending_record.cid = 'ABC123'
       pending_record.save!
 
-      claim = ClaimsApi::PowerOfAttorney.first
+      claim = ClaimsApi::PowerOfAttorney.last
 
       expect(claim.cid).to eq('ABC123')
     end
