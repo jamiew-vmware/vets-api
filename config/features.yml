@@ -24,6 +24,14 @@ features:
     actor_type: user
     description: Whether to use MuleSoft when submitting to CARMA.
     enable_in_development: true
+  caregiver_use_facilities_API:
+    actor_type: user
+    description: Allow list of caregiver facilites to be fetched by way of the Facilities API.
+    enable_in_development: true
+  caregiver_async:
+    actor_type: user
+    description: Submit 1010cg applications using a background job
+    enable_in_development: false
   hca_american_indian_enabled:
     actor_type: user
     description: Enables American Indian SIGI question page.
@@ -95,7 +103,7 @@ features:
     description: Enables disclaimer for possible untranslated content on spanish pages
     enable_in_development: true
   check_in_experience_lorota_security_updates_enabled:
-    actor_type: user
+    actor_type: cookie_id
     description: Enables DOB instead of last 4 of SSN.
     enable_in_development: false
   check_in_experience_mock_enabled:
@@ -110,6 +118,10 @@ features:
     actor_type: user
     description: Enables 504 mapping for CHIP endpoint in check-in & pre-checkin
     enable_in_development: true
+  check_in_experience_lorota_deletion_enabled:
+    actor_type: cookie_id
+    description: Enables lorota delete endpoint call for users exceeding max auth attempts
+    enable_in_development: false
   ch31_vbms_form_confirmation_email:
     actor_type: user
     description: Enables Ch31 form email submission confirmation after central mail
@@ -129,6 +141,7 @@ features:
   combined_financial_status_report:
     actor_type: user
     description: Enables users to submit FSR forms for VHA and VBA debts
+    enable_in_development: true
   communication_preferences:
     actor_type: user
     description: Allow user to access backend communication_preferences API
@@ -429,6 +442,10 @@ features:
   profile_get_military_info_from_vaprofile:
     actor_type: user
     description: When enabled, the profile page will get military service history from VA Profile instead of eMIS.
+  profile_hide_direct_deposit_comp_and_pen:
+    actor_type: user
+    description: Hides disability comp and pen section of the Profile - Direct Deposit page during a service outage
+    enable_in_development: true
   profile_notification_settings:
     actor_type: user
     description: Turns on the Notification Settings section of the VA.gov Profile
@@ -449,6 +466,9 @@ features:
     actor_type: user
     description: Allows to force the BAI experience for UAT testing
     enable_in_development: false
+  profile_show_payments_notification_setting:
+    actor_type: user
+    description: Show/Hide the payments section of notifications in profile
   profile_show_pronouns_and_sexual_orientation:
     actor_type: user
     description: Show/hide Pronouns and Sexual Orientation fields on profile page
@@ -499,6 +519,10 @@ features:
   rrd_mas_notification:
     actor_type: user
     description: Notifies MAS service that a MAS-relevant claim has come through
+    enable_in_development: true
+  rrd_new_pact_related_disability:
+    actor_type: user
+    description: Sends notification to Slack channel if a new claim includes a PACT-related disability that RRD handles
     enable_in_development: true
   search_representative:
     actor_type: user
@@ -563,12 +587,10 @@ features:
     actor_type: user
     description: Allows for frontend to have progressivley enhanced backend endpoints to consume in staging.
     enable_in_development: true
-  show_updated_toe_app:
+  show_forms_app:
     actor_type: user
     description: This determines when the form should be displayed.
-  show_updated_fry_dea_app:
-    actor_type: user
-    description: This determines when the form should be displayed
+    enable_in_development: true
   show_medical_copays:
     actor_type: user
     description: Enables the medical copays application on route /manage-va-debt/medical-copays/
@@ -691,6 +713,10 @@ features:
     actor_type: user
     enable_in_development: true
     description: Toggle for tickets with the label vaos-v2-next will be behind this flag
+  va_online_scheduling_appointment_list:
+    actor_type: user
+    enable_in_development: true
+    description: Toggle for the new appointment List feature
   va_view_dependents_access:
     actor_type: user
     description: Allows us to gate the View/ Modify dependents content in a progressive rollout

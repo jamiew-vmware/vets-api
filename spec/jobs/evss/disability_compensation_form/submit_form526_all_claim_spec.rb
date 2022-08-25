@@ -9,6 +9,10 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
     Sidekiq::Worker.clear_all
   end
 
+  around do |example|
+    VCR.use_cassette('evss/claims/claims_without_open_compensation_claims', allow_playback_repeats: true, &example)
+  end
+
   let(:user) { FactoryBot.create(:user, :loa3) }
   let(:auth_headers) do
     EVSS::DisabilityCompensationAuthHeaders.new(user).add_headers(EVSS::AuthHeaders.new(user).to_h)
@@ -86,6 +90,40 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
             end
           end
         end
+
+        it 'includes a proper classification code for EVSS submission' do
+          VCR.use_cassette('evss/disability_compensation_form/submit_form_v2') do
+            VCR.use_cassette('mail_automation/mas_initiate_apcas_request') do
+              subject.perform_async(submission.id)
+              described_class.drain
+              mas_submission = Form526Submission.find(Form526JobStatus.last.form526_submission_id)
+              expect(mas_submission.form.dig('form526', 'form526',
+                                             'disabilities').first['classificationCode']).to eq '9012'
+            end
+          end
+        end
+
+        context 'MAS-related claim that already includes classification code' do
+          let(:submission) do
+            create(:form526_submission,
+                   :mas_diagnostic_code_with_classification,
+                   user_uuid: user.uuid,
+                   auth_headers_json: auth_headers.to_json,
+                   saved_claim_id: saved_claim.id)
+          end
+
+          it 'already includes classification code and does not modify' do
+            VCR.use_cassette('evss/disability_compensation_form/submit_form_v2') do
+              VCR.use_cassette('mail_automation/mas_initiate_apcas_request') do
+                subject.perform_async(submission.id)
+                described_class.drain
+                mas_submission = Form526Submission.find(Form526JobStatus.last.form526_submission_id)
+                expect(mas_submission.form.dig('form526', 'form526',
+                                               'disabilities').first['classificationCode']).to eq '8935'
+              end
+            end
+          end
+        end
       end
 
       context 'with multiple MAS-related diagnostic codes' do
@@ -103,6 +141,49 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
             described_class.drain
             expect(ActionMailer::Base.deliveries.length).to eq 0
           end
+        end
+      end
+
+      context 'with PACT-related disability' do
+        let(:submission) do
+          create(:form526_submission,
+                 :with_pact_related_disabilities,
+                 user_uuid: user.uuid,
+                 auth_headers_json: auth_headers.to_json,
+                 saved_claim_id: saved_claim.id)
+        end
+
+        it 'sends an email' do
+          VCR.use_cassette('evss/disability_compensation_form/submit_form_v2') do
+            VCR.use_cassette('rrd/hypertension', match_requests_on: %i[host path method]) do
+              subject.perform_async(submission.id)
+              described_class.drain
+              expect(ActionMailer::Base.deliveries.last.body.include?('Number of BP readings: 0')).to eq true
+              expect(ActionMailer::Base.deliveries.last.body.include?('Number of Active Medications: 11')).to eq true
+              expect(ActionMailer::Base.deliveries.last.body.include?('Number of claimed issues: 3')).to eq true
+              expect(ActionMailer::Base.deliveries.last.subject).to eq "NEW claim - #{submitted_claim_id}"
+            end
+          end
+        end
+      end
+    end
+
+    context 'with non-MAS-related diagnostic code' do
+      let(:submission) do
+        create(:form526_submission,
+               :with_uploads,
+               user_uuid: user.uuid,
+               auth_headers_json: auth_headers.to_json,
+               saved_claim_id: saved_claim.id)
+      end
+
+      it 'does not set a classification code for irrelevant claims' do
+        VCR.use_cassette('evss/disability_compensation_form/submit_form_v2') do
+          subject.perform_async(submission.id)
+          described_class.drain
+          mas_submission = Form526Submission.find(Form526JobStatus.last.form526_submission_id)
+          expect(mas_submission.form.dig('form526', 'form526',
+                                         'disabilities').first['classificationCode']).to eq '8935'
         end
       end
     end
@@ -273,6 +354,17 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
           expect_any_instance_of(Sidekiq::Form526JobStatusTracker::Metrics).to receive(:increment_non_retryable).once
           described_class.drain
           expect(Form526JobStatus.last.status).to eq Form526JobStatus::STATUS[:non_retryable_error]
+        end
+      end
+    end
+
+    context 'with a VeteranRecordWsClientException java error' do
+      it 'sets the transaction to "retryable_error"' do
+        VCR.use_cassette('evss/disability_compensation_form/submit_500_with_java_ws_error') do
+          subject.perform_async(submission.id)
+          expect_any_instance_of(Sidekiq::Form526JobStatusTracker::Metrics).to receive(:increment_retryable).once
+          expect { described_class.drain }.to raise_error(EVSS::DisabilityCompensationForm::ServiceException)
+          expect(Form526JobStatus.last.status).to eq Form526JobStatus::STATUS[:retryable_error]
         end
       end
     end

@@ -48,12 +48,34 @@ module RapidReadyForDecision
 
     DISABILITIES_BY_CODE = DISABILITIES.map { |k, v| [v[:code], k] }.to_h
 
+    # a classificationCode is derived from EVSS and is represented as a string
+    PACT_CLASSIFICATION_CODES = [
+      '3460', # hypertension
+      '3370' # high blood pressure
+    ].freeze
+
     MAS_DISABILITIES = [
       7528, # prostate cancer
       6847, # sleep apnea
       6522, # rhinitis
       6510, 6511, 6512, 6513, 6514 # sinusitus
     ].freeze
+
+    # The key is associated with the `MAS_DISABILITIES` above, which are diagnostic codes.
+    # The value is the contention codes -- see http://linktestbepbenefits.vba.va.gov:80/StandardDataService/StandardDataService
+    # 9012: Respiratory
+    # 8935: Cancer - Genitourinary
+    # the classification codes must be strings
+    MAS_RELATED_CONTENTIONS = {
+      7528 => '8935',
+      6847 => '9012',
+      6522 => '9012',
+      6510 => '9012',
+      6511 => '9012',
+      6512 => '9012',
+      6513 => '9012',
+      6514 => '9012'
+    }.freeze
 
     # @return [Array] mapping submitted disabilities to symbols used as keys for DISABILITIES;
     #                 an element is nil when the disability is not supported by RRD

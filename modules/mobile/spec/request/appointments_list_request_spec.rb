@@ -13,6 +13,7 @@ RSpec.describe 'appointments', type: :request do
     allow_any_instance_of(VAOS::UserService).to receive(:session).and_return('stubbed_token')
     Flipper.disable(:mobile_appointment_requests)
     Flipper.disable(:mobile_appointment_use_VAOS_MFS)
+    Flipper.disable(:mobile_appointment_use_VAOS_v2)
   end
 
   before(:all) do
@@ -446,7 +447,7 @@ RSpec.describe 'appointments', type: :request do
               'type' => 'appointment',
               'attributes' => {
                 'appointmentType' => 'VA',
-                'cancelId' => 'MzA4OzIwMjAxMTAzLjA5MDAwMDs0NDI7R3JlZW4gVGVhbSBDbGluaWMx',
+                'cancelId' => 'MzA4OzIwMjAxMTAzLjA5MDAwMDs5ODM7R3JlZW4gVGVhbSBDbGluaWMx',
                 'comment' => nil,
                 'healthcareProvider' => nil,
                 'healthcareService' => 'Green Team Clinic1',
@@ -588,7 +589,7 @@ RSpec.describe 'appointments', type: :request do
               'type' => 'appointment',
               'attributes' => {
                 'appointmentType' => 'VA',
-                'cancelId' => 'MzA4OzIwMjAxMTAzLjA5MDAwMDs0NDI7R3JlZW4gVGVhbSBDbGluaWMx',
+                'cancelId' => 'MzA4OzIwMjAxMTAzLjA5MDAwMDs5ODM7R3JlZW4gVGVhbSBDbGluaWMx',
                 'comment' => nil,
                 'healthcareProvider' => nil,
                 'healthcareService' => 'Green Team Clinic1',

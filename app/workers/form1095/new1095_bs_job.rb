@@ -54,7 +54,9 @@ module Form1095
       i = 1
       while i <= 13
         val = "H#{i < 10 ? '0' : ''}#{i}"
-        coverage_arr.push(form_fields[val.to_sym] ? true : false)
+
+        field = form_fields[val.to_sym]
+        coverage_arr.push(field && field.strip == 'Y' ? true : false)
 
         i += 1
       end
@@ -96,15 +98,14 @@ module Form1095
       produce_1095_hash(form_fields, unique_id, coverage_arr)
     end
 
-    def save_data?(form_data)
+    def save_data?(form_data, corrected)
       existing_form = Form1095B.find_by(veteran_icn: form_data[:veteran_icn], tax_year: form_data[:tax_year])
 
-      if !form_data[:is_corrected] && existing_form.present? # returns true to indicate successful entry
+      if !corrected && existing_form.present? # returns true to indicate successful entry
         Rails.logger.warn "Form for #{form_data[:tax_year]} already exists, but file is for Original 1095-B forms."
         return true
-      elsif form_data[:is_corrected] && existing_form.nil?
+      elsif corrected && existing_form.nil?
         Rails.logger.warn "Form for year #{form_data[:tax_year]} not found, but file is for Corrected 1095-B forms."
-        return true # return false here?? (or create form?) if is a correction, then it should already exist
       end
 
       if existing_form.nil?
@@ -115,28 +116,40 @@ module Form1095
       end
     end
 
+    def process_line?(form, file_details)
+      data = parse_form(form)
+
+      corrected = !file_details[:isOg?]
+
+      data[:tax_year] = file_details[:tax_year]
+      data[:form_data][:is_corrected] = corrected
+      data[:form_data][:is_beneficiary] = file_details[:is_dep_file?]
+      data[:form_data] = data[:form_data].to_json
+
+      unique_id = data[:unique_id]
+      data.delete(:unique_id)
+
+      if save_data?(data, corrected)
+        @form_count += 1
+        true
+      else
+        @error_count += 1
+        Rails.logger.warn "Failed to save form with unique ID: #{unique_id}"
+        false
+      end
+    end
+
     def process_file?(temp_file, file_details)
+      all_succeeded = true
       temp_file.each_line do |form|
-        data = parse_form(form)
-
-        data[:tax_year] = file_details[:tax_year]
-        data[:form_data][:is_corrected] = !file_details[:isOg?]
-        data[:form_data][:is_beneficiary] = file_details[:is_dep_file?]
-        data[:form_data] = data[:form_data].to_json
-
-        unique_id = data[:unique_id]
-        data.delete(:unique_id)
-
-        unless save_data?(data)
-          Rails.logger.error "Failed on form with unique ID: #{unique_id}"
-          return false
-        end
+        successful_line = process_line?(form, file_details)
+        all_succeeded = false if !successful_line && all_succeeded
       end
 
       temp_file.close
       temp_file.unlink
 
-      true
+      all_succeeded
     rescue => e
       Rails.logger.error(e.message)
       false
@@ -147,33 +160,48 @@ module Form1095
     def download_and_process_file?(file_name)
       Rails.logger.info "processing file: #{file_name}"
 
+      @form_count = 0
+      @error_count = 0
+
       file_details = parse_file_name(file_name)
 
       return false if file_details.blank?
 
       # downloads S3 file into local file, allows for processing large files this way
-      temp_file = Tempfile.new(file_name)
+      temp_file = Tempfile.new(file_name, encoding: 'ascii-8bit')
 
       # downloads file into temp_file
       bucket.object(file_name).get(response_target: temp_file)
 
       process_file?(temp_file, file_details)
+    rescue => e
+      Rails.logger.error(e.message)
+      false
     end
 
     def perform
       Rails.logger.info 'Checking for new 1095-B data'
 
       file_names = get_bucket_files
-      Rails.logger.info 'No new 1095 files found' if file_names.empty?
+      if file_names.empty?
+        Rails.logger.info 'No new 1095 files found'
+      else
+        Rails.logger.info "#{file_names.size} files found"
+      end
 
+      files_read_count = 0
       file_names.each do |file_name|
         if download_and_process_file?(file_name)
-          Rails.logger.info "#{file_name} read successfully, deleting file from S3"
+          files_read_count += 1
+          Rails.logger.info "Successfully read #{@form_count} 1095B forms from #{file_name}, deleting file from S3"
           bucket.delete_objects(delete: { objects: [{ key: file_name }] })
         else
-          Rails.logger.error "failed to load 1095 data from file: #{file_name}"
+          Rails.logger.error  "failed to save #{@error_count} forms from file: #{file_name};"\
+                              " successfully saved #{@form_count} forms"
         end
       end
+
+      Rails.logger.info "#{files_read_count}/#{file_names.size} files read successfully"
     end
   end
 end
