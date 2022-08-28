@@ -63,8 +63,14 @@ module SignIn
     def update_mpi_record
       return unless user_identity_from_attributes.loa3?
 
-      add_mpi_user unless mpi_find_profile_response
-      update_mpi_correlation_record unless mhv_auth?
+      if mhv_auth?
+        set_user_attributes_from_mpi
+        add_mpi_user
+      elsif mpi_find_profile_response.present?
+        update_mpi_correlation_record
+      else
+        add_mpi_user
+      end
     end
 
     def add_mpi_user
@@ -81,10 +87,11 @@ module SignIn
     def update_mpi_correlation_record
       user_identity_from_attributes.icn ||= mpi_find_profile_response.icn
       update_profile_response = mpi_service.update_profile(user_identity_from_attributes)
-      unless update_profile_response.ok?
+      unless update_profile_response&.ok?
         handle_error(Errors::MPIUserUpdateFailedError,
                      'User MPI record cannot be updated',
-                     Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE)
+                     Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE,
+                     raise_error: false)
       end
     end
 
@@ -117,6 +124,20 @@ module SignIn
                         code_challenge: state_payload.code_challenge,
                         user_verification_id: user_verification.id,
                         credential_email: credential_email).save!
+    end
+
+    def set_user_attributes_from_mpi
+      unless mpi_find_profile_response
+        handle_error(Errors::MHVMissingMPIRecordError,
+                     'No MPI Record for MHV Account',
+                     Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE)
+      end
+      user_identity_from_attributes.first_name = mpi_find_profile_response.given_names.first
+      user_identity_from_attributes.last_name = mpi_find_profile_response.family_name
+      user_identity_from_attributes.birth_date = mpi_find_profile_response.birth_date
+      user_identity_from_attributes.ssn = mpi_find_profile_response.ssn
+      user_identity_from_attributes.icn = mpi_find_profile_response.icn
+      user_identity_from_attributes.mhv_icn = mpi_find_profile_response.icn
     end
 
     def user_identity_from_attributes
@@ -164,9 +185,9 @@ module SignIn
       end
     end
 
-    def handle_error(error, error_message, error_code)
+    def handle_error(error, error_message, error_code, raise_error: true)
       log_message_to_sentry(error_message, 'warn')
-      raise error, message: error_message, code: error_code
+      raise error, message: error_message, code: error_code if raise_error
     end
 
     def mpi_find_profile_response
