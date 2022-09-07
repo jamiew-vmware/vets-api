@@ -27,7 +27,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
   end
 
   let(:mock_facility) do
-    mock_facility = { id: '442',
+    mock_facility = { id: '983',
                       name: 'Cheyenne VA Medical Center',
                       physical_address: { type: 'physical',
                                           line: ['2360 East Pershing Boulevard'],
@@ -58,7 +58,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
 
     let(:start_date) { Time.zone.parse('2021-01-01T00:00:00Z').iso8601 }
     let(:end_date) { Time.zone.parse('2023-01-01T00:00:00Z').iso8601 }
-    let(:params) { { startDate: start_date, endDate: end_date } }
+    let(:params) { { startDate: start_date, endDate: end_date, include: ['pending'] } }
 
     context 'backfill facility service returns data' do
       before { mock_clinic }
@@ -71,7 +71,6 @@ RSpec.describe 'vaos v2 appointments', type: :request do
             get '/mobile/v0/appointments', headers: iam_headers, params: params
           end
         end
-
         location = response.parsed_body.dig('data', 0, 'attributes', 'location')
         expect(response.body).to match_json_schema('VAOS_v2_appointments')
         expect(location).to eq({ 'id' => '983',
@@ -111,7 +110,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
       before { mock_facility }
 
       it 'healthcareService is populated' do
-        VCR.use_cassette('appointments/VAOS_v2/get_facility_clinics_200',
+        VCR.use_cassette('appointments/VAOS_v2/get_clinic_200',
                          match_requests_on: %i[method uri]) do
           VCR.use_cassette('appointments/VAOS_v2/get_appointment_200',
                            match_requests_on: %i[method uri]) do
@@ -119,34 +118,17 @@ RSpec.describe 'vaos v2 appointments', type: :request do
           end
         end
         expect(response.body).to match_json_schema('VAOS_v2_appointments')
-        expect(response.parsed_body.dig('data', 0, 'attributes', 'healthcareService')).to eq('CHY C&P AUDIO')
+        expect(response.parsed_body.dig('data', 0, 'attributes', 'healthcareService')).to eq('MTZ-LAB (BLOOD WORK)')
       end
     end
 
-    context 'backfill clinic service no clinic data' do
+    context 'backfill clinic service uses facility id that does not exist' do
       before { mock_facility }
 
       it 'healthcareService is nil' do
-        VCR.use_cassette('appointments/VAOS_v2/get_facility_clinics_bad_facility_id_200',
+        VCR.use_cassette('appointments/VAOS_v2/get_clinic_bad_facility_id_500',
                          match_requests_on: %i[method uri]) do
-          VCR.use_cassette('appointments/VAOS_v2/get_appointment_200',
-                           match_requests_on: %i[method uri]) do
-            get '/mobile/v0/appointments', headers: iam_headers, params: params
-          end
-        end
-
-        expect(response.body).to match_json_schema('VAOS_v2_appointments')
-        expect(response.parsed_body.dig('data', 0, 'attributes', 'healthcareService')).to be_nil
-      end
-    end
-
-    context 'backfill clinic service returns in error' do
-      before { mock_facility }
-
-      it 'healthcareService is nil' do
-        VCR.use_cassette('appointments/VAOS_v2/get_facility_clinics_500',
-                         match_requests_on: %i[method uri]) do
-          VCR.use_cassette('appointments/VAOS_v2/get_appointment_200',
+          VCR.use_cassette('appointments/VAOS_v2/get_appointment_200_bad_facility_id',
                            match_requests_on: %i[method uri]) do
             get '/mobile/v0/appointments', headers: iam_headers, params: params
           end
@@ -178,7 +160,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
       end
     end
 
-    context 'request all appointments' do
+    context 'request all appointments without requests' do
       before do
         mock_facility
         mock_clinic
@@ -186,19 +168,46 @@ RSpec.describe 'vaos v2 appointments', type: :request do
 
       let(:start_date) { Time.zone.parse('1991-01-01T00:00:00Z').iso8601 }
       let(:end_date) { Time.zone.parse('2023-01-01T00:00:00Z').iso8601 }
-      let(:params) { { page: { number: 1, size: 9999 }, startDate: start_date, endDate: end_date } }
+      let(:params) { { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date } }
 
-      it 'processes all appointments without error' do
+      it 'returns no appointment requests' do
+        VCR.use_cassette('appointments/VAOS_v2/get_appointments_no_requests_200',
+                         match_requests_on: %i[method uri]) do
+          get '/mobile/v0/appointments', headers: iam_headers, params: params
+        end
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match_json_schema('VAOS_v2_appointments')
+
+        uniq_statuses = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'status') }.uniq
+        expect(uniq_statuses).to eq(%w[CANCELLED BOOKED])
+      end
+    end
+
+    context 'request all appointments with requests' do
+      before do
+        mock_facility
+        mock_clinic
+      end
+
+      let(:start_date) { Time.zone.parse('1991-01-01T00:00:00Z').iso8601 }
+      let(:end_date) { Time.zone.parse('2023-01-01T00:00:00Z').iso8601 }
+      let(:params) do
+        { page: { number: 1, size: 9999 }, startDate: start_date, endDate: end_date, include: ['pending'] }
+      end
+
+      it 'processes appointments without error' do
         VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben',
                          match_requests_on: %i[method uri]) do
           get '/mobile/v0/appointments', headers: iam_headers, params: params
         end
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)['data'].size).to eq(1233)
-
+        expect(JSON.parse(response.body)['data'].size).to eq(1305)
         # VAOS v2 appointment is only different from appointments by allowing some fields to be nil.
         # This is due to bad staging data.
         expect(response.body).to match_json_schema('VAOS_v2_appointments')
+
+        uniq_statuses = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'status') }.uniq
+        expect(uniq_statuses).to eq(%w[CANCELLED BOOKED SUBMITTED])
       end
     end
   end
