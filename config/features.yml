@@ -94,6 +94,10 @@ features:
     actor_type: user
     description: Enables the capture of user responses to demographics up-to-date questions
     enable_in_development: true
+  check_in_experience_synthetic_metric_name:
+    actor_type: user
+    description: Enables updating the StatsD metric name for Synthetic check traffic
+    enable_in_development: true
   check_in_experience_translation_disclaimer_spanish_enabled:
     actor_type: user
     description: Enables disclaimer for possible untranslated content on spanish pages
@@ -190,6 +194,9 @@ features:
   debt_letters_show_letters:
     actor_type: user
     description: Enables debt letters
+  debt_letters_show_letters_vbms:
+    actor_type: user
+    description: Enables debt letter download from VBMS
   decision_review_hlr_email:
     actor_type: user
     description: Send email notification for successful HLR submission
