@@ -29,6 +29,9 @@ RSpec.describe 'vaos v2 appointments', type: :request do
   let(:mock_facility) do
     mock_facility = { id: '983',
                       name: 'Cheyenne VA Medical Center',
+                      time_zone: {
+                        time_zone_id: 'America/Denver'
+                      },
                       physical_address: { type: 'physical',
                                           line: ['2360 East Pershing Boulevard'],
                                           city: 'Cheyenne',
@@ -171,7 +174,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
       let(:params) { { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date } }
 
       it 'returns no appointment requests' do
-        VCR.use_cassette('appointments/VAOS_v2/get_appointments_no_requests_200',
+        VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben',
                          match_requests_on: %i[method uri]) do
           get '/mobile/v0/appointments', headers: iam_headers, params: params
         end

@@ -54,6 +54,7 @@ sign_in:
   jwt_encode_key: 'spec/fixtures/sign_in/privatekey.pem'
   cookies_secure: false
   info_cookie_domain: localhost
+  auto_uplevel: true
   client_redirect_uris:
     mobile: 'vamobile://login-success'
     web: 'http://localhost:3001/auth/login/callback'
@@ -270,6 +271,7 @@ modules_appeals_api:
   documentation:
     path_enabled_flag: false
     wip_docs:
+      - segmented_apis
       # List of flags to indicate parts of documentation that are still WIP and not ready for production.
       # See the rswag:appeals_api:dev rake task, spec_helper, and DocHelpers#wip_doc_enabled? for usage info to opt-in.
       # NOTE: Do not remove this key even if it's empty.
@@ -492,7 +494,6 @@ mvi:
   client_cert_path: /fake/client/cert/path
   client_key_path: /fake/client/key/path
   pii_logging: false
-  vba_orchestration: false
 
 # Settings for eMIS
 # The certs used here can be obtained from the DevOps team. A different set is required for
@@ -1143,6 +1144,7 @@ vanotify:
         burial_claim_confirmation_email_template_id: burial_claim_confirmation_email_template_id
         ch31_vbms_form_confirmation_email: ch31_vbms_fake_template_id
         ch31_central_mail_form_confirmation_email: ch31_central_mail_fake_template_id
+        career_counseling_confirmation_email: career_counseling_confirmation_email_template_id
         contact_info_change: fake_template_id
         form526_confirmation_email: fake_template_id
         form526_submission_failed_email: fake_template_id
@@ -1354,9 +1356,10 @@ rrd:
       - fake_email
 
 virtual_regional_office:
-  url: http://va.gov
-  token: 9d3868d1-ec15-4889-8002-2bff1b50ba62
+  url: https://sandbox.lighthouse.va.gov/abd-vro
+  api_key: 9d3868d1-ec15-4889-8002-2bff1b50ba62
   health_assessment_path: health-data-assessment
+  evidence_pdf_path: evidence-pdf
 
 # Settings for Test User Dashboard modules
 test_user_dashboard:

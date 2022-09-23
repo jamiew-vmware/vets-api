@@ -32,6 +32,10 @@ features:
     actor_type: user
     description: Submit 1010cg applications using a background job
     enable_in_development: false
+  career_counseling_confirmation_email:
+    actor_type: user
+    description: Enables Career Counseling claim email confirmation upon submission
+    enable_in_development: true
   hca_american_indian_enabled:
     actor_type: user
     description: Enables American Indian SIGI question page.
@@ -221,6 +225,10 @@ features:
     actor_type: user
     description: Enables the supplemental claim PII expunge job
     enable_in_development: true
+  decision_review_icn_updater_enabled:
+      actor_type: user
+      description: Enables the ICN lookup job
+      enable_in_development: true
   dependency_verification:
     actor_type: user
     description: Feature gates the dependency verification modal for updating the diaries service.
@@ -534,9 +542,17 @@ features:
     actor_type: user
     description: Notifies MAS service that a MAS-relevant claim has come through
     enable_in_development: true
+  rrd_call_vro_service:
+    actor_type: user
+    description: Enables the RRD flow to call VRO for assessing health data and generating RRD PDF
+    enable_in_development: true
   rrd_new_pact_related_disability:
     actor_type: user
     description: Sends notification to Slack channel if a new claim includes a PACT-related disability that RRD handles
+    enable_in_development: true
+  rrd_asrd_doctype:
+    actor_type: user
+    description: Uploads RRD summary PDFs to EVSS with new document type "Automated Review Summary Document"
     enable_in_development: true
   search_representative:
     actor_type: user
@@ -731,6 +747,10 @@ features:
     actor_type: user
     enable_in_development: true
     description: Toggle for tickets with the label vaos-v2-next will be behind this flag
+  va_online_scheduling_clinic_filter:
+    actor_type: user
+    enable_in_development: true
+    description: Toggle for VAOS direct scheduling & appointment request clinic filtering
   va_online_scheduling_appointment_list:
     actor_type: user
     enable_in_development: true
@@ -749,6 +769,10 @@ features:
   virtual_agent_auth:
     actor_type: user
     description: Enables auth lock in order to access bot
+    enable_in_development: true
+  virtual_agent_user_access_records:
+    actor_type: user
+    description: Enables collection of user data for VBA
     enable_in_development: true
   yellow_ribbon_mvp_enhancement:
     actor_type: user
@@ -784,4 +808,8 @@ features:
   show_digital_form_1095b:
     actor_type: user
     description: Enables access to digital 1095-B form download
+    enable_in_development: true
+  show_meb_mailing_address_foreign:
+    actor_type: user
+    description: Allows the city and state inputs to change if a user lives on a military base outside the USA.
     enable_in_development: true
