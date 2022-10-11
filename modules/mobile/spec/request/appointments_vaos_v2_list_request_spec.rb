@@ -158,8 +158,11 @@ RSpec.describe 'vaos v2 appointments', type: :request do
 
         expect(response.body).to match_json_schema('appointments')
 
-        # removed vetextId due to lack of use on FE
-        expect(response_v2['attributes'].except('vetextId')).to eq(appt_v0_cancelled['attributes'].except('vetextId'))
+        response_v2 = response_v2['attributes'].except('vetextId', 'typeOfCare', 'friendlyLocationName')
+        response_v0 = appt_v0_cancelled['attributes'].except('vetextId', 'typeOfCare', 'friendlyLocationName')
+
+        # removed vetextId, typeOfCare, and friendlyLocationName due to change in behavior decided for v2 adaption to v0
+        expect(response_v2).to eq(response_v0)
       end
     end
 
@@ -176,13 +179,21 @@ RSpec.describe 'vaos v2 appointments', type: :request do
       it 'returns no appointment requests' do
         VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben',
                          match_requests_on: %i[method uri]) do
-          get '/mobile/v0/appointments', headers: iam_headers, params: params
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            get '/mobile/v0/appointments', headers: iam_headers, params: params
+          end
         end
         expect(response).to have_http_status(:ok)
         expect(response.body).to match_json_schema('VAOS_v2_appointments')
 
         uniq_statuses = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'status') }.uniq
-        expect(uniq_statuses).to eq(%w[CANCELLED BOOKED])
+        expect(uniq_statuses).to match_array(%w[BOOKED CANCELLED])
+
+        proposed_times = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'proposedTimes') }.uniq
+        expect(proposed_times).to eq([nil])
+
+        is_pending = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'isPending') }.uniq
+        expect(is_pending).to eq([false])
       end
     end
 
@@ -201,7 +212,9 @@ RSpec.describe 'vaos v2 appointments', type: :request do
       it 'processes appointments without error' do
         VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben',
                          match_requests_on: %i[method uri]) do
-          get '/mobile/v0/appointments', headers: iam_headers, params: params
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            get '/mobile/v0/appointments', headers: iam_headers, params: params
+          end
         end
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)['data'].size).to eq(1305)
@@ -210,7 +223,78 @@ RSpec.describe 'vaos v2 appointments', type: :request do
         expect(response.body).to match_json_schema('VAOS_v2_appointments')
 
         uniq_statuses = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'status') }.uniq
-        expect(uniq_statuses).to eq(%w[CANCELLED BOOKED SUBMITTED])
+        expect(uniq_statuses).to match_array(%w[CANCELLED BOOKED SUBMITTED])
+
+        proposed_times = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'proposedTimes') }.uniq
+        expect(proposed_times).not_to eq([nil])
+
+        is_pending = response.parsed_body['data'].map { |appt| appt.dig('attributes', 'isPending') }.uniq
+        expect(is_pending).to eq([true, false])
+      end
+    end
+
+    describe 'healthcare provider names' do
+      before do
+        mock_facility
+        mock_clinic
+      end
+
+      def fetch_appointments
+        VCR.use_cassette('appointments/VAOS_v2/get_appointments_with_mixed_provider_types',
+                         match_requests_on: %i[method uri]) do
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            get '/mobile/v0/appointments', headers: iam_headers
+          end
+        end
+      end
+
+      context 'when upstream appointments index returns provider names' do
+        it 'adds names to healthcareProvider field' do
+          fetch_appointments
+          appointment = response.parsed_body['data'].find { |appt| appt['id'] == '76133' }
+          expect(appointment['attributes']['healthcareProvider']).to eq('MATTHEW ENGHAUSER')
+        end
+      end
+
+      context 'when the upstream appointments index returns provider id but no name' do
+        let(:appointment) { response.parsed_body['data'].find { |appt| appt['id'] == '76132' } }
+
+        it 'backfills that data by calling the provider service' do
+          fetch_appointments
+          expect(appointment['attributes']['healthcareProvider']).to eq('DEHGHAN, AMIR')
+        end
+
+        it 'logs error and falls back to nil when provider does not return provider data' do
+          expect(Rails.logger).to receive(:error).with('Mobile appointments provider not found', '1407938061')
+
+          VCR.use_cassette('appointments/VAOS_v2/get_appointments_with_mixed_provider_types',
+                           match_requests_on: %i[method uri]) do
+            VCR.use_cassette('providers/get_provider_400', match_requests_on: %i[method uri], tag: :force_utf8) do
+              get '/mobile/v0/appointments', headers: iam_headers
+            end
+          end
+          expect(response).to have_http_status(:ok)
+          expect(appointment['attributes']['healthcareProvider']).to be_nil
+        end
+
+        it 'logs error and falls back to nil when provider service returns 500' do
+          VCR.use_cassette('appointments/VAOS_v2/get_appointments_with_mixed_provider_types',
+                           match_requests_on: %i[method uri]) do
+            VCR.use_cassette('providers/get_provider_500', match_requests_on: %i[method uri], tag: :force_utf8) do
+              get '/mobile/v0/appointments', headers: iam_headers
+            end
+          end
+          expect(response).to have_http_status(:ok)
+          expect(appointment['attributes']['healthcareProvider']).to be_nil
+        end
+      end
+
+      context 'when upstream appointments index provides neither provider name nor id' do
+        it 'sets provider name to nil' do
+          fetch_appointments
+          appointment = response.parsed_body['data'].find { |appt| appt['id'] == '76131' }
+          expect(appointment['attributes']['healthcareProvider']).to be_nil
+        end
       end
     end
   end

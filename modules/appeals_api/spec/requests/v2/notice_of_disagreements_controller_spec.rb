@@ -76,6 +76,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
         nod = AppealsApi::NoticeOfDisagreement.find_by(id: parsed['data']['id'])
 
         expect(nod.source).to eq('va.gov')
+        expect(nod.veteran_icn).to eq('1013062086V794840')
         expect(parsed['data']['type']).to eq('noticeOfDisagreement')
         expect(parsed['data']['attributes']['status']).to eq('pending')
       end
@@ -98,7 +99,10 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
     context 'with minimum valid headers' do
       it 'creates an NOD and persists the data' do
         post(path, params: @minimum_data, headers: @headers)
+        nod = AppealsApi::NoticeOfDisagreement.find_by(id: parsed['data']['id'])
+
         expect(parsed['data']['type']).to eq('noticeOfDisagreement')
+        expect(nod.veteran_icn).to be_nil
       end
     end
 
@@ -344,7 +348,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
       expect(missing_claimant_error['title']).to eq 'Missing required fields'
       expect(missing_claimant_error['source']['pointer']).to eq '/data/attributes'
       expect(missing_claimant_error['detail']).to eq(
-        "Claimant headers were provided but missing '/data/attributes/claimant' field"
+        "Non-veteran claimant headers were provided but missing '/data/attributes/claimant' field"
       )
       expect(missing_claimant_error['meta']['missing_fields']).to eq ['claimant']
     end

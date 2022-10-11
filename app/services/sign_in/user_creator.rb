@@ -86,6 +86,12 @@ module SignIn
 
     def update_mpi_correlation_record
       user_identity_from_attributes.icn ||= mpi_response_profile.icn
+      attribute_mismatch_check(:first_name,
+                               user_identity_from_attributes.first_name,
+                               mpi_response_profile.given_names.first)
+      attribute_mismatch_check(:last_name, user_identity_from_attributes.last_name, mpi_response_profile.family_name)
+      attribute_mismatch_check(:birth_date, user_identity_from_attributes.birth_date, mpi_response_profile.birth_date)
+      attribute_mismatch_check(:ssn, user_identity_from_attributes.ssn, mpi_response_profile.ssn, prevent_auth: true)
       update_profile_response = mpi_service.update_profile(user_identity_from_attributes)
       unless update_profile_response&.ok?
         handle_error(Errors::MPIUserUpdateFailedError,
@@ -95,9 +101,18 @@ module SignIn
       end
     end
 
+    def attribute_mismatch_check(type, credential_attribute, mpi_attribute, prevent_auth: false)
+      return unless mpi_attribute
+
+      if credential_attribute != mpi_attribute
+        handle_error(Errors::AttributeMismatchError,
+                     "Attribute mismatch, #{type} in credential does not match MPI attribute",
+                     Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE,
+                     raise_error: prevent_auth)
+      end
+    end
+
     def log_first_time_user
-      user_verification_type = logingov_auth? ? :logingov_uuid : :idme_uuid
-      user_verification_identifier = logingov_auth? ? logingov_uuid : idme_uuid
       unless UserVerification.find_by(user_verification_type => user_verification_identifier)
         sign_in_logger.info("New VA.gov user, type=#{sign_in[:service_name]}")
       end
@@ -144,7 +159,7 @@ module SignIn
       @user_identity_from_attributes ||= UserIdentity.new({ idme_uuid: idme_uuid,
                                                             logingov_uuid: logingov_uuid,
                                                             loa: loa,
-                                                            sign_in: sign_in_backing_csp_type,
+                                                            sign_in: sign_in,
                                                             first_name: first_name,
                                                             last_name: last_name,
                                                             birth_date: birth_date,
@@ -208,16 +223,30 @@ module SignIn
       @user_verification ||= Login::UserVerifier.new(user_identity_from_attributes).perform
     end
 
-    def sign_in_backing_csp_type
-      { service_name: service_name_backing_csp_type }
+    def user_verification_type
+      case sign_in[:service_name]
+      when SAML::User::LOGINGOV_CSID
+        :logingov_uuid
+      when SAML::User::MHV_ORIGINAL_CSID
+        :mhv_uuid
+      when SAML::User::DSLOGON_CSID
+        :dslogon_uuid
+      when SAML::User::IDME_CSID
+        :idme_uuid
+      end
     end
 
-    def service_name_backing_csp_type
-      logingov_auth? ? SAML::User::LOGINGOV_CSID : SAML::User::IDME_CSID
-    end
-
-    def logingov_auth?
-      sign_in[:service_name] == SAML::User::LOGINGOV_CSID
+    def user_verification_identifier
+      case sign_in[:service_name]
+      when SAML::User::LOGINGOV_CSID
+        logingov_uuid
+      when SAML::User::MHV_ORIGINAL_CSID
+        mhv_correlation_id
+      when SAML::User::DSLOGON_CSID
+        edipi
+      when SAML::User::IDME_CSID
+        idme_uuid
+      end
     end
 
     def mhv_auth?
@@ -225,7 +254,7 @@ module SignIn
     end
 
     def user_uuid
-      @user_uuid ||= user_verification.credential_identifier
+      @user_uuid ||= user_verification.backing_credential_identifier
     end
 
     def login_code

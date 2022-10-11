@@ -18,7 +18,7 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
   end
 
   it 'returns a list of appointments at the expected size' do
-    expect(adapted_appointments.size).to eq(11)
+    expect(adapted_appointments.size).to eq(12)
   end
 
   context 'with a cancelled VA appointment' do
@@ -28,6 +28,7 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
       expect(cancelled_va[:status_detail]).to eq('CANCELLED BY PATIENT')
       expect(cancelled_va[:status]).to eq('CANCELLED')
       expect(cancelled_va[:appointment_type]).to eq('VA')
+      expect(cancelled_va[:is_pending]).to eq(false)
       expect(cancelled_va.as_json).to eq({ 'id' => '121133',
                                            'appointment_type' => 'VA',
                                            'cancel_id' => nil,
@@ -67,11 +68,11 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
                                            'is_covid_vaccine' => false,
                                            'is_pending' => false,
                                            'proposed_times' => nil,
-                                           'type_of_care' => nil,
+                                           'type_of_care' => 'Optometry',
                                            'patient_phone_number' => nil,
                                            'patient_email' => nil,
                                            'best_time_to_call' => nil,
-                                           'friendly_location_name' => nil })
+                                           'friendly_location_name' => 'Cheyenne VA Medical Center' })
     end
   end
 
@@ -121,11 +122,11 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
                                         'is_covid_vaccine' => false,
                                         'is_pending' => false,
                                         'proposed_times' => nil,
-                                        'type_of_care' => nil,
+                                        'type_of_care' => 'Optometry',
                                         'patient_phone_number' => nil,
                                         'patient_email' => nil,
                                         'best_time_to_call' => nil,
-                                        'friendly_location_name' => nil
+                                        'friendly_location_name' => 'Cheyenne VA Medical Center'
                                       })
     end
   end
@@ -306,13 +307,13 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
                                           'proposed_times' => [
                                             { 'date' => '09/28/2021', 'time' => 'AM' }
                                           ],
-                                          'type_of_care' => nil,
+                                          'type_of_care' => 'Social Work',
                                           'patient_phone_number' => '717-555-5555',
                                           'patient_email' => 'Aarathi.poldass@va.gov',
                                           'best_time_to_call' => [
                                             'Evening'
                                           ],
-                                          'friendly_location_name' => nil
+                                          'friendly_location_name' => 'Cheyenne VA Medical Center'
                                         })
     end
   end
@@ -365,13 +366,13 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
                                        'proposed_times' => [
                                          { 'date' => '10/01/2021', 'time' => 'PM' }
                                        ],
-                                       'type_of_care' => nil,
+                                       'type_of_care' => 'Primary Care',
                                        'patient_phone_number' => '717-555-5555',
                                        'patient_email' => 'judy.morrison@id.me',
                                        'best_time_to_call' => [
                                          'Morning'
                                        ],
-                                       'friendly_location_name' => nil
+                                       'friendly_location_name' => 'Cheyenne VA Medical Center'
                                      })
     end
   end
@@ -414,11 +415,11 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
                                       'is_covid_vaccine' => false,
                                       'is_pending' => true,
                                       'proposed_times' => [{ 'date' => '09/08/2021', 'time' => 'PM' }],
-                                      'type_of_care' => 'Primary Care ',
+                                      'type_of_care' => 'Primary Care',
                                       'patient_phone_number' => '999-999-9992',
                                       'patient_email' => nil,
                                       'best_time_to_call' => nil,
-                                      'friendly_location_name' => nil })
+                                      'friendly_location_name' => 'Cheyenne VA Medical Center' })
     end
   end
 
@@ -468,11 +469,11 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
                                        'is_covid_vaccine' => false,
                                        'is_pending' => true,
                                        'proposed_times' => [{ 'date' => '09/08/2021', 'time' => 'PM' }],
-                                       'type_of_care' => 'Primary Care ',
+                                       'type_of_care' => 'Primary Care',
                                        'patient_phone_number' => '999-999-9992',
                                        'patient_email' => nil,
                                        'best_time_to_call' => nil,
-                                       'friendly_location_name' => nil })
+                                       'friendly_location_name' => 'Cheyenne VA Medical Center' })
     end
   end
 
@@ -514,11 +515,74 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
                                      'is_covid_vaccine' => false,
                                      'is_pending' => true,
                                      'proposed_times' => [{ 'date' => '09/08/2021', 'time' => 'PM' }],
-                                     'type_of_care' => 'Primary Care ',
+                                     'type_of_care' => 'Primary Care',
                                      'patient_phone_number' => '999-999-9992',
                                      'patient_email' => nil,
                                      'best_time_to_call' => nil,
-                                     'friendly_location_name' => nil })
+                                     'friendly_location_name' => 'Cheyenne VA Medical Center' })
+    end
+  end
+
+  context 'with a cancelled requested VA appointment' do
+    let(:cancelled_requested_va_appt) { adapted_appointments[11] }
+
+    it 'has expected fields' do
+      expect(cancelled_requested_va_appt[:appointment_type]).to eq('VA')
+      expect(cancelled_requested_va_appt[:is_pending]).to eq(true)
+      expect(cancelled_requested_va_appt[:status]).to eq('CANCELLED')
+
+      expect(cancelled_requested_va_appt.as_json).to eq({
+                                                          'id' => '53241',
+                                                          'appointment_type' => 'VA',
+                                                          'cancel_id' => nil,
+                                                          'comment' => 'testing',
+                                                          'facility_id' => '442',
+                                                          'sta6aid' => '442',
+                                                          'healthcare_provider' => nil,
+                                                          'healthcare_service' => nil,
+                                                          'location' => {
+                                                            'id' => '442',
+                                                            'name' => 'Cheyenne VA Medical Center',
+                                                            'address' => {
+                                                              'street' => '2360 East Pershing Boulevard',
+                                                              'city' => 'Cheyenne',
+                                                              'state' => 'WY',
+                                                              'zip_code' => '82001-5356'
+                                                            },
+                                                            'lat' => 41.148026,
+                                                            'long' => -104.786255,
+                                                            'phone' => {
+                                                              'area_code' => '307',
+                                                              'number' => '778-7550',
+                                                              'extension' => nil
+                                                            },
+                                                            'url' => nil,
+                                                            'code' => nil
+                                                          },
+                                                          'minutes_duration' => nil,
+                                                          'phone_only' => false,
+                                                          'start_date_local' => '2017-05-15T18:00:00.000-06:00',
+                                                          'start_date_utc' => '2017-05-16T00:00:00.000+00:00',
+                                                          'status' => 'CANCELLED',
+                                                          'status_detail' => 'CANCELLED BY CLINIC',
+                                                          'time_zone' => 'America/Denver',
+                                                          'vetext_id' => nil,
+                                                          'reason' => 'Routine Follow-up',
+                                                          'is_covid_vaccine' => false,
+                                                          'is_pending' => true,
+                                                          'proposed_times' => [
+                                                            { 'date' => '05/16/2017', 'time' => 'AM' },
+                                                            { 'date' => '05/17/2017', 'time' => 'AM' },
+                                                            { 'date' => '05/31/2017', 'time' => 'AM' }
+                                                          ],
+                                                          'type_of_care' => 'Primary Care',
+                                                          'patient_phone_number' => '788-999-9999',
+                                                          'patient_email' => nil,
+                                                          'best_time_to_call' => [
+                                                            'Afternoon'
+                                                          ],
+                                                          'friendly_location_name' => 'Cheyenne VA Medical Center'
+                                                        })
     end
   end
 
@@ -560,7 +624,7 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
   end
 
   context 'with non-human readable service type' do
-    let!(:no_readable_service_appt) do
+    let(:no_readable_service_appt) do
       vaos_data = JSON.parse(appointment_fixtures, symbolize_names: true)[2]
       vaos_data[:service_type] = 'outpatientMentalHealth'
       subject.parse([vaos_data])
@@ -568,6 +632,18 @@ describe Mobile::V0::Adapters::VAOSV2Appointments, aggregate_failures: true do
 
     it 'converts to human readable service type' do
       expect(no_readable_service_appt.first[:type_of_care]).to eq('Mental Health')
+    end
+  end
+
+  context 'with arrived status' do
+    let(:arrived_appt) do
+      vaos_data = JSON.parse(appointment_fixtures, symbolize_names: true)[1]
+      vaos_data[:status] = 'arrived'
+      subject.parse([vaos_data])
+    end
+
+    it 'converts status to BOOKED' do
+      expect(arrived_appt.first[:status]).to eq('BOOKED')
     end
   end
 

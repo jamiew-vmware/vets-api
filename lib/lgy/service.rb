@@ -77,6 +77,17 @@ module LGY
         )
         response.body
       end
+    rescue Faraday::Error => e
+      # LGY recently started returning error messages to us. We are logging
+      # those errors in sentry to debug the issues described here:
+      # https://github.com/department-of-veterans-affairs/va.gov-team/issues/47435#issuecomment-1268916462
+      log_message_to_sentry(
+        "COE application submission failed with http status: #{e.response[:status]}",
+        :error,
+        { response_body: e.response[:body], response_headers: e.response[:headers] },
+        { team: 'vfs-ebenefits' }
+      )
+      raise e
     rescue Common::Client::Errors::ClientError => e
       raise e
     end
