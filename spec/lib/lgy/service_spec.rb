@@ -176,6 +176,23 @@ describe LGY::Service do
         end
       end
     end
+
+    context 'LGY returns an error' do
+      it 'logs response body and headers to sentry' do
+        VCR.use_cassette 'lgy/application_put_500' do
+          expect_any_instance_of(LGY::Service).to receive(:log_message_to_sentry).with(
+            'COE application submission failed with http status: 500',
+            :error,
+            { message: 'the server responded with status 500', status: 500,
+              body: { 'errors' => [{ 'message' => 'Fake error message' }] } },
+            { team: 'vfs-ebenefits' }
+          )
+          expect do
+            subject.put_application(payload: coe_claim)
+          end.to raise_error(Common::Client::Errors::ClientError)
+        end
+      end
+    end
   end
 
   describe '#post_document' do

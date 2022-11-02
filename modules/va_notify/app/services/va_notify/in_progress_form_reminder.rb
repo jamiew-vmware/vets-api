@@ -55,21 +55,23 @@ module VANotify
     end
 
     def personalisation_details_single
-      if Flipper.enabled?(:in_progress_form_reminder_age_param)
-        {
-          'first_name' => veteran.first_name.upcase,
-          'date' => in_progress_form.expires_at.strftime('%B %d, %Y'),
-          'form_age' => VANotify::InProgressFormHelper.form_age(in_progress_form)
-        }
-      else
-        {
-          'first_name' => veteran.first_name.upcase,
-          'date' => in_progress_form.expires_at.strftime('%B %d, %Y')
-        }
-      end
+      {
+        'first_name' => veteran.first_name.upcase,
+        'date' => in_progress_form.expires_at.strftime('%B %d, %Y'),
+        'form_age' => VANotify::InProgressFormHelper.form_age(in_progress_form)
+      }
     end
 
     def personalisation_details_multiple
+      if Flipper.enabled?(:in_progress_generic_multiple_template)
+        details_generic_multiple
+      else
+        # To be remove once we have verified the new logic behind the in_progress_generic_multiple_template flag
+        details_hardcoded_multiple
+      end
+    end
+
+    def details_hardcoded_multiple
       in_progress_forms = InProgressForm.where(form_id: FindInProgressForms::RELEVANT_FORMS,
                                                user_uuid: in_progress_form.user_uuid).order(:expires_at)
       personalisation = in_progress_forms.flat_map.with_index(1) do |form, i|
@@ -80,6 +82,26 @@ module VANotify
           ["form_#{i}_date", form.expires_at.strftime('%B %d, %Y')]
         ]
       end.to_h
+      personalisation['first_name'] = veteran.first_name.upcase
+      personalisation
+    end
+
+    def details_generic_multiple
+      in_progress_forms = InProgressForm.where(form_id: FindInProgressForms::RELEVANT_FORMS,
+                                               user_uuid: in_progress_form.user_uuid).order(:expires_at)
+      personalisation = {}
+      personalisation['formatted_form_data'] = in_progress_forms.map do |form|
+        friendly_form_name = VANotify::InProgressFormHelper::FRIENDLY_FORM_SUMMARY.fetch(form.form_id)
+        <<~FORM_DATA
+
+          ^ FORM #{form.form_id}
+          ^
+          ^__#{friendly_form_name}__
+          ^
+          ^_Application expires on:_ #{form.expires_at.strftime('%B %d, %Y')}
+
+        FORM_DATA
+      end.join("\n^---\n")
       personalisation['first_name'] = veteran.first_name.upcase
       personalisation
     end

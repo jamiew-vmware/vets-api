@@ -12,6 +12,7 @@ module SignIn
       def render_auth(state: SecureRandom.hex, acr: IAL::LOGIN_GOV_IAL1)
         renderer = ActionController::Base.renderer
         renderer.controller.prepend_view_path(Rails.root.join('lib', 'sign_in', 'templates'))
+        Rails.logger.info("[SignIn][Logingov][Service] Rendering auth, state: #{state}, acr: #{acr}")
         renderer.render(template: 'oauth_get_form',
                         locals: {
                           url: auth_url,
@@ -30,53 +31,74 @@ module SignIn
                         format: :html)
       end
 
-      def render_logout(id_token:)
-        "#{sign_out_url}?#{sign_out_params(id_token, config.logout_redirect_uri, SecureRandom.hex).to_query}"
+      def render_logout
+        "#{sign_out_url}?#{sign_out_params(config.logout_redirect_uri, SecureRandom.hex).to_query}"
       end
 
       def token(code)
         response = perform(
           :post, config.token_path, token_params(code), { 'Content-Type' => 'application/json' }
         )
+        Rails.logger.info("[SignIn][Logingov][Service] Token Success, code: #{code}")
         response.body
       rescue Common::Client::Errors::ClientError => e
-        raise e, '[SignIn][Logingov][Service] Cannot perform Token request'
+        raise_client_error(e, 'Token')
       end
 
       def user_info(token)
         response = perform(:get, config.userinfo_path, nil, { 'Authorization' => "Bearer #{token}" })
         OpenStruct.new(response.body)
       rescue Common::Client::Errors::ClientError => e
-        raise e, '[SignIn][Logingov][Service] Cannot perform UserInfo request'
+        raise_client_error(e, 'UserInfo')
       end
 
-      def normalized_attributes(user_info, credential_level, client_id)
-        loa_current = ial_to_loa(credential_level.current_ial)
-        loa_highest = ial_to_loa(credential_level.max_ial)
+      def normalized_attributes(user_info, credential_level)
         {
-          uuid: user_info.sub,
           logingov_uuid: user_info.sub,
-          loa: { current: loa_current, highest: loa_highest },
+          current_ial: credential_level.current_ial,
+          max_ial: credential_level.max_ial,
           ssn: user_info.social_security_number&.tr('-', ''),
           birth_date: user_info.birthdate,
           first_name: user_info.given_name,
           last_name: user_info.family_name,
+          address: normalize_address(user_info.address),
           csp_email: user_info.email,
           multifactor: true,
-          sign_in: { service_name: config.service_name, auth_broker: Constants::Auth::BROKER_CODE,
-                     client_id: client_id },
-          authn_context: get_authn_context(credential_level.current_ial)
+          service_name: config.service_name,
+          authn_context: get_authn_context(credential_level.current_ial),
+          auto_uplevel: credential_level.auto_uplevel
         }
       end
 
       private
 
-      def get_authn_context(current_ial)
-        current_ial == IAL::TWO ? IAL::LOGIN_GOV_IAL2 : IAL::LOGIN_GOV_IAL1
+      def normalize_address(address)
+        return unless address
+
+        street_array = address[:street_address].split("\n")
+        {
+          street: street_array[0],
+          street2: street_array[1],
+          postal_code: address[:postal_code],
+          state: address[:region],
+          city: address[:locality],
+          country: united_states_country_code
+        }
       end
 
-      def ial_to_loa(ial)
-        ial == IAL::TWO ? LOA::THREE : LOA::ONE
+      def united_states_country_code
+        'USA'
+      end
+
+      def raise_client_error(client_error, function_name)
+        status = client_error.status
+        description = client_error.body && client_error.body[:error]
+        raise client_error, "[SignIn][Logingov][Service] Cannot perform #{function_name} request, " \
+                            "status: #{status}, description: #{description}"
+      end
+
+      def get_authn_context(current_ial)
+        current_ial == IAL::TWO ? IAL::LOGIN_GOV_IAL2 : IAL::LOGIN_GOV_IAL1
       end
 
       def auth_url
@@ -91,9 +113,9 @@ module SignIn
         "#{config.base_path}/#{config.logout_path}"
       end
 
-      def sign_out_params(id_token, redirect_uri, state)
+      def sign_out_params(redirect_uri, state)
         {
-          id_token_hint: id_token,
+          client_id: config.client_id,
           post_logout_redirect_uri: redirect_uri,
           state: state
         }

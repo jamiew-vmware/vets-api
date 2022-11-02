@@ -13,6 +13,7 @@ module SignIn
       def render_auth(state: SecureRandom.hex, acr: LOA::IDME_LOA1_VETS)
         renderer = ActionController::Base.renderer
         renderer.controller.prepend_view_path(Rails.root.join('lib', 'sign_in', 'templates'))
+        Rails.logger.info("[SignIn][Idme][Service] Rendering auth, state: #{state}, acr: #{acr}")
         renderer.render(template: 'oauth_get_form',
                         locals: {
                           url: auth_url,
@@ -28,7 +29,7 @@ module SignIn
                         format: :html)
       end
 
-      def normalized_attributes(user_info, credential_level, client_id)
+      def normalized_attributes(user_info, credential_level)
         attributes = case type
                      when 'idme'
                        idme_attributes(user_info)
@@ -37,16 +38,17 @@ module SignIn
                      when 'mhv'
                        mhv_attributes(user_info)
                      end
-        attributes.merge(standard_attributes(user_info, credential_level, client_id))
+        attributes.merge(standard_attributes(user_info, credential_level))
       end
 
       def token(code)
         response = perform(
           :post, config.token_path, token_params(code), { 'Content-Type' => 'application/json' }
         )
+        Rails.logger.info("[SignIn][Idme][Service] Token Success, code: #{code}, scope: #{response.body[:scope]}")
         response.body
       rescue Common::Client::Errors::ClientError => e
-        raise e, '[SignIn][Idme][Service] Cannot perform Token request'
+        raise_client_error(e, 'Token')
       end
 
       def user_info(token)
@@ -54,23 +56,28 @@ module SignIn
         decrypted_jwe = jwe_decrypt(JSON.parse(response.body))
         jwt_decode(decrypted_jwe)
       rescue Common::Client::Errors::ClientError => e
-        raise e, '[SignIn][Idme][Service] Cannot perform UserInfo request'
+        raise_client_error(e, 'UserInfo')
       end
 
       private
 
-      def standard_attributes(user_info, credential_level, client_id)
-        loa_current = ial_to_loa(credential_level.current_ial)
-        loa_highest = ial_to_loa(credential_level.max_ial)
+      def raise_client_error(client_error, function_name)
+        status = client_error.status
+        description = client_error.body && client_error.body[:error_description]
+        raise client_error, "[SignIn][Idme][Service] Cannot perform #{function_name} request, " \
+                            "status: #{status}, description: #{description}"
+      end
+
+      def standard_attributes(user_info, credential_level)
         {
-          uuid: user_info.sub,
           idme_uuid: user_info.sub,
-          loa: { current: loa_current, highest: loa_highest },
-          sign_in: { service_name: type, auth_broker: Constants::Auth::BROKER_CODE,
-                     client_id: client_id },
+          current_ial: credential_level.current_ial,
+          max_ial: credential_level.max_ial,
+          service_name: type,
           csp_email: user_info.email,
           multifactor: user_info.multifactor,
-          authn_context: get_authn_context(credential_level.current_ial)
+          authn_context: get_authn_context(credential_level.current_ial),
+          auto_uplevel: credential_level.auto_uplevel
         }
       end
 
@@ -90,7 +97,8 @@ module SignIn
           ssn: user_info.social&.tr('-', ''),
           birth_date: user_info.birth_date,
           first_name: user_info.fname,
-          last_name: user_info.lname
+          last_name: user_info.lname,
+          address: normalize_address(user_info)
         }
       end
 
@@ -113,8 +121,18 @@ module SignIn
         }
       end
 
-      def ial_to_loa(ial)
-        ial == IAL::TWO ? LOA::THREE : LOA::ONE
+      def normalize_address(user_info)
+        {
+          street: user_info.street,
+          postal_code: user_info.zip,
+          state: user_info.state,
+          city: user_info.city,
+          country: united_states_country_code
+        }
+      end
+
+      def united_states_country_code
+        'USA'
       end
 
       def scope

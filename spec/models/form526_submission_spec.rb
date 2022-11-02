@@ -871,4 +871,109 @@ RSpec.describe Form526Submission do
       end
     end
   end
+
+  describe '#single_disability_eligible_for_mas?' do
+    subject { form_526_submission.single_disability_eligible_for_mas? }
+
+    context 'when form has a single hypertension issue' do
+      let(:hypertension_form_json) do
+        File.read('spec/support/disability_compensation_form/submissions/only_526_hypertension.json')
+      end
+      let(:form_526_submission) do
+        Form526Submission.create(
+          user_uuid: user.uuid,
+          saved_claim_id: saved_claim.id,
+          auth_headers_json: auth_headers.to_json,
+          form_json: hypertension_form_json
+        )
+      end
+
+      context 'when Flipper flag is enabled' do
+        before { Flipper.enable(:rrd_hypertension_mas_notification) }
+        after { Flipper.disable(:rrd_hypertension_mas_notification) }
+
+        it 'returns true' do
+          expect(subject).to be_truthy
+        end
+      end
+
+      context 'when Flipper flag is disabled' do
+        before { Flipper.disable(:rrd_hypertension_mas_notification) }
+        after { Flipper.enable(:rrd_hypertension_mas_notification) }
+
+        it 'returns false' do
+          expect(subject).to be_falsey
+        end
+      end
+    end
+  end
+
+  describe '#single_issue_hypertension_cfi?' do
+    subject { form_526_submission.single_issue_hypertension_cfi? }
+
+    let(:form_526_submission) do
+      Form526Submission.create(
+        user_uuid: user.uuid,
+        saved_claim_id: saved_claim.id,
+        auth_headers_json: auth_headers.to_json,
+        form_json: File.read("spec/support/disability_compensation_form/submissions/#{form_json_filename}")
+      )
+    end
+
+    context 'when the form contains a single hypertension issue for increase' do
+      let(:form_json_filename) { 'only_526_hypertension.json' }
+
+      it 'returns true' do
+        expect(subject).to be_truthy
+      end
+    end
+
+    context 'when the form does not contain a single hypertension issue for increase' do
+      let(:form_json_filename) { 'only_526_asthma.json' }
+
+      it 'returns false' do
+        expect(subject).to be_falsey
+      end
+    end
+  end
+
+  describe '#disabilities_not_service_connected?' do
+    subject { form_526_submission.disabilities_not_service_connected? }
+
+    let(:form_526_submission) do
+      Form526Submission.create(
+        user_uuid: user.uuid,
+        saved_claim_id: saved_claim.id,
+        auth_headers_json: auth_headers.to_json,
+        form_json: File.read("spec/support/disability_compensation_form/submissions/#{form_json_filename}")
+      )
+    end
+
+    before { VCR.insert_cassette('evss/disability_compensation_form/rated_disabilities_with_non_service_connected') }
+    after { VCR.eject_cassette('evss/disability_compensation_form/rated_disabilities_with_non_service_connected') }
+
+    context 'when all corresponding rated disabilities are not service-connected' do
+      let(:form_json_filename) { 'only_526_asthma.json' }
+
+      it 'returns true' do
+        expect(subject).to be_truthy
+      end
+    end
+
+    context 'when some but not all corresponding rated disabilities are not service-connected' do
+      let(:form_json_filename) { 'only_526_two_rated_disabilities.json' }
+
+      it 'returns false' do
+        expect(subject).to be_falsey
+      end
+    end
+
+    context 'when some disabilities do not have a ratedDisabilityId yet' do
+      let(:form_json_filename) { 'only_526_mixed_action_disabilities.json' }
+
+      it 'returns false' do
+        expect(subject).to be_falsey
+      end
+    end
+  end
 end

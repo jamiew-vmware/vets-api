@@ -7,6 +7,10 @@ require 'debt_management_center/sharepoint/request'
 require 'support/financial_status_report_helpers'
 
 RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :service do
+  before do
+    mock_pdf_fill
+  end
+
   it 'inherits SentryLogging' do
     expect(described_class.ancestors).to include(SentryLogging)
   end
@@ -15,6 +19,11 @@ RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :servic
     sp_stub = instance_double('DebtManagementCenter::Sharepoint::Request')
     allow(DebtManagementCenter::Sharepoint::Request).to receive(:new).and_return(sp_stub)
     allow(sp_stub).to receive(:upload).and_return(Faraday::Response.new)
+  end
+
+  def mock_pdf_fill
+    pdf_stub = class_double('PdfFill::Filler').as_stubbed_const
+    allow(pdf_stub).to receive(:fill_ancillary_form).and_return("#{::Rails.root}/spec/fixtures/dmc/5655.pdf")
   end
 
   describe '#submit_financial_status_report' do
@@ -95,7 +104,7 @@ RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :servic
             service = described_class.new(user)
             expect(DebtManagementCenter::VANotifyEmailJob).to receive(:perform_async).with(
               user.email.downcase,
-              described_class::CONFIRMATION_TEMPLATE,
+              described_class::VBA_CONFIRMATION_TEMPLATE,
               {
                 'name' => user.first_name,
                 'time' => '48 hours',
@@ -156,7 +165,6 @@ RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :servic
   describe '#submit_vha_fsr' do
     let(:valid_form_data) { get_fixture('dmc/fsr_submission') }
     let(:user) { build(:user, :loa3) }
-    let(:form_submission) { create(:form5655_submission) }
 
     before do
       response = Faraday::Response.new(status: 200, body:
@@ -177,7 +185,7 @@ RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :servic
         'debtType' => 'COPAY'
       }]
       service = described_class.new(user)
-      expect(service.submit_vha_fsr(valid_form_data, form_submission)).to eq({ status: [200] })
+      expect(service.submit_vha_fsr(valid_form_data)).to eq({ status: [200] })
     end
 
     it 'sends a confirmation email' do
@@ -191,14 +199,14 @@ RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :servic
       service = described_class.new(user)
       expect(DebtManagementCenter::VANotifyEmailJob).to receive(:perform_async).with(
         user.email.downcase,
-        described_class::CONFIRMATION_TEMPLATE,
+        described_class::VHA_CONFIRMATION_TEMPLATE,
         {
           'name' => user.first_name,
           'time' => '48 hours',
           'date' => Time.zone.now.strftime('%m/%d/%Y')
         }
       )
-      service.submit_vha_fsr(valid_form_data, form_submission)
+      service.submit_vha_fsr(valid_form_data)
     end
 
     it 'parses out delimiter characters' do
@@ -210,9 +218,9 @@ RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :servic
         'debtType' => 'COPAY'
       }]
       service = described_class.new(user)
-      valid_form_data['personalData']['veteranFullName']['first'] = '^Greg|'
+      valid_form_data['personalData']['veteranFullName']['first'] = "^Gr\neg|"
       parsed_form_string = service.send(:remove_form_delimiters, valid_form_data).to_s
-      expect(['^', '|'].any? { |i| parsed_form_string.include? i }).to be false
+      expect(['^', '|', "\n"].any? { |i| parsed_form_string.include? i }).to be false
     end
 
     it 'calls VBS multiple times for multiple stations' do
@@ -241,7 +249,7 @@ RSpec.describe DebtManagementCenter::FinancialStatusReportService, type: :servic
       ]
       service = described_class.new(user)
       expect_any_instance_of(DebtManagementCenter::VBS::Request).to receive(:post).twice
-      service.submit_vha_fsr(valid_form_data, form_submission)
+      service.submit_vha_fsr(valid_form_data)
     end
   end
 

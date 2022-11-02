@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'claims_api/bgs_claim_status_mapper'
+require 'claims_api/v2/mock_documents_service'
 
 module ClaimsApi
   module V2
@@ -177,13 +178,6 @@ module ClaimsApi
           data.split('')
         end
 
-        def ever_phase_back(data)
-          return false if data[:benefit_claim_details_dto][:phase_type_change_ind].nil?
-
-          pt_ind_array = get_phase_type_indicator_array(data)
-          pt_ind_array.first.to_i > pt_ind_array.last.to_i
-        end
-
         def get_bgs_phase_name(data, phase_number)
           ClaimsApi::BGSClaimStatusMapper.new(data[:benefit_claim_details_dto], phase_number).name_from_phase
         end
@@ -337,7 +331,11 @@ module ClaimsApi
         def build_supporting_docs(bgs_claim)
           return [] if bgs_claim.nil?
 
-          docs = evss_docs_service.get_claim_documents(bgs_claim[:benefit_claim_details_dto][:benefit_claim_id]).body
+          docs = if sandbox?
+                   { documents: ClaimsApi::V2::MockDocumentsService.new.generate_documents }.with_indifferent_access
+                 else
+                   evss_docs_service.get_claim_documents(bgs_claim[:benefit_claim_details_dto][:benefit_claim_id]).body
+                 end
           return [] if docs.nil? || docs['documents'].blank?
 
           docs['documents'].map do |doc|
@@ -361,7 +359,6 @@ module ClaimsApi
                 {
                   phase_change_date: format_bgs_phase_chng_dates(bgs_claim),
                   current_phase_back: current_phase_back(bgs_claim),
-                  ever_phase_back: ever_phase_back(bgs_claim),
                   latest_phase_type: latest_phase_type(bgs_claim)
                 }
             }
@@ -370,6 +367,10 @@ module ClaimsApi
               phase_change_date: format_bgs_phase_chng_dates(bgs_claim)
             }
           end
+        end
+
+        def sandbox?
+          Settings.claims_api.claims_error_reporting.environment_name&.downcase.eql? 'sandbox'
         end
       end
     end

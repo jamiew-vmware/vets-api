@@ -70,6 +70,7 @@ Rails.application.routes.draw do
       get 'user_submissions'
       get 'separation_locations'
     end
+    get 'benefits_reference_data/*path', to: 'benefits_reference_data#get_data'
 
     resources :financial_status_reports, only: %i[create] do
       collection do
@@ -120,6 +121,9 @@ Rails.application.routes.draw do
       resources :pension_claims, only: %i[create show]
       resources :burial_claims, only: %i[create show]
     end
+
+    get 'claim_letters', to: 'claim_letters#index'
+    get 'claim_letters/:document_id', to: 'claim_letters#show'
 
     resources :efolder, only: %i[index show]
 
@@ -325,6 +329,8 @@ Rails.application.routes.draw do
     end
 
     get 'feature_toggles', to: 'feature_toggles#index'
+
+    resource :mhv_opt_in_flags, only: %i[show create]
 
     namespace :contact_us do
       resources :inquiries, only: %i[index create]

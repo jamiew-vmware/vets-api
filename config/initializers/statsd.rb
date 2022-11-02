@@ -85,10 +85,10 @@ Rails.application.reloader.to_prepare do
       SignIn::Constants::Auth::ACR_VALUES.each do |acr|
         StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_AUTHORIZE_SUCCESS, 0,
                          tags: ["type:#{type}", "client_id:#{client_id}", "acr:#{acr}"])
-      end
-      [IAL::ONE, IAL::TWO].each do |ial|
-        StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_SUCCESS, 0,
-                         tags: ["type:#{type}", "client_id:#{client_id}", "ial:#{ial}"])
+        [IAL::ONE, IAL::TWO].each do |ial|
+          StatsD.increment(SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_SUCCESS, 0,
+                           tags: ["type:#{type}", "client_id:#{client_id}", "ial:#{ial}", "acr:#{acr}"])
+        end
       end
     end
   end
@@ -126,6 +126,10 @@ Rails.application.reloader.to_prepare do
     %w[total fail].each do |type|
       StatsD.increment("#{HCA::Service::STATSD_KEY_PREFIX}.#{method}.#{type}", 0)
     end
+  end
+
+  %w[same different].each do |type|
+    StatsD.increment("api.1010ez.in_progress_form_email.#{type}", 0)
   end
 
   %w[submission_attempt validation_error failed_wont_retry].each do |stat|
@@ -193,7 +197,13 @@ Rails.application.reloader.to_prepare do
   StatsD.increment(Form1010cg::Auditor.metrics.submission.caregivers.no_primary_one_secondary, 0)
   StatsD.increment(Form1010cg::Auditor.metrics.submission.caregivers.no_primary_two_secondary, 0)
 
-  %w[record_parse_error failed_no_retries_left failed_ten_retries].each do |key|
+  %w[
+    record_parse_error
+    failed_no_retries_left
+    failed_ten_retries
+    retries
+    applications_retried
+  ].each do |key|
     StatsD.increment("#{Form1010cg::SubmissionJob::STATSD_KEY_PREFIX}#{key}", 0)
   end
 

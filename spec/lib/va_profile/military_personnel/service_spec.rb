@@ -47,12 +47,11 @@ describe VAProfile::MilitaryPersonnel::Service do
           response = subject.get_service_history
           episodes = response.episodes
 
-          expect(episodes.count).to eq(3)
+          expect(episodes.count).to eq(5)
           episodes.each do |e|
             expect(e.branch_of_service).not_to be_nil
             expect(e.begin_date).not_to be_nil
             expect(e.end_date).not_to be_nil
-            expect(e.personnel_category_type_code).not_to be_nil
           end
         end
       end
@@ -62,23 +61,23 @@ describe VAProfile::MilitaryPersonnel::Service do
           response = subject.get_service_history
           episodes = response.episodes
 
-          expect(episodes.count).to eq(3)
-          expect(episodes[0].begin_date).to eq('2002-02-02')
-          expect(episodes[1].begin_date).to eq('2009-03-01')
-          expect(episodes[2].begin_date).to eq('2012-03-02')
+          expect(episodes.count).to eq(5)
+          expect(episodes[0].begin_date).to eq('1999-06-23')
+          expect(episodes[1].begin_date).to eq('2000-06-30')
+          expect(episodes[2].begin_date).to eq('2002-02-02')
+          expect(episodes[3].begin_date).to eq('2009-03-01')
+          expect(episodes[4].begin_date).to eq('2012-03-02')
         end
       end
     end
 
     context 'when not successful' do
-      context 'with a 400 error' do
-        it 'returns nil service history' do
-          VCR.use_cassette('va_profile/military_personnel/post_read_service_history_400') do
-            response = subject.get_service_history
+      it 'returns nil service history' do
+        VCR.use_cassette('va_profile/military_personnel/post_read_service_history_400') do
+          response = subject.get_service_history
 
-            expect(response).not_to be_ok
-            expect(response.episodes.count).to eq(0)
-          end
+          expect(response).not_to be_ok
+          expect(response.episodes.count).to eq(0)
         end
       end
 

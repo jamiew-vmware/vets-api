@@ -106,6 +106,10 @@ features:
     actor_type: user
     description: Enables disclaimer for possible untranslated content on spanish pages
     enable_in_development: true
+  check_in_experience_translation_disclaimer_tagalog_enabled:
+    actor_type: user
+    description: Enables disclaimer for possible untranslated content on tagalog pages
+    enable_in_development: true
   check_in_experience_lorota_security_updates_enabled:
     actor_type: cookie_id
     description: Enables DOB instead of last 4 of SSN.
@@ -118,13 +122,21 @@ features:
     actor_type: user
     description: Enables telephone appointments for check-in
     enable_in_development: false
-  check_in_experience_504_error_mapping_enabled:
+  check_in_experience_chip_500_error_mapping_enabled:
     actor_type: user
-    description: Enables 504 mapping for CHIP endpoint in check-in & pre-checkin
+    description: Enables 500 mapping for CHIP endpoint in check-in & pre-checkin
     enable_in_development: true
   check_in_experience_lorota_deletion_enabled:
     actor_type: cookie_id
     description: Enables lorota delete endpoint call for users exceeding max auth attempts
+    enable_in_development: false
+  check_in_experience_travel_reimbursement:
+    actor_type: user
+    description: Enables travel reimbursement workflow for day-of check-in application.
+    enable_in_development: true
+  check_in_experience_browser_monitoring:
+    actor_type: user
+    description: Enables browser monitoring for check-in applications.
     enable_in_development: false
   ch31_vbms_form_confirmation_email:
     actor_type: user
@@ -133,6 +145,10 @@ features:
   ch31_central_mail_form_confirmation_email:
     actor_type: user
     description: Enables Ch31 form email submission confirmation after vbms
+    enable_in_development: true
+  claim_letters_access:
+    actor_type: user
+    description: Enables users to access the claim letters page
     enable_in_development: true
   coe_access:
     actor_type: user
@@ -226,9 +242,9 @@ features:
     description: Enables the supplemental claim PII expunge job
     enable_in_development: true
   decision_review_icn_updater_enabled:
-      actor_type: user
-      description: Enables the ICN lookup job
-      enable_in_development: true
+    actor_type: user
+    description: Enables the ICN lookup job
+    enable_in_development: true
   dependency_verification:
     actor_type: user
     description: Feature gates the dependency verification modal for updating the diaries service.
@@ -269,10 +285,6 @@ features:
   enrollment_verification:
     actor_type: user
     description: Enables access to the Enrollment Verification app
-    enable_in_development: true
-  evss_upload_limit_150mb:
-    actor_type: user
-    description: Allow user to upload files up to 150 MB in size (EVSS endpoint for 526 & CST)
     enable_in_development: true
   ezcg_use_facility_api:
     actor_type: user
@@ -369,9 +381,6 @@ features:
     actor_type: user
     description: Enables secure messaging
     enable_in_development: true
-  hlr_v2:
-    actor_type: user
-    description: Enable showing Higher-Level Review v2
   in_progress_form_custom_expiration:
     actor_type: user
     description: Enable/disable custom expiration dates for forms
@@ -387,6 +396,10 @@ features:
   in_progress_form_reminder_1010ez:
     actor_type: user
     description: Enable/disable 1010ez in progress form reminders (sent via VaNotify)
+    enable_in_development: true
+  in_progress_generic_multiple_template:
+    actor_type: user
+    description: Enable/disable using generic template for multiple in progress reminders (sent via VaNotify)
     enable_in_development: true
   loop_pages:
     actor_type: user
@@ -458,16 +471,24 @@ features:
       Toggle for the entire pre-entry covid 19 self-screener available at /covid19screener and to be used by visitors
       to VHA facilities in lieu of manual screening with a VHA employee.
       This toggle is owned by Patrick B. and the rest of the CTO Health Products team.
+  profile_email_specify_change:
+    actor_type: user
+    description: >
+      When enabled, if a user changes a phone number, the notification email will specify whether the home or mobile
+      phone was changed.  For an address change, the notification email will specify whether the residential or correspondence
+      address was changed.
+    enable_in_development: true
   profile_user_claims:
     actor_type: user
     description: When enabled, /v0/user will return user profile claims for accessing service endpoints.
-  profile_get_military_info_from_vaprofile:
+  profile_show_military_academy_attendance:
     actor_type: user
-    description: When enabled, the profile page will get military service history from VA Profile instead of eMIS.
+    description: When enabled, profile service history will include military academy attendance.
+    enable_in_development: true
   profile_hide_direct_deposit_comp_and_pen:
     actor_type: user
     description: Hides disability comp and pen section of the Profile - Direct Deposit page during a service outage
-    enable_in_development: true
+    enable_in_development: false
   profile_notification_settings:
     actor_type: user
     description: Turns on the Notification Settings section of the VA.gov Profile
@@ -491,6 +512,9 @@ features:
   profile_show_payments_notification_setting:
     actor_type: user
     description: Show/Hide the payments section of notifications in profile
+  profile_show_appeal_status_notification_setting':
+    actor_type: user
+    description: Show/Hide the appeal status change notification setting in profile
   profile_show_pronouns_and_sexual_orientation:
     actor_type: user
     description: Show/hide Pronouns and Sexual Orientation fields on profile page
@@ -510,10 +534,9 @@ features:
     actor_type: user
     description: Enabling Public Websites-managed EHR CTAs to use Drupal EHR data, including for Cerner cutovers
     enable_in_development: true
-  request_locked_pdf_password:
+  pw_ehr_cta_use_slo:
     actor_type: user
-    description: Ask for a password when an encrypted PDF is detected before uploading
-    enable_in_development: true
+    description: Use single-logout (SLO) paths for Public Websites-managed EHR CTAs
   rrd_asthma_compensation:
     actor_type: user
     description: Fast tracks 526 disability compensation asthma claims by submitting additional health data
@@ -538,9 +561,21 @@ features:
     actor_type: user
     description: Enables Slack notifications for MAS-specific disabilities
     enable_in_development: true
+  rrd_mas_all_claims_tracking:
+    actor_type: user
+    description: Enables Slack and other email notifications for all MAS-eligible claims
+    enable_in_development: true
   rrd_mas_notification:
     actor_type: user
     description: Notifies MAS service that a MAS-relevant claim has come through
+    enable_in_development: true
+  rrd_mas_all_claims_notification:
+    actor_type: user
+    description: Notifies MAS service of all MAS-eligible claims that have come through
+    enable_in_development: true
+  rrd_hypertension_mas_notification:
+    actor_type: user
+    description: Notifies MAS service of single-issue hypertension claims
     enable_in_development: true
   rrd_call_vro_service:
     actor_type: user
@@ -549,10 +584,6 @@ features:
   rrd_new_pact_related_disability:
     actor_type: user
     description: Sends notification to Slack channel if a new claim includes a PACT-related disability that RRD handles
-    enable_in_development: true
-  rrd_asrd_doctype:
-    actor_type: user
-    description: Uploads RRD summary PDFs to EVSS with new document type "Automated Review Summary Document"
     enable_in_development: true
   search_representative:
     actor_type: user
@@ -632,7 +663,7 @@ features:
   sign_in_service_enabled:
     actor_type: cookie_id
     description: Enables the ability to use OAuth authentication via the Sign in Service (Identity)
-    enable_in_development: false
+    enable_in_development: true
   medical_copays_zero_debt:
     actor_type: user
     description: Enables zero debt balances feature on the medical copays application
@@ -672,6 +703,10 @@ features:
   subform_8940_4192:
     actor_type: user
     description: Form 526 subforms for unemployability & connected employment information
+    enable_in_development: true
+  supplemental_claim:
+    actor_type: user
+    description: Enable showing Supplemental Claim form 0995
     enable_in_development: true
   va_global_downtime_notification:
     actor_type: user
@@ -743,6 +778,10 @@ features:
     actor_type: user
     enable_in_development: true
     description: Toggle for homepage status improvement
+  va_online_scheduling_status_improvement_canceled:
+    actor_type: user
+    enable_in_development: true
+    description: Toggle to display canceled booked appointments
   va_online_scheduling_vaos_v2_next:
     actor_type: user
     enable_in_development: true
@@ -755,6 +794,10 @@ features:
     actor_type: user
     enable_in_development: true
     description: Toggle for the new appointment List feature
+  va_online_scheduling_acheron_service:
+    actor_type: user
+    enable_in_development: true
+    description: Toggle for the Acheron service changes
   va_view_dependents_access:
     actor_type: user
     description: Allows us to gate the View/ Modify dependents content in a progressive rollout
@@ -791,6 +834,9 @@ features:
   show_dashboard_notifications:
     actor_type: user
     description: Enables on-site notifications
+  show_myva_dashboard_2_0:
+    actor_type: user
+    description: Enables myva 2.0
   check_va_inbox_enabled:
     actor_type: user
     description: Enables check inbox link
@@ -809,7 +855,7 @@ features:
     actor_type: user
     description: Enables access to digital 1095-B form download
     enable_in_development: true
-  show_meb_mailing_address_foreign:
+  show_meb_dgi40_features:
     actor_type: user
-    description: Allows the city and state inputs to change if a user lives on a military base outside the USA.
+    description: Enables the UI integration with the meb dgi
     enable_in_development: true

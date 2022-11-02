@@ -66,6 +66,10 @@ describe 'Supplemental Claims', swagger_doc: "modules/appeals_api/app/swagger/ap
       parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_username_header]
       parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_id_header]
 
+      parameter AppealsApi::SwaggerSharedComponents.header_params[:alternate_signer_first_name_header]
+      parameter AppealsApi::SwaggerSharedComponents.header_params[:alternate_signer_middle_initial_header]
+      parameter AppealsApi::SwaggerSharedComponents.header_params[:alternate_signer_last_name_header]
+
       response '200', 'Info about a single Supplemental Claim' do
         let(:sc_body) do
           JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'fixtures', 'v2', 'valid_200995.json')))
@@ -79,9 +83,9 @@ describe 'Supplemental Claims', swagger_doc: "modules/appeals_api/app/swagger/ap
       end
 
       response '200', 'Info about a single Supplemental Claim' do
-        let(:'X-VA-Claimant-First-Name') { 'first' }
-        let(:'X-VA-Claimant-Middle-Initial') { 'm' }
-        let(:'X-VA-Claimant-Last-Name') { 'last' }
+        let(:'X-VA-NonVeteranClaimant-First-Name') { 'first' }
+        let(:'X-VA-NonVeteranClaimant-Middle-Initial') { 'm' }
+        let(:'X-VA-NonVeteranClaimant-Last-Name') { 'last' }
 
         let(:sc_body) do
           JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'fixtures', 'v2', 'valid_200995_extra.json')))
@@ -242,6 +246,10 @@ describe 'Supplemental Claims', swagger_doc: "modules/appeals_api/app/swagger/ap
       parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_username_header]
       parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_id_header]
 
+      parameter AppealsApi::SwaggerSharedComponents.header_params[:alternate_signer_first_name_header]
+      parameter AppealsApi::SwaggerSharedComponents.header_params[:alternate_signer_middle_initial_header]
+      parameter AppealsApi::SwaggerSharedComponents.header_params[:alternate_signer_last_name_header]
+
       response '200', 'Valid Minimum' do
         let(:sc_body) do
           JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'fixtures', 'v2', 'valid_200995.json')))
@@ -257,8 +265,8 @@ describe 'Supplemental Claims', swagger_doc: "modules/appeals_api/app/swagger/ap
           JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'fixtures', 'v2', 'valid_200995_extra.json')))
         end
 
-        let(:'X-VA-Claimant-First-Name') { 'first' }
-        let(:'X-VA-Claimant-Last-Name') { 'last' }
+        let(:'X-VA-NonVeteranClaimant-First-Name') { 'first' }
+        let(:'X-VA-NonVeteranClaimant-Last-Name') { 'last' }
 
         schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'sc_validate.json')))
 

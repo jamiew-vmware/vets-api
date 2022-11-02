@@ -9,7 +9,11 @@ module AppealsApi
     include PdfOutputPrep
     include ModelValidations
 
-    required_claimant_headers %w[X-VA-Claimant-First-Name X-VA-Claimant-Last-Name X-VA-Claimant-Birth-Date]
+    required_claimant_headers %w[
+      X-VA-NonVeteranClaimant-First-Name
+      X-VA-NonVeteranClaimant-Last-Name
+      X-VA-NonVeteranClaimant-Birth-Date
+    ]
 
     attr_readonly :auth_headers
     attr_readonly :form_data
@@ -224,19 +228,28 @@ module AppealsApi
     end
 
     # rubocop:disable Metrics/MethodLength
-    def update_status!(status:, code: nil, detail: nil)
+    def update_status(status:, code: nil, detail: nil, raise_on_error: false)
       current_status = self.status
+      current_code = self.code
+      current_detail = self.detail
 
-      update!(status: status, code: code, detail: detail)
+      send(
+        raise_on_error ? :update! : :update,
+        status: status,
+        code: code,
+        detail: detail
+      )
 
-      if status != current_status
+      if status != current_status || code != current_code || detail != current_detail
         AppealsApi::StatusUpdatedJob.perform_async(
           {
             status_event: 'nod_status_updated',
             from: current_status,
             to: status.to_s,
             status_update_time: Time.zone.now.iso8601,
-            statusable_id: id
+            statusable_id: id,
+            code: code,
+            detail: detail
           }
         )
       end
@@ -258,6 +271,10 @@ module AppealsApi
       end
     end
     # rubocop:enable Metrics/MethodLength
+
+    def update_status!(status:, code: nil, detail: nil)
+      update_status(status: status, code: code, detail: detail, raise_on_error: true)
+    end
 
     private
 

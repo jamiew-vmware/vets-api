@@ -78,6 +78,15 @@ module LGY
         response.body
       end
     rescue Common::Client::Errors::ClientError => e
+      # LGY recently started returning error messages to us. We are logging
+      # those errors in sentry to debug the issues described here:
+      # https://github.com/department-of-veterans-affairs/va.gov-team/issues/47435#issuecomment-1268916462
+      log_message_to_sentry(
+        "COE application submission failed with http status: #{e.status}",
+        :error,
+        { message: e.message, status: e.status, body: e.body },
+        { team: 'vfs-ebenefits' }
+      )
       raise e
     end
 

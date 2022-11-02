@@ -99,6 +99,7 @@ module Swagger
                               property :id, type: :integer
                               property :name, type: :string
                               property :description, type: :string
+                              property :default_send_indicator, type: :boolean
 
                               property :communication_permission do
                                 key :type, :object
@@ -951,9 +952,12 @@ module Swagger
                     key :type, :array
                     items do
                       key :required, %i[branch_of_service begin_date]
+                      property :service_type, type: :string, example: 'Military Service'
                       property :branch_of_service, type: :string, example: 'Air Force'
                       property :begin_date, type: :string, format: :date, example: '2007-04-01'
                       property :end_date, type: :string, format: :date, example: '2016-06-01'
+                      property :termination_reason_code, type: :string, example: 'S', description: 'S = Separation From Personnel Category, C = Completion of Active Service Period, D = Death while in personnel category or organization, W = Not Applicable'
+                      property :termination_reason_text, type: :string, example: 'Separation from personnel category or organization'
                       property :personnel_category_type_code, type: :string, example: 'V', description: 'A = Regular Active, N = Guard, V = Reserve, Q = Reserve Retiree'
                     end
                   end
@@ -962,8 +966,8 @@ module Swagger
             end
           end
 
-          response 502 do
-            key :description, 'Unexpected response body'
+          response 400 do
+            key :description, '_CUF_UNEXPECTED_ERROR'
             schema do
               key :required, [:errors]
 
@@ -971,12 +975,12 @@ module Swagger
                 key :type, :array
                 items do
                   key :required, %i[title detail code status source]
-                  property :title, type: :string, example: 'Unexpected response body'
+                  property :title, type: :string, example: '_CUF_UNEXPECTED_ERROR'
                   property :detail,
                            type: :string,
-                           example: 'EMIS service responded with something other than the expected array of service history hashes.'
-                  property :code, type: :string, example: 'EMIS_HIST502'
-                  property :status, type: :string, example: '502'
+                           example: 'there was an error encountered processing the Request.  Please retry.  If problem persists, please contact support with a copy of the Response.'
+                  property :code, type: :string, example: 'CORE100'
+                  property :status, type: :string, example: '400'
                   property :source, type: :string, example: 'V0::Profile::ServiceHistoriesController'
                 end
               end

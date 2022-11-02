@@ -99,8 +99,6 @@ class User < Common::RedisStore
   def birth_date
     birth_date = identity.birth_date || birth_date_mpi
 
-    Rails.logger.info "[User] Cannot find birth date for User with uuid: #{uuid}" if birth_date.nil?
-
     Formatters::DateFormatter.format_date(birth_date)
   end
 
@@ -183,7 +181,7 @@ class User < Common::RedisStore
       city: address[:city],
       state: address[:state],
       country: address[:country],
-      zip: address[:postal_code]
+      postal_code: address[:postal_code]
     }
   end
 
@@ -192,14 +190,7 @@ class User < Common::RedisStore
   end
 
   def birth_date_mpi
-    return nil unless mpi_profile
-
-    if mpi_profile.birth_date.nil?
-      Rails.logger.info "[User] Cannot find birth date from MPI profile for User with uuid: #{uuid}"
-      return nil
-    end
-
-    mpi_profile.birth_date
+    mpi_profile&.birth_date
   end
 
   def edipi_mpi

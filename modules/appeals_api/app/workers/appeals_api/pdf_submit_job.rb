@@ -87,13 +87,13 @@ module AppealsApi
 
     def handle_upload_error(appeal, e)
       log_upload_error(appeal, e)
-      appeal.update(status: 'error', code: e.code, detail: e.detail)
+      appeal.update_status(status: 'error', code: e.code, detail: e.detail)
 
       if e.code == 'DOC201' || e.code == 'DOC202'
         notify(
           {
             'class' => self.class.name,
-            'args' => [appeal.id, appeal.created_at.iso8601],
+            'args' => [appeal.id, appeal.class.to_s, appeal.created_at.iso8601],
             'error_class' => e.code,
             'error_message' => e.detail,
             'failed_at' => Time.zone.now

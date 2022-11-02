@@ -5,12 +5,13 @@ require 'sign_in/idme/service'
 
 describe SignIn::Idme::Service do
   let(:code) { '04e3f01f11764b50becb0cdcb618b804' }
+  let(:scope) { 'http://idmanagement.gov/ns/assurance/loa/3' }
   let(:token) do
     {
       access_token: '0f5ebddd60d0451782214e6705cac5d1',
       token_type: 'bearer',
       expires_in: 300,
-      scope: 'http://idmanagement.gov/ns/assurance/loa/3',
+      scope: scope,
       refresh_token: '26f282c510a740bb9c27aeed65fc08c4',
       refresh_expires_in: 604_800
     }
@@ -27,6 +28,11 @@ describe SignIn::Idme::Service do
         credential_ial_highest: 'classic_loa3',
         birth_date: birth_date,
         email: email,
+        street: street,
+        zip: zip,
+        state: address_state,
+        city: city,
+        phone: phone,
         fname: first_name,
         social: ssn,
         lname: last_name,
@@ -38,19 +44,25 @@ describe SignIn::Idme::Service do
       }
     )
   end
-  let(:expiration_time) { 1_652_159_422 }
-  let(:current_time) { 1_652_141_421 }
+
+  let(:street) { '145 N Hayden Bay Dr Apt 2350' }
+  let(:zip) { '97217' }
+  let(:address_state) { 'OR' }
+  let(:city) { 'Portland' }
+  let(:expiration_time) { 1_666_827_002 }
+  let(:current_time) { 1_666_809_002 }
   let(:idme_originating_url) { 'https://api.idmelabs.com/oidc' }
   let(:state) { 'some-state' }
   let(:acr) { 'some-acr' }
   let(:idme_client_id) { 'ef7f1237ed3c396e4b4a2b04b608a7b1' }
-  let(:user_uuid) { '6400bbf301eb4e6e95ccea7693eced6f' }
-  let(:birth_date) { '1950-10-04' }
+  let(:user_uuid) { '7e9bdcc2c79247fda1e4973e24c9dcaf' }
+  let(:birth_date) { '1970-10-10' }
+  let(:phone) { '12069827345' }
   let(:multifactor) { true }
-  let(:first_name) { 'MARK' }
-  let(:last_name) { 'WEBB' }
-  let(:ssn) { '796104437' }
-  let(:email) { 'vets.gov.user+228@gmail.com' }
+  let(:first_name) { 'Gary' }
+  let(:last_name) { 'Twinkle' }
+  let(:ssn) { '666798234' }
+  let(:email) { 'tumults-vicious-0q@icloud.com' }
 
   before do
     Timecop.freeze(Time.zone.at(current_time))
@@ -66,9 +78,15 @@ describe SignIn::Idme::Service do
     let(:expected_authorization_page) { "#{base_path}/#{auth_path}" }
     let(:base_path) { 'some-base-path' }
     let(:auth_path) { 'oauth/authorize' }
+    let(:expected_log) { "[SignIn][Idme][Service] Rendering auth, state: #{state}, acr: #{acr}" }
 
     before do
       allow(Settings.idme).to receive(:oauth_url).and_return(base_path)
+    end
+
+    it 'logs information to rails logger' do
+      expect(Rails.logger).to receive(:info).with(expected_log)
+      response
     end
 
     it 'renders the oauth_get_form template' do
@@ -82,6 +100,15 @@ describe SignIn::Idme::Service do
 
   describe '#token' do
     context 'when the request is successful' do
+      let(:expected_log) { "[SignIn][Idme][Service] Token Success, code: #{code}, scope: #{scope}" }
+
+      it 'logs information to rails logger' do
+        VCR.use_cassette('identity/idme_200_responses') do
+          expect(Rails.logger).to receive(:info).with(expected_log)
+          subject.token(code)
+        end
+      end
+
       it 'returns an access token' do
         VCR.use_cassette('identity/idme_200_responses') do
           expect(subject.token(code)).to eq(token)
@@ -91,10 +118,15 @@ describe SignIn::Idme::Service do
 
     context 'when an issue occurs with the client request' do
       let(:expected_error) { Common::Client::Errors::ClientError }
-      let(:expected_error_message) { '[SignIn][Idme][Service] Cannot perform Token request' }
+      let(:expected_error_message) do
+        "[SignIn][Idme][Service] Cannot perform Token request, status: #{status}, description: #{description}"
+      end
+      let(:status) { 'some-status' }
+      let(:description) { 'some-description' }
+      let(:raised_error) { Common::Client::Errors::ClientError.new(nil, status, { error_description: description }) }
 
       before do
-        allow_any_instance_of(described_class).to receive(:perform).and_raise(Common::Client::Errors::ClientError)
+        allow_any_instance_of(described_class).to receive(:perform).and_raise(raised_error)
       end
 
       it 'raises a client error with expected message' do
@@ -112,10 +144,15 @@ describe SignIn::Idme::Service do
 
     context 'when an issue occurs with the client request' do
       let(:expected_error) { Common::Client::Errors::ClientError }
-      let(:expected_error_message) { '[SignIn][Idme][Service] Cannot perform UserInfo request' }
+      let(:expected_error_message) do
+        "[SignIn][Idme][Service] Cannot perform UserInfo request, status: #{status}, description: #{description}"
+      end
+      let(:status) { 'some-status' }
+      let(:description) { 'some-description' }
+      let(:raised_error) { Common::Client::Errors::ClientError.new(nil, status, { error_description: description }) }
 
       before do
-        allow_any_instance_of(described_class).to receive(:perform).and_raise(Common::Client::Errors::ClientError)
+        allow_any_instance_of(described_class).to receive(:perform).and_raise(raised_error)
       end
 
       it 'raises a client error with expected message' do
@@ -190,16 +227,18 @@ describe SignIn::Idme::Service do
     let(:client_id) { SignIn::Constants::ClientConfig::COOKIE_AUTH }
     let(:expected_standard_attributes) do
       {
-        uuid: user_uuid,
         idme_uuid: user_uuid,
-        loa: { current: LOA::THREE, highest: LOA::THREE },
-        sign_in: { service_name: service_name, auth_broker: auth_broker, client_id: client_id },
+        current_ial: IAL::TWO,
+        max_ial: IAL::TWO,
+        service_name: service_name,
         csp_email: email,
         multifactor: multifactor,
-        authn_context: authn_context
+        authn_context: authn_context,
+        auto_uplevel: auto_uplevel
       }
     end
     let(:service_name) { 'idme' }
+    let(:auto_uplevel) { false }
     let(:authn_context) { LOA::IDME_LOA3 }
     let(:auth_broker) { SignIn::Constants::Auth::BROKER_CODE }
     let(:credential_level) { create(:credential_level, current_ial: IAL::TWO, max_ial: IAL::TWO) }
@@ -223,6 +262,10 @@ describe SignIn::Idme::Service do
             fname: first_name,
             social: ssn,
             lname: last_name,
+            street: street,
+            zip: zip,
+            state: address_state,
+            city: city,
             level_of_assurance: 3,
             multifactor: multifactor,
             credential_aal: 2,
@@ -231,17 +274,26 @@ describe SignIn::Idme::Service do
           }
         )
       end
+      let(:expected_address) do
+        {
+          street: street,
+          postal_code: zip,
+          state: address_state,
+          city: city,
+          country: country
+        }
+      end
+      let(:country) { 'USA' }
       let(:expected_attributes) do
         expected_standard_attributes.merge({ ssn: ssn,
                                              birth_date: birth_date,
                                              first_name: first_name,
-                                             last_name: last_name })
+                                             last_name: last_name,
+                                             address: expected_address })
       end
 
       it 'returns expected idme attributes' do
-        expect(subject.normalized_attributes(user_info,
-                                             credential_level,
-                                             client_id)).to eq(expected_attributes)
+        expect(subject.normalized_attributes(user_info, credential_level)).to eq(expected_attributes)
       end
     end
 
@@ -286,9 +338,7 @@ describe SignIn::Idme::Service do
       end
 
       it 'returns expected dslogon attributes' do
-        expect(subject.normalized_attributes(user_info,
-                                             credential_level,
-                                             client_id)).to eq(expected_attributes)
+        expect(subject.normalized_attributes(user_info, credential_level)).to eq(expected_attributes)
       end
     end
 
@@ -328,9 +378,7 @@ describe SignIn::Idme::Service do
       end
 
       it 'returns expected mhv attributes' do
-        expect(subject.normalized_attributes(user_info,
-                                             credential_level,
-                                             client_id)).to eq(expected_attributes)
+        expect(subject.normalized_attributes(user_info, credential_level)).to eq(expected_attributes)
       end
     end
   end

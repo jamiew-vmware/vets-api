@@ -24,9 +24,11 @@ module SignIn
     class CodeChallengeMethodMismatchError < StandardError; end
     class CodeChallengeMalformedError < StandardError; end
     class CodeChallengeMismatchError < StandardError; end
+    class StateCodeInvalidError < StandardError; end
     class StatePayloadError < StandardError; end
     class StatePayloadSignatureMismatchError < StandardError; end
     class StatePayloadMalformedJWTError < StandardError; end
+    class AttributeMismatchError < StandardError; end
     class GrantTypeValueError < StandardError; end
     class CodeInvalidError < StandardError; end
     class MalformedParamsError < StandardError; end
@@ -38,15 +40,14 @@ module SignIn
     class InvalidAcrError < StandardError; end
     class InvalidTypeError < StandardError; end
     class InvalidCredentialLevelError < StandardError; end
-    class InvalidCredentialInfoError < StandardError; end
     class LogoutAuthorizationError < StandardError; end
     class UserAttributesMalformedError < StandardError; end
     class MPIUserCreationFailedError < StandardError; end
-    class MPIUserUpdateFailedError < StandardError; end
     class MPILockedAccountError < StandardError; end
     class MPIMalformedAccountError < StandardError; end
     class AccessDeniedError < StandardError; end
     class CredentialProviderError < StandardError; end
     class MHVMissingMPIRecordError < StandardError; end
+    class CredentialMissingAttributeError < StandardError; end
   end
 end

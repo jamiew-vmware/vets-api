@@ -11,6 +11,7 @@ require 'support/stub_financial_status_report'
 require 'support/sm_client_helpers'
 require 'support/rx_client_helpers'
 require 'bgs/service'
+require 'sign_in/logingov/service'
 
 RSpec.describe 'API doc validations', type: :request do
   context 'json validation' do
@@ -54,6 +55,107 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
               expect(subject).to validate(:get, '/v0/backend_statuses', 429, headers)
             end
           end
+        end
+      end
+    end
+
+    describe 'sign in service' do
+      describe 'POST v0/sign_in/token' do
+        let(:user_verification) { create(:user_verification) }
+        let(:user_verification_id) { user_verification.id }
+        let(:grant_type) { 'authorization_code' }
+        let(:code) { '0c2d21d3-465b-4054-8030-1d042da4f667' }
+        let(:code_verifier) { '5787d673fb784c90f0e309883241803d' }
+        let(:code_challenge) { '1BUpxy37SoIPmKw96wbd6MDcvayOYm3ptT-zbe6L_zM' }
+        let!(:code_container) do
+          create(:code_container,
+                 code: code,
+                 code_challenge: code_challenge,
+                 user_verification_id: user_verification_id)
+        end
+
+        it 'validates the authorization_code & returns tokens' do
+          expect(subject).to validate(
+            :post,
+            '/v0/sign_in/token',
+            200,
+            '_query_string' => "grant_type=#{grant_type}&code_verifier=#{code_verifier}&code=#{code}"
+          )
+        end
+      end
+
+      describe 'POST v0/sign_in/refresh' do
+        let(:user_verification) { create(:user_verification) }
+        let(:validated_credential) { create(:validated_credential, user_verification: user_verification) }
+        let(:session_container) { SignIn::SessionCreator.new(validated_credential: validated_credential).perform }
+        let(:refresh_token) do
+          CGI.escape(SignIn::RefreshTokenEncryptor.new(refresh_token: session_container.refresh_token).perform)
+        end
+        let(:refresh_token_param) { { refresh_token: refresh_token } }
+
+        it 'refreshes the session and returns new tokens' do
+          expect(subject).to validate(
+            :post,
+            '/v0/sign_in/refresh',
+            200,
+            '_query_string' => "refresh_token=#{refresh_token}"
+          )
+        end
+      end
+
+      describe 'GET v0/sign_in/introspect' do
+        let(:access_token_object) { create(:access_token) }
+        let(:access_token) { SignIn::AccessTokenJwtEncoder.new(access_token: access_token_object).perform }
+        let!(:user) { create(:user, :loa3, uuid: access_token_object.user_uuid, middle_name: 'leo') }
+
+        it 'returns user attributes' do
+          expect(subject).to validate(
+            :get,
+            '/v0/sign_in/introspect',
+            200,
+            '_headers' => {
+              'Authorization' => "Bearer #{access_token}"
+            }
+          )
+        end
+      end
+
+      describe 'POST v0/sign_in/revoke' do
+        let(:user_verification) { create(:user_verification) }
+        let(:validated_credential) { create(:validated_credential, user_verification: user_verification) }
+        let(:session_container) { SignIn::SessionCreator.new(validated_credential: validated_credential).perform }
+        let(:refresh_token) do
+          CGI.escape(SignIn::RefreshTokenEncryptor.new(refresh_token: session_container.refresh_token).perform)
+        end
+        let(:refresh_token_param) { { refresh_token: CGI.escape(refresh_token) } }
+
+        it 'revokes the session' do
+          expect(subject).to validate(
+            :post,
+            '/v0/sign_in/revoke',
+            200,
+            '_query_string' => "refresh_token=#{refresh_token}"
+          )
+        end
+      end
+
+      describe 'GET v0/sign_in/revoke_all_sessions' do
+        let(:user_verification) { create(:user_verification) }
+        let(:validated_credential) { create(:validated_credential, user_verification: user_verification) }
+        let(:session_container) { SignIn::SessionCreator.new(validated_credential: validated_credential).perform }
+        let(:access_token_object) { session_container.access_token }
+        let!(:user) { create(:user, :loa3, uuid: access_token_object.user_uuid, middle_name: 'leo') }
+        let(:access_token) { SignIn::AccessTokenJwtEncoder.new(access_token: access_token_object).perform }
+
+        it 'revokes the session' do
+          expect(subject).to validate(
+            :get,
+            '/v0/sign_in/revoke_all_sessions',
+            200,
+            '_headers' => {
+              'Authorization' => "Bearer #{access_token}"
+            }
+          )
         end
       end
     end
@@ -627,6 +729,8 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
 
       context 'financial status report create' do
         it 'validates the route' do
+          pdf_stub = class_double('PdfFill::Filler').as_stubbed_const
+          allow(pdf_stub).to receive(:fill_ancillary_form).and_return("#{::Rails.root}/spec/fixtures/dmc/5655.pdf")
           VCR.use_cassette('dmc/submit_fsr') do
             VCR.use_cassette('bgs/people_service/person_data') do
               expect(subject).to validate(
@@ -1913,6 +2017,19 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
       end
     end
 
+    describe 'Lighthouse Benefits Reference Data' do
+      it 'gets data from endpoint' do
+        VCR.use_cassette('lighthouse/benefits_reference_data/200_response') do
+          expect(subject).to validate(
+            :get,
+            '/v0/benefits_reference_data/{path}',
+            200,
+            headers.merge('path' => 'disabilities')
+          )
+        end
+      end
+    end
+
     describe 'appeals' do
       it 'documents appeals 401' do
         expect(subject).to validate(:get, '/v0/appeals', 401)
@@ -2280,9 +2397,8 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
       end
 
       it 'supports getting service history data' do
-        Flipper.disable(:profile_get_military_info_from_vaprofile)
         expect(subject).to validate(:get, '/v0/profile/service_history', 401)
-        VCR.use_cassette('emis/get_military_service_episodes/valid') do
+        VCR.use_cassette('va_profile/military_personnel/post_read_service_history_200') do
           expect(subject).to validate(:get, '/v0/profile/service_history', 200, headers)
         end
       end
@@ -2962,12 +3078,11 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
       end
     end
 
-    describe 'when EMIS returns an unexpected response body' do
-      it 'supports returning a custom 502 response' do
-        Flipper.disable(:profile_get_military_info_from_vaprofile)
-        allow(EMISRedis::MilitaryInformation).to receive_message_chain(:for_user, :service_history) { nil }
-
-        expect(subject).to validate(:get, '/v0/profile/service_history', 502, headers)
+    describe 'when VA Profile returns an unexpected response body' do
+      it 'supports returning a custom 400 response' do
+        VCR.use_cassette('va_profile/military_personnel/post_read_service_history_500') do
+          expect(subject).to validate(:get, '/v0/profile/service_history', 400, headers)
+        end
       end
     end
 
@@ -3647,6 +3762,11 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
       subject.untested_mappings.delete('/v0/financial_status_reports/download_pdf')
       subject.untested_mappings.delete('/v0/form1095_bs/download_pdf/{tax_year}')
       subject.untested_mappings.delete('/v0/form1095_bs/download_txt/{tax_year}')
+      # SiS methods that involve forms & redirects
+      subject.untested_mappings.delete('/v0/sign_in/authorize')
+      subject.untested_mappings.delete('/v0/sign_in/callback')
+      subject.untested_mappings.delete('/v0/sign_in/logout')
+
       expect(subject).to validate_all_paths
     end
   end

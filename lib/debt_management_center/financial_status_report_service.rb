@@ -25,7 +25,8 @@ module DebtManagementCenter
 
     STATSD_KEY_PREFIX = 'api.dmc'
     DATE_TIMEZONE = 'Central Time (US & Canada)'
-    CONFIRMATION_TEMPLATE = Settings.vanotify.services.dmc.template_id.fsr_confirmation_email
+    VBA_CONFIRMATION_TEMPLATE = Settings.vanotify.services.dmc.template_id.fsr_confirmation_email
+    VHA_CONFIRMATION_TEMPLATE = Settings.vanotify.services.dmc.template_id.vha_fsr_confirmation_email
 
     ##
     # Submit a financial status report to the Debt Management Center
@@ -60,39 +61,49 @@ module DebtManagementCenter
     end
 
     def submit_combined_fsr(form)
-      submission = persist_form_submission(form)
-
-      Rails.logger.info('Submitting Combined FSR', submission_id: submission.id)
+      Rails.logger.info('Submitting Combined FSR')
 
       vba_status = submit_vba_fsr(form) if selected_vba_debts(form['selectedDebtsAndCopays']).present?
-      vha_status = submit_vha_fsr(form, submission) if selected_vha_copays(form['selectedDebtsAndCopays']).present?
+      vha_status = submit_vha_fsr(form) if selected_vha_copays(form['selectedDebtsAndCopays']).present?
 
-      { vba_status: vba_status, vha_status: vha_status }.compact
+      {
+        vba_status: vba_status,
+        vha_status: vha_status,
+        content: Base64.encode64(
+          File.read(
+            PdfFill::Filler.fill_ancillary_form(
+              form,
+              SecureRandom.uuid,
+              '5655'
+            )
+          )
+        )
+      }
     end
 
     def submit_vba_fsr(form)
+      Rails.logger.info('5655 Form Submitting to VBA')
       vba_form = form.deep_dup
       vba_form.delete('selectedDebtsAndCopays')
       response = perform(:post, 'financial-status-report/formtopdf', vba_form)
       fsr_response = DebtManagementCenter::FinancialStatusReportResponse.new(response.body)
 
-      send_confirmation_email if response.success?
+      send_confirmation_email(VBA_CONFIRMATION_TEMPLATE) if response.success?
 
       update_filenet_id(fsr_response)
       { status: fsr_response.status }
     end
 
-    def submit_vha_fsr(form, form_submission)
-      Rails.logger.info('5655 Form Submitting to VHA', submission_id: form_submission.id)
-
-      vha_forms = parse_vha_form(form, form_submission)
+    def submit_vha_fsr(form)
+      vha_forms = parse_vha_form(form)
       vbs_request = DebtManagementCenter::VBS::Request.build
       sharepoint_request = DebtManagementCenter::Sharepoint::Request.new
       vbs_responses = []
       vha_forms.each do |vha_form|
+        Rails.logger.info('5655 Form Submitting to VHA', submission_id: vha_form['transactionId'])
         sharepoint_request.upload(
           form_contents: vha_form,
-          form_submission: form_submission,
+          form_submission: Form5655Submission.find(vha_form['transactionId']),
           station_id: vha_form['facilityNum']
         )
         vbs_response = vbs_request.post("#{vbs_settings.base_path}/UploadFSRJsonDocument",
@@ -100,7 +111,7 @@ module DebtManagementCenter
         vbs_responses << vbs_response
       end
 
-      send_confirmation_email if vbs_responses.all?(&:success?)
+      send_confirmation_email(VHA_CONFIRMATION_TEMPLATE) if vbs_responses.all?(&:success?)
 
       { status: vbs_responses.collect(&:status) }
     end
@@ -111,18 +122,20 @@ module DebtManagementCenter
       raise Common::Client::Errors::ClientError.new('malformed request', 400)
     end
 
-    def parse_vha_form(form, form_submission)
+    def parse_vha_form(form)
       facility_forms = []
       facility_copays = selected_vha_copays(form['selectedDebtsAndCopays']).group_by do |copay|
         copay['station']['facilitYNum']
       end
       facility_copays.each do |facility_num, copays|
         fsr_reason = copays.map { |copay| copay['resolutionOption'] }.uniq.join(', ')
+        submission = persist_form_submission(form, copays)
         facility_form = form.deep_dup
         facility_form['personalIdentification']['fsrReason'] = fsr_reason
+        facility_form['personalIdentification']['fileNumber'] = @user.ssn
         facility_form['facilityNum'] = facility_num
-        facility_form['transactionId'] = form_submission.id
-        facility_form['timestamp'] = form_submission.created_at.strftime('%Y%m%dT%H%M%S')
+        facility_form['transactionId'] = submission.id
+        facility_form['timestamp'] = submission.created_at.strftime('%Y%m%dT%H%M%S')
         facility_form.delete('selectedDebtsAndCopays')
         facility_forms << remove_form_delimiters(facility_form)
       end
@@ -130,10 +143,10 @@ module DebtManagementCenter
       facility_forms
     end
 
-    def persist_form_submission(form)
+    def persist_form_submission(form, debts)
       metadata = {
-        debts: selected_vba_debts(form['selectedDebtsAndCopays']),
-        copays: selected_vha_copays(form['selectedDebtsAndCopays'])
+        debts: selected_vba_debts(debts),
+        copays: selected_vha_copays(debts)
       }.to_json
       form_json = form.deep_dup
 
@@ -194,13 +207,13 @@ module DebtManagementCenter
       form['applicantCertifications']['veteranDateSigned'] = date_formatted if form['applicantCertifications']
     end
 
-    def send_confirmation_email
+    def send_confirmation_email(template_id)
       return unless Flipper.enabled?(:fsr_confirmation_email)
 
       email = @user.email&.downcase
       return if email.blank?
 
-      DebtManagementCenter::VANotifyEmailJob.perform_async(email, CONFIRMATION_TEMPLATE, email_personalization_info)
+      DebtManagementCenter::VANotifyEmailJob.perform_async(email, template_id, email_personalization_info)
     end
 
     def email_personalization_info
@@ -208,7 +221,7 @@ module DebtManagementCenter
     end
 
     def remove_form_delimiters(form)
-      JSON.parse(form.to_s.gsub(/[\^|]/, '').gsub('=>', ':'))
+      JSON.parse(form.to_s.gsub(/[\^|\n]/, '').gsub('=>', ':'))
     end
 
     def vbs_settings

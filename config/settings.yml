@@ -41,6 +41,7 @@ saml_ssoe:
   response_signing: false
   response_encryption: false
   identity_slack_webhook: ~
+  idp_sso_service_binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
 
 ssoe_eauth_cookie:
   name: vagov_saml_request_localhost
@@ -188,7 +189,7 @@ central_mail:
   upload:
     enabled: true
     host: "test2.domaonline.com/EmmsAPI"
-    token: "<PENSIONS_TOKEN>"
+    token: "<CENTRAL_MAIL_TOKEN>"
 
 # Settings for BIP Services
 bip:
@@ -871,6 +872,7 @@ flipper:
     - drew.fisher@adhocteam.us # Drew Fisher (Ad Hoc), Team Lead Decision Reviews
     - dror@matal.com
     - eric.boehs@oddball.io
+    - eric.voshall@adhocteam.us
     - erik@adhocteam.us
     - ethan.teague@civicactions.com
     - filip.fafara@gmail.com # Thoughtworks, ex VANotify, supports DHP, CDSP, Virtual Agent
@@ -915,6 +917,7 @@ flipper:
     - metrowebz@gmail.com
     - micah@adhocteam.us
     - michel.mcdonald@adhocteam.us
+    - michael.chaffee@va.gov # DHP team tech lead
     - michael.chelen@va.gov
     - michael.pelz-sherman@gcio.com
     - michelle.middaugh@adhocteam.us
@@ -925,6 +928,7 @@ flipper:
     - patrick@adhocteam.us
     - patrickryll@yahoo.com
     - paul.touchton@b3groupinc.com
+    - rebecca.green@thoughtworks.com
     - regarr@gmail.com # Robin Garrison - AdHoc
     - riley.anderson@oddball.io
     - ryan.leahy@adhocteam.us # Ryan Leahy - Adhoc
@@ -988,6 +992,7 @@ flipper:
     - jerek.shoemaker@adhocteam.us # Jerek Shoemaker - Benefits Team #1
     - sam.cormier@coforma.io # Sam Cormier - Benefits Team #1
     - scott.meyers@coforma.io # Scott Meyers - Benefits Team #1
+    - johncater@gmail.com # John Cater - FE Engineer Auth Exp
 
 bgs:
   application: ~
@@ -1008,7 +1013,7 @@ va_mobile:
   ppms_base_url: "https://staff.apps.va.gov"
   mock: false
   key_path: /fake/client/key/path
-  timeout: 15
+  timeout: 55
 
 vetext:
   url: "https://something.fake.va.gov"
@@ -1066,6 +1071,10 @@ hqva_mobile:
 # settings va.gov uses related to lighthouse api's
 lighthouse:
   api_key: fake_key
+  benefits_reference_data:
+    url: https://sandbox-api.va.gov
+    path: services/benefits-reference-data
+    version: v1
   veterans_health:
     url: https://sandbox-api.va.gov
     fast_tracker:
@@ -1133,6 +1142,11 @@ virtual_agent:
   webchat_secret_b: fake_secret_b
   lighthouse_api_uri: https://sandbox-api.va.gov/services/appeals/v0/appeals
   lighthouse_api_key: fake_api_key
+  cxdw_client_secret: fake_secret
+  cxdw_client_id: fake_id
+  cxdw_app_uri: fake_app_uri
+  cxdw_dataverse_uri: fake_dataverse_uri
+  cxdw_table_prefix: fake_table_prefix
 
 # Settings for notifications client
 vanotify:
@@ -1165,6 +1179,7 @@ vanotify:
       api_key: fake_secret
       template_id:
         fsr_confirmation_email: fake_template_id
+        vha_fsr_confirmation_email: fake_template_id
   mock: false
   links:
     connected_applications: https://www.va.gov/profile/connected-applications
@@ -1292,6 +1307,9 @@ github_cvu:
   private_pem: ~
 
 check_in:
+  travel_reimbursement_api:
+    redis_token_expiry: 3540 # 59 minutes
+    service_name: BTSSS-API
   authentication:
     max_auth_retry_limit: 3
     retry_attempt_expiry: 604800 # 7 Days
@@ -1349,6 +1367,9 @@ rrd:
     recipients:
       - fake_email
   mas_tracking:
+    recipients:
+      - fake_email
+  mas_all_claims_tracking:
     recipients:
       - fake_email
   pact_tracking:
