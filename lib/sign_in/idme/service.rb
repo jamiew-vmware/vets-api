@@ -122,6 +122,8 @@ module SignIn
       end
 
       def normalize_address(user_info)
+        return unless address_defined?(user_info)
+
         {
           street: user_info.street,
           postal_code: user_info.zip,
@@ -131,19 +133,12 @@ module SignIn
         }
       end
 
-      def united_states_country_code
-        'USA'
+      def address_defined?(user_info)
+        user_info.street && user_info.zip && user_info.state && user_info.city
       end
 
-      def scope
-        case type
-        when 'idme'
-          config.idme_scope
-        when 'dslogon'
-          config.dslogon_scope
-        when 'mhv'
-          config.mhv_scope
-        end
+      def united_states_country_code
+        'USA'
       end
 
       def jwe_decrypt(encrypted_jwe)

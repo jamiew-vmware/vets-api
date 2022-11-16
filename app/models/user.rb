@@ -37,6 +37,7 @@ class User < Common::RedisStore
   attribute :account_id, Integer
   attribute :user_account_uuid, String
   attribute :user_verification_id, Integer
+  attribute :fingerprint, String
 
   delegate :email, to: :identity, allow_nil: true
   delegate :loa3?, to: :identity, allow_nil: true
@@ -174,7 +175,7 @@ class User < Common::RedisStore
   end
 
   def address
-    address = identity&.address || mpi_profile&.address
+    address = identity&.address || mpi_profile&.address || {}
     {
       street: address[:street],
       street2: address[:street2],
@@ -267,20 +268,6 @@ class User < Common::RedisStore
     add_person_identity.search_token = search_token
     mpi.user_identity = add_person_identity
     mpi.add_person_proxy
-  end
-
-  def mpi_add_person_implicit_search
-    return unless loa3?
-
-    invalidate_mpi_cache
-    mpi.add_person_implicit_search
-  end
-
-  def mpi_update_profile
-    return unless loa3?
-
-    invalidate_mpi_cache
-    mpi.update_profile
   end
 
   def set_mhv_ids(mhv_id)
@@ -390,7 +377,7 @@ class User < Common::RedisStore
   end
 
   def in_progress_forms
-    InProgressForm.where(user_uuid: uuid)
+    InProgressForm.for_user(self)
   end
 
   # Re-caches the MPI response. Use in response to any local changes that
@@ -506,9 +493,11 @@ class User < Common::RedisStore
     when SAML::User::DSLOGON_CSID
       return UserVerification.find_by(dslogon_uuid: identity.edipi) if identity.edipi
     when SAML::User::LOGINGOV_CSID
-      return UserVerification.find_by(logingov_uuid: logingov_uuid)
+      return UserVerification.find_by(logingov_uuid: logingov_uuid) if logingov_uuid
     end
-    UserVerification.find_by(idme_uuid: idme_uuid)
+    return nil unless idme_uuid
+
+    UserVerification.find_by(idme_uuid: idme_uuid) || UserVerification.find_by(backing_idme_uuid: idme_uuid)
   end
 
   def get_relationships_array

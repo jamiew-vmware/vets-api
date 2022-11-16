@@ -94,10 +94,6 @@ features:
     actor_type: user
     description: Enables the health care check-in experiences to show the pre-check-in experience.
     enable_in_development: true
-  check_in_experience_day_of_demographics_flags_enabled:
-    actor_type: user
-    description: Enables the capture of user responses to demographics up-to-date questions
-    enable_in_development: true
   check_in_experience_synthetic_metric_name:
     actor_type: user
     description: Enables updating the StatsD metric name for Synthetic check traffic
@@ -245,6 +241,10 @@ features:
     actor_type: user
     description: Enables the ICN lookup job
     enable_in_development: true
+  decision_review_weekly_error_report_enabled:
+    actor_type: user
+    description: Enables the weekly decision review text error report
+    enable_in_development: true
   dependency_verification:
     actor_type: user
     description: Feature gates the dependency verification modal for updating the diaries service.
@@ -302,10 +302,6 @@ features:
   facilities_ppms_suppress_pharmacies:
     actor_type: user
     description: Front End Flag to suppress the ability to search for pharmacies
-  facility_locator_covid_vaccine_walk_in_availability_text_frontend:
-    actor_type: user
-    description: Enable covid vaccine walk-in availability text within covid vaccine related search results
-    enable_in_development: true
   facility_locator_lat_long_only:
     actor_type: user
     description: Send only lat/long values (no bounding box or address) to the API when querying for facilities.
@@ -314,10 +310,6 @@ features:
     actor_type: user
     description: enable covid search/display
     enable_in_development: true
-  facilities_locator_mobile_covid_online_scheduling:
-    actor_type: user
-    enable_in_development: true
-    description: get covid online scheduling availability from the mobile api
   facility_locator_ppms_forced_unique_id:
     actor_type: user
     description: Use an hexdigest for the ID on PPMS Place of Service Calls
@@ -397,9 +389,9 @@ features:
     actor_type: user
     description: Enable/disable 1010ez in progress form reminders (sent via VaNotify)
     enable_in_development: true
-  in_progress_generic_multiple_template:
+  in_progress_form_reminder_526ez:
     actor_type: user
-    description: Enable/disable using generic template for multiple in progress reminders (sent via VaNotify)
+    description: Enable/disable 526ez in progress form reminders (sent via VaNotify)
     enable_in_development: true
   loop_pages:
     actor_type: user
@@ -489,10 +481,6 @@ features:
     actor_type: user
     description: Hides disability comp and pen section of the Profile - Direct Deposit page during a service outage
     enable_in_development: false
-  profile_notification_settings:
-    actor_type: user
-    description: Turns on the Notification Settings section of the VA.gov Profile
-    enable_in_development: true
   profile_schema_forms:
     actor_type: user
     description: Enables SchemaForm-based contact info edit forms on the VA.gov Veteran profile page
@@ -518,10 +506,6 @@ features:
   profile_show_pronouns_and_sexual_orientation:
     actor_type: user
     description: Show/hide Pronouns and Sexual Orientation fields on profile page
-  profile_show_receive_text_notifications:
-    actor_type: user
-    description: https://www.va.gov/profile/ show Receive Text Notifications
-    enable_in_development: true
   profile_use_vaos_v2_api:
     description: "Use the new VAOS v2 API endpoints"
     enable_in_development: true
@@ -798,6 +782,10 @@ features:
     actor_type: user
     enable_in_development: true
     description: Toggle for the Acheron service changes
+  va_online_scheduling_use_dsot:
+    actor_type: user
+    enable_in_development: true
+    description: Toggle for querying Drupal Source of Truth for Acheron flag
   va_view_dependents_access:
     actor_type: user
     description: Allows us to gate the View/ Modify dependents content in a progressive rollout
@@ -859,3 +847,6 @@ features:
     actor_type: user
     description: Enables the UI integration with the meb dgi
     enable_in_development: true
+  move_form_back_button:
+    actor_type: user
+    description: Test moving form back button to the top of the page

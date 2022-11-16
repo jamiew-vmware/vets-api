@@ -1118,6 +1118,24 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe '#fingerprint' do
+    let(:fingerprint) { '196.168.0.0' }
+    let(:user) { create :user, fingerprint: fingerprint }
+
+    it 'returns expected user fingerprint' do
+      expect(user.fingerprint).to eq(fingerprint)
+    end
+
+    context 'fingerprint mismatch' do
+      let(:new_fingerprint) { '0.0.0.0' }
+
+      it 'can update the user fingerprint value' do
+        user.fingerprint = new_fingerprint
+        expect(user.fingerprint).to eq(new_fingerprint)
+      end
+    end
+  end
+
   describe '#user_verification' do
     let(:user) do
       described_class.new(build(:user,
@@ -1152,8 +1170,21 @@ RSpec.describe User, type: :model do
       context 'and there is not an mhv_correlation_id' do
         let(:mhv_correlation_id) { nil }
 
-        it 'returns user verification with a matching idme_uuid' do
-          expect(user.user_verification.idme_uuid).to eq(idme_uuid)
+        context 'and user has an idme_uuid' do
+          let(:idme_uuid) { 'some-idme-uuid' }
+
+          it 'returns user verification with a matching idme_uuid' do
+            expect(user.user_verification.idme_uuid).to eq(idme_uuid)
+          end
+        end
+
+        context 'and user does not have an idme_uuid' do
+          let(:idme_uuid) { nil }
+          let(:user_verification) { nil }
+
+          it 'returns nil' do
+            expect(user.user_verification).to be nil
+          end
         end
       end
     end
@@ -1172,8 +1203,21 @@ RSpec.describe User, type: :model do
       context 'and there is not an edipi' do
         let(:edipi) { nil }
 
-        it 'returns user verification with a matching idme_uuid' do
-          expect(user.user_verification.idme_uuid).to eq(idme_uuid)
+        context 'and user has an idme_uuid' do
+          let(:idme_uuid) { 'some-idme-uuid' }
+
+          it 'returns user verification with a matching idme_uuid' do
+            expect(user.user_verification.idme_uuid).to eq(idme_uuid)
+          end
+        end
+
+        context 'and user does not have an idme_uuid' do
+          let(:idme_uuid) { nil }
+          let(:user_verification) { nil }
+
+          it 'returns nil' do
+            expect(user.user_verification).to be nil
+          end
         end
       end
     end
@@ -1189,10 +1233,22 @@ RSpec.describe User, type: :model do
 
     context 'when user is logged in with idme' do
       let(:authn_context) { LOA::IDME_LOA1_VETS }
-      let(:idme_uuid) { 'some-idme-uuid' }
 
-      it 'returns user verification with a matching idme_uuid' do
-        expect(user.user_verification.idme_uuid).to eq(idme_uuid)
+      context 'and user has an idme_uuid' do
+        let(:idme_uuid) { 'some-idme-uuid' }
+
+        it 'returns user verification with a matching idme_uuid' do
+          expect(user.user_verification.idme_uuid).to eq(idme_uuid)
+        end
+      end
+
+      context 'and user does not have an idme_uuid' do
+        let(:idme_uuid) { nil }
+        let(:user_verification) { nil }
+
+        it 'returns nil' do
+          expect(user.user_verification).to be nil
+        end
       end
     end
   end
@@ -1225,58 +1281,34 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe '#mpi_add_person_implicit_search' do
-    subject { user.mpi_add_person_implicit_search }
-
-    let(:user) { create(:user, :loa3) }
-
-    before do
-      allow_any_instance_of(MPI::Service).to receive(:add_person_implicit_search)
-    end
-
-    context 'when loa3? is true' do
-      before { stub_mpi_not_found }
-
-      it 'makes a call to MPI to create a new user' do
-        expect_any_instance_of(MPI::Service).to receive(:add_person_implicit_search)
-        subject
-      end
-    end
-
-    context 'when loa3? is false' do
-      let(:user) { create(:user) }
-
-      it 'does not make a call to MPI to create a new user' do
-        expect_any_instance_of(MPI::Service).not_to receive(:add_person_implicit_search)
-        subject
-      end
-    end
-  end
-
-  describe '#mpi_update_profile' do
-    subject { user.mpi_update_profile }
-
-    let(:user) { create(:user, :loa3) }
+  describe '#address' do
+    let(:user) { build(:user, :loa3, :mvi_profile_street_and_suffix) }
+    let(:mvi_profile) { build(:mvi_profile, suffix: 'Jr.') }
 
     before do
-      allow_any_instance_of(MPI::Service).to receive(:update_profile)
+      stub_mpi(mvi_profile)
     end
 
-    context 'when loa3? is true' do
-      before { stub_mpi_not_found }
-
-      it 'makes a call to MPI to update a user correlation profile' do
-        expect_any_instance_of(MPI::Service).to receive(:update_profile)
-        subject
+    context 'user has an address' do
+      it 'returns address as hash, with user_identity record\'s address preferred over mpi_profile\'s address' do
+        expect(user.address).to eq(user.identity.address)
+        user.identity.address = nil
+        expect(user.address).to eq(user.send(:mpi_profile).address.to_h)
       end
     end
 
-    context 'when loa3? is false' do
-      let(:user) { create(:user) }
-
-      it 'does not make a call to MPI to update a user correlation profile' do
-        expect_any_instance_of(MPI::Service).not_to receive(:update_profile)
-        subject
+    context 'user does not have an address' do
+      it 'returns a hash where all values are nil' do
+        user.identity.address = nil
+        user.send(:mpi_profile).address = nil
+        expect(user.address).to eq({
+                                     street: nil,
+                                     street2: nil,
+                                     city: nil,
+                                     state: nil,
+                                     country: nil,
+                                     postal_code: nil
+                                   })
       end
     end
   end

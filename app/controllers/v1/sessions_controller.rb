@@ -133,7 +133,7 @@ module V1
       @current_user, @session_object = user_session_form.persist
       set_cookies
       after_login_actions
-      if url_service.should_uplevel?
+      if url_service.should_verify?
         render_login('verify')
       else
         redirect_to url_service.login_redirect_url
@@ -180,7 +180,7 @@ module V1
       when 'mhv'
         url_service.login_url('mhv', 'myhealthevet', AuthnContext::MHV)
       when 'mhv_verified'
-        url_service.login_url('mhv', 'myhealthevet_loa3', AuthnContext::MHV)
+        url_service.login_url('mhv_verified', 'myhealthevet', AuthnContext::MHV)
       when 'dslogon'
         url_service.login_url('dslogon', 'dslogon', AuthnContext::DSLOGON)
       when 'dslogon_verified'

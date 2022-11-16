@@ -78,15 +78,19 @@ module SignIn
     def update_mpi_correlation_record
       return if auto_uplevel
 
+      user_attribute_mismatch_checks
+      update_profile_response = mpi_service.update_profile(user_identity_from_attributes)
+      unless update_profile_response&.ok?
+        handle_error('User MPI record cannot be updated', Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE)
+      end
+    end
+
+    def user_attribute_mismatch_checks
       user_identity_from_attributes.icn ||= mpi_response_profile.icn
       attribute_mismatch_check(:first_name, first_name, mpi_response_profile.given_names.first)
       attribute_mismatch_check(:last_name, last_name, mpi_response_profile.family_name)
       attribute_mismatch_check(:birth_date, birth_date, mpi_response_profile.birth_date)
       attribute_mismatch_check(:ssn, ssn, mpi_response_profile.ssn, prevent_auth: true)
-      update_profile_response = mpi_service.update_profile(user_identity_from_attributes)
-      unless update_profile_response&.ok?
-        handle_error('User MPI record cannot be updated', Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE)
-      end
     end
 
     def validate_credential_attributes
@@ -95,10 +99,10 @@ module SignIn
         credential_attribute_check(:mhv_uuid, mhv_correlation_id)
       else
         credential_attribute_check(:dslogon_uuid, edipi) if dslogon_auth?
-        credential_attribute_check(:first_name, first_name)
-        credential_attribute_check(:last_name, last_name)
-        credential_attribute_check(:birth_date, birth_date)
-        credential_attribute_check(:ssn, ssn)
+        credential_attribute_check(:first_name, first_name) unless auto_uplevel
+        credential_attribute_check(:last_name, last_name) unless auto_uplevel
+        credential_attribute_check(:birth_date, birth_date) unless auto_uplevel
+        credential_attribute_check(:ssn, ssn) unless auto_uplevel
       end
       credential_attribute_check(:uuid, logingov_uuid || idme_uuid)
       credential_attribute_check(:email, credential_email)
@@ -171,7 +175,9 @@ module SignIn
     end
 
     def handle_error(error_message, error_code, error: nil)
-      sign_in_logger.info('attribute validator error', { errors: error_message })
+      sign_in_logger.info('attribute validator error', { errors: error_message,
+                                                         credential_uuid: credential_uuid,
+                                                         type: service_name })
       raise error, message: error_message, code: error_code if error
     end
 
