@@ -30,8 +30,7 @@ module Mobile
 
       def aud_urls
         { health: Settings.mobile_lighthouse.health.aud_claim_url,
-          letters: Settings.mobile_lighthouse.letters.aud_claim_url
-        }
+          letters: Settings.mobile_lighthouse.letters.aud_claim_url }
       end
 
       def rsa_key

@@ -39,7 +39,7 @@ module Mobile
           cached_session = LighthouseSession.get_cached(@user)
           return cached_session.access_token if cached_session
 
-          params = LighthouseParamsFactory.new(@user.icn,'letters').build
+          params = LighthouseParamsFactory.new(@user.icn, 'letters').build
           response = config.access_token_connection.post('', params)
           token_hash = response.body
           session = LighthouseSession.new(token_hash.symbolize_keys)

@@ -8,7 +8,7 @@ module Mobile
     class LighthouseParamsFactory
       # @param icn String a veteran's ICN
       #
-      def initialize(icn,api)
+      def initialize(icn, api)
         @icn = icn
         @api = api
       end
