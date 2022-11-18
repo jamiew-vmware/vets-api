@@ -2,7 +2,7 @@
 
 module Mobile
   module V0
-    module LighthouseHealth
+    module LighthouseLetters
       # Service that connects to VA Lighthouse's Veteran Health FHIR API
       # https://developer.va.gov/explore/health/docs/fhir?version=current
       #
@@ -15,26 +15,13 @@ module Mobile
           @user = user
         end
 
-        # Performs a query for a list of immunizations for a veteran
+        # Performs a query for a list of eligible letters for a veteran
         # by ICN (identified in the access token)
         #
-        # @return Hash the list of immunizations decoded from JSON
+        # @return Hash the list of letters decoded from JSON
         #
-        def get_immunizations
-          response = perform(:get, 'Immunization', params, headers)
-          response.body
-        end
-
-        # Performs a query location info
-        # by id
-        #
-        # @return Hash of location info based on id provided
-        #
-        def get_location(id)
-          response = perform(:get, "Location/#{id}", nil, headers)
-          Rails.logger.info('Mobile Lighthouse Service, Location response', response: response)
-          raise Common::Exceptions::BackendServiceException, 'LIGHTHOUSE_FACILITIES404' if response[:status] == 404
-
+        def get_letters
+          response = perform(:get, 'eligible-letters', params, headers)
           response.body
         end
 
@@ -45,14 +32,14 @@ module Mobile
         end
 
         def params
-          { patient: @user.icn }
+          { icn: @user.icn }
         end
 
         def access_token
           cached_session = LighthouseSession.get_cached(@user)
           return cached_session.access_token if cached_session
 
-          params = LighthouseParamsFactory.new(@user.icn,'health').build
+          params = LighthouseParamsFactory.new(@user.icn,'letters').build
           response = config.access_token_connection.post('', params)
           token_hash = response.body
           session = LighthouseSession.new(token_hash.symbolize_keys)
