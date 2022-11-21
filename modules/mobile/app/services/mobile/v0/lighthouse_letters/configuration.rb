@@ -36,11 +36,18 @@ module Mobile
         # @return Faraday::Connection a Faraday connection instance with the correct middleware
         #
         def access_token_connection
-          Faraday.new(access_token_url) do |conn|
+          Faraday.new(access_token_url,headers: headers) do |conn|
             conn.use :breakers
             conn.response :json, content_type: /\bjson$/
             conn.adapter Faraday.default_adapter
           end
+        end
+
+        def headers
+          {
+            'Host' => 'sandbox-api.va.gov',
+            'Content-Type' => 'application/x-www-form-urlencoded'
+          }
         end
 
         # Main connection for querying the Health FHIR API
