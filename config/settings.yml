@@ -1401,7 +1401,7 @@ test_user_dashboard:
     client_id:
     client_secret:
 
-mobile_lighthouse:
+lighthouse_health_immunization:
   client_id: '0oad0xggirKLf2ger2p7'
   key_path: ~
   health:
