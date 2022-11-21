@@ -20,8 +20,8 @@ module Mobile
       def claims(api)
         {
           aud: aud_urls[api],
-          iss: Settings.mobile_lighthouse.client_id,
-          sub: Settings.mobile_lighthouse.client_id,
+          iss: Settings.lighthouse_health_immunization.client_id,
+          sub: Settings.lighthouse_health_immunization.client_id,
           jti: SecureRandom.uuid,
           iat: Time.now.to_i,
           exp: Time.now.to_i + TTL
@@ -29,12 +29,12 @@ module Mobile
       end
 
       def aud_urls
-        { health: Settings.mobile_lighthouse.health.aud_claim_url,
-          letters: Settings.mobile_lighthouse.letters.aud_claim_url }
+        { health: Settings.lighthouse_health_immunization.health.aud_claim_url,
+          letters: Settings.lighthouse_health_immunization.letters.aud_claim_url }
       end
 
       def rsa_key
-        OpenSSL::PKey::RSA.new(File.read(Settings.mobile_lighthouse.key_path))
+        OpenSSL::PKey::RSA.new(File.read(Settings.lighthouse_health_immunization.key_path))
       end
     end
   end

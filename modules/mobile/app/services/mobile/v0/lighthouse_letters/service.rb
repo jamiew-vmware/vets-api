@@ -1,31 +1,17 @@
-# frozen_string_literal: true
-
 module Mobile
   module V0
     module LighthouseLetters
-      # Service that connects to VA Lighthouse's Veteran Health FHIR API
-      # https://developer.va.gov/explore/health/docs/fhir?version=current
-      #
+
       class Service < Common::Client::Base
         configuration Configuration
 
-        # @param user IAMUser the user requesting the records
-        #
         def initialize(user)
           @user = user
         end
 
-        # Performs a query for a list of eligible letters for a veteran
-        # by ICN (identified in the access token)
-        #
-        # @return Hash the list of letters decoded from JSON
-        #
         def get_letters
-          response = perform(:get, 'eligible-letters', params, headers)
-          response.body
+          perform(:get, 'eligible-letters', params, headers)
         end
-
-        private
 
         def headers
           config.base_request_headers.merge(Authorization: "Bearer #{access_token}")
