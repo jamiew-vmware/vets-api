@@ -14,7 +14,7 @@ module EVSS
       #
       def base_path
         if Flipper.enabled? :form526_dvp
-          dvp_base_path()
+          dvp_base_path
         else
           "#{Settings.evss.url}/#{Settings.evss.alternate_service_name}/rest/form526/v2"
         end
