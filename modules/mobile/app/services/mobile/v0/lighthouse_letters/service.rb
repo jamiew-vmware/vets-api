@@ -1,7 +1,6 @@
 module Mobile
   module V0
     module LighthouseLetters
-
       class Service < Common::Client::Base
         configuration Configuration
 
@@ -10,7 +9,9 @@ module Mobile
         end
 
         def get_letters
-          perform(:get, 'eligible-letters', params, headers)
+          response = perform(:get, 'eligible-letters', params, headers)
+
+          response.body
         end
 
         def headers
