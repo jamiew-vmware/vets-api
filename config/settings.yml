@@ -379,6 +379,11 @@ evss:
   url: https://csraciapp6.evss.srarad.com
   service_name: "wss-form526-services-web"
   alternate_service_name: "wss-form526-services-web-v2"
+  dvp:
+    current_env: qa
+    qa:
+      url: https://blue.qa.lighthouse.va.gov
+      service_name: "wss-form526-services-web"
   cert_path: ~
   key_path: ~
   root_cert_path: ~
