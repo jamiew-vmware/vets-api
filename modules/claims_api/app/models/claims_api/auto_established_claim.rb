@@ -67,7 +67,7 @@ module ClaimsApi
       form_data['disabilites'] = remove_special_issues_from_secondary_disabilities
       form_data['treatments'] = transform_treatment_dates if treatments?
       form_data['serviceInformation'] = transform_service_branch
-      #form_data['servicePay'] = transform_service_pay_service_branch
+      # form_data['servicePay'] = transform_service_pay_service_branch
 
       resolve_special_issue_mappings!
       resolve_homelessness_situation_type_mappings!
@@ -387,34 +387,34 @@ module ClaimsApi
 
     # Note this is not finished, but wanted to run this by Dash devs before I go further.
     # Not sure if we need this to handle cases where clients submit servicePay-related service branch
-    # values with incorrect spelling (e.g. '&amp;' instead of '&'). 
+    # values with incorrect spelling (e.g. '&amp;' instead of '&').
     # Method above only handles cases found in serviceInformation.servicePeriod.
     def transform_service_pay_service_branch
-        received_retired_payment = form_data['servicePay']['militiaryRetiredPay']['payment']
-        #if militaryRetiredPay is not null/empty
-        retiredBranch = received_retired_payment['serviceBranch']
-        ClaimsApi::Logger.log('526',
-          detail: "militaryRetiredPay 'serviceBranch' value received is :: #{retiredBranch}")
-        received_retired_payment['serviceBranch'] = ClaimsApi::ServiceBranchMapper.new(retiredBranch).value
-        
-        received_retired_payment
+      received_retired_payment = form_data['servicePay']['militiaryRetiredPay']['payment']
+      # if militaryRetiredPay is not null/empty
+      retiredBranch = received_retired_payment['serviceBranch']
+      ClaimsApi::Logger.log('526',
+                            detail: "militaryRetiredPay 'serviceBranch' value received is :: #{retiredBranch}")
+      received_retired_payment['serviceBranch'] = ClaimsApi::ServiceBranchMapper.new(retiredBranch).value
 
-        form_data['servicePay']['militiaryRetiredPay']['payment'] = received_retired_payment
-        form_data['servicePay']['militiaryRetiredPay']
-        form_data['servicePay']
+      received_retired_payment
 
-        received_separation_payment = form_data['servicePay']['separationPay']['payment']
-        #if separationPay is not null/empty
-        separationBranch = received_separation_payment['serviceBranch']
-        ClaimsApi::Logger.log('526',
-          detail: "separationPay 'serviceBranch' value received is :: #{separationBranch}")
-        received_separation_payment['serviceBranch'] = ClaimsApi::ServiceBranchMapper.new(separationBranch).value
-        
-        received_separation_payment
+      form_data['servicePay']['militiaryRetiredPay']['payment'] = received_retired_payment
+      form_data['servicePay']['militiaryRetiredPay']
+      form_data['servicePay']
 
-        form_data['servicePay']['separationPay']['payment']
-        form_data['servicePay']['separationPay']
-        form_data['servicePay']
+      received_separation_payment = form_data['servicePay']['separationPay']['payment']
+      # if separationPay is not null/empty
+      separationBranch = received_separation_payment['serviceBranch']
+      ClaimsApi::Logger.log('526',
+                            detail: "separationPay 'serviceBranch' value received is :: #{separationBranch}")
+      received_separation_payment['serviceBranch'] = ClaimsApi::ServiceBranchMapper.new(separationBranch).value
+
+      received_separation_payment
+
+      form_data['servicePay']['separationPay']['payment']
+      form_data['servicePay']['separationPay']
+      form_data['servicePay']
     end
 
     # The legacy ClaimsApi code has always allowed 'secondaryDisabilities' to have 'specialIssues'.
