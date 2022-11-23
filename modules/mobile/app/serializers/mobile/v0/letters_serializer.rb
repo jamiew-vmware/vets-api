@@ -9,34 +9,32 @@ module Mobile
       attributes :letters
 
       def initialize(id, letters, options = {})
-        if letters.instance_of?(Hash)
-          binding.pry
+        if Flipper.enabled?(:mobile_lighthouse_letters, @current_user)
           letters = letters.map do |letter|
             letter[:letter_type] = letter[:letter_type].downcase
-
             letter[:letter_name] = case letter[:letter_type]
                                    when 'benefit_summary'
-                                     letter[:letter_name] = 'Benefit Summary and Service Verification Letter'
+                                     'Benefit Summary and Service Verification Letter'
                                    when 'benefit_summary_dependent'
-                                     letter[:letter_name] = 'Dependent Benefit Summary and Service Verification Letter'
+                                     'Dependent Benefit Summary and Service Verification Letter'
                                    else
                                      letter[:letter_name]
                                    end
 
-            Mobile::V0::Letter.new(letter[:letter_name], letter[:letter_type])
+            Mobile::V0::Letter.new(name: letter[:letter_name],letter_type: letter[:letter_type])
           end
-          super(resource, options)
 
         else
-          letters.map! do |letter|
+          letters = letters.map! do |letter|
             letter.name = 'Benefit Summary and Service Verification Letter' if letter.letter_type == 'benefit_summary'
             if letter.letter_type == 'benefit_summary_dependent'
               letter.name = 'Dependent Benefit Summary and Service Verification Letter'
             end
             letter
           end
-          resource = LettersStruct.new(id, letters)
         end
+        resource = LettersStruct.new(id, letters)
+
         super(resource, options)
       end
     end

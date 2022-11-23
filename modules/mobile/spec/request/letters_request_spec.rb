@@ -6,7 +6,22 @@ require_relative '../support/matchers/json_schema_matcher'
 
 RSpec.describe 'letters', type: :request do
   include JsonSchemaMatchers
-  before { iam_sign_in }
+
+  let(:rsa_key) { OpenSSL::PKey::RSA.generate(2048) }
+
+  before do
+    allow(File).to receive(:read).and_return(rsa_key.to_s)
+    allow_any_instance_of(IAMUser).to receive(:icn).and_return('24811694708759028')
+    iam_sign_in(build(:iam_user))
+    Flipper.enable(:mobile_lighthouse_letters)
+  end
+
+  before(:all) do
+    @original_cassette_dir = VCR.configure(&:cassette_library_dir)
+    VCR.configure { |c| c.cassette_library_dir = 'modules/mobile/spec/support/vcr_cassettes' }
+  end
+
+  after(:all) { VCR.configure { |c| c.cassette_library_dir = @original_cassette_dir } }
 
   let(:letters_body) do
     {
@@ -55,43 +70,15 @@ RSpec.describe 'letters', type: :request do
   end
 
   describe 'GET /mobile/v0/letters' do
-    context 'with a valid evss response' do
+    context 'with a valid lighthouse response' do
       it 'matches the letters schema' do
-        VCR.use_cassette('evss/letters/letters') do
-          get '/mobile/v0/letters', headers: iam_headers
-          expect(response).to have_http_status(:ok)
-          expect(JSON.parse(response.body)).to eq(letters_body)
-          expect(response.body).to match_json_schema('letters')
+        VCR.use_cassette('lighthouse_letters/letters_200', match_requests_on: %i[method uri]) do
+          get '/mobile/v0/letters', headers: iam_headers ,params: nil
         end
-      end
-    end
-
-    unauthorized_five_hundred = { cassette_name: 'evss/letters/unauthorized' }
-    context 'with an 500 unauthorized response', vcr: unauthorized_five_hundred do
-      it 'returns a bad gateway response' do
-        get '/mobile/v0/letters', headers: iam_headers
-        expect(response).to have_http_status(:bad_gateway)
-        expect(response.body).to match_json_schema('evss_errors')
-      end
-    end
-
-    context 'with a 403 response' do
-      it 'returns a not authorized response' do
-        VCR.use_cassette('evss/letters/letters_403') do
-          get '/mobile/v0/letters', headers: iam_headers
-          expect(response).to have_http_status(:forbidden)
-          expect(response.body).to match_json_schema('evss_errors')
-        end
-      end
-    end
-
-    context 'with a generic 500 response' do
-      it 'returns a not found response' do
-        VCR.use_cassette('evss/letters/letters_500') do
-          get '/mobile/v0/letters', headers: iam_headers
-          expect(response).to have_http_status(:internal_server_error)
-          expect(response.body).to match_json_schema('evss_errors')
-        end
+        binding.pry
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)).to eq(letters_body)
+        expect(response.body).to match_json_schema('letters')
       end
     end
   end
