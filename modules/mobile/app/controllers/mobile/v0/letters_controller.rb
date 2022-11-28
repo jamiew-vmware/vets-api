@@ -11,7 +11,6 @@ module Mobile
 
       # returns list of letters available for a given user. List includes letter display name and letter type
       def index
-        response = nil
         response = if Flipper.enabled?(:mobile_lighthouse_letters, @current_user)
                      lighthouse_service.get_letters[:letters]
                    else

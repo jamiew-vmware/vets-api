@@ -13,7 +13,7 @@ RSpec.describe 'letters', type: :request do
     allow(File).to receive(:read).and_return(rsa_key.to_s)
     allow_any_instance_of(IAMUser).to receive(:icn).and_return('24811694708759028')
     iam_sign_in(build(:iam_user))
-    Flipper.enable(:mobile_lighthouse_letters)
+    Flipper.disable(:mobile_lighthouse_letters)
   end
 
   before(:all) do
