@@ -56,7 +56,6 @@ RSpec.describe 'letters', type: :request do
 
   before do
     allow(File).to receive(:read).and_return(rsa_key.to_s)
-    allow(File).to receive(:read).and_call_original
     allow_any_instance_of(IAMUser).to receive(:icn).and_return('24811694708759028')
     iam_sign_in(build(:iam_user))
     Flipper.enable(:mobile_lighthouse_letters)
@@ -76,111 +75,38 @@ RSpec.describe 'letters', type: :request do
           get '/mobile/v0/letters', headers: iam_headers
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body)).to eq(letters_body)
+          allow(File).to receive(:read).and_call_original
           expect(response.body).to match_json_schema('letters')
         end
       end
     end
-  end
 
-  describe 'error handling' do
-    context 'with a letter generator service error' do
+    context 'with service error' do
       it 'returns a not found response' do
-        VCR.use_cassette('evss/letters/letters_letter_generator_service_error') do
+        VCR.use_cassette('lighthouse_letters/letters_503', match_requests_on: %i[method uri]) do
           get '/mobile/v0/letters', headers: iam_headers
           expect(response).to have_http_status(:service_unavailable)
-          expect(response.body).to match_json_schema('evss_errors')
+          expect(response.parsed_body).to eq({ 'errors' =>
+                                                [{ 'title' => 'Service unavailable',
+                                                   'detail' => 'Backend Service Outage',
+                                                   'code' => '503',
+                                                   'status' => '503' }] })
         end
       end
     end
 
     context 'with one or more letter destination errors' do
       it 'returns a not found response' do
-        VCR.use_cassette('evss/letters/letters_letter_destination_error') do
+        VCR.use_cassette('lighthouse_letters/letters_404', match_requests_on: %i[method uri]) do
           get '/mobile/v0/letters', headers: iam_headers
-          expect(response).to have_http_status(:unprocessable_entity)
-          expect(response.body).to match_json_schema('evss_errors')
         end
-      end
-    end
-
-    context 'with an invalid address error' do
-      context 'when the user has not been logged' do
-        it 'logs the user edipi' do
-          VCR.use_cassette('evss/letters/letters_invalid_address') do
-            expect { get '/mobile/v0/letters', headers: iam_headers }.to change(InvalidLetterAddressEdipi, :count).by(1)
-            expect(response).to have_http_status(:unprocessable_entity)
-          end
-        end
-      end
-
-      context 'when log record insertion fails' do
-        it 'stills return unprocessable_entity' do
-          VCR.use_cassette('evss/letters/letters_invalid_address') do
-            allow(InvalidLetterAddressEdipi).to receive(:find_or_create_by).and_raise(ActiveRecord::ActiveRecordError)
-            expect { get '/mobile/v0/letters', headers: iam_headers }.to change(InvalidLetterAddressEdipi, :count).by(0)
-            expect(response).to have_http_status(:unprocessable_entity)
-          end
-        end
-      end
-    end
-
-    context 'with a not eligible error' do
-      it 'returns a not found response' do
-        VCR.use_cassette('evss/letters/letters_not_eligible_error') do
-          get '/mobile/v0/letters', headers: iam_headers
-          expect(response).to have_http_status(:bad_gateway)
-          expect(response.body).to match_json_schema('evss_errors')
-          expect(JSON.parse(response.body)).to have_deep_attributes(
-            'errors' => [
-              {
-                'title' => 'Proxy error',
-                'detail' => 'Upstream server returned not eligible response',
-                'code' => '111',
-                'source' => 'EVSS::Letters::Service',
-                'status' => '502',
-                'meta' => {
-                  'messages' => [
-                    {
-                      'key' => 'lettergenerator.notEligible',
-                      'severity' => 'FATAL',
-                      'text' => 'Veteran is not eligible to receive the letter'
-                    }
-                  ]
-                }
-              }
-            ]
-          )
-        end
-      end
-    end
-
-    context 'with can not determine eligibility error' do
-      it 'returns a not found response' do
-        VCR.use_cassette('evss/letters/letters_determine_eligibility_error') do
-          get '/mobile/v0/letters', headers: iam_headers
-          expect(response).to have_http_status(:bad_gateway)
-          expect(response.body).to match_json_schema('evss_errors')
-          expect(JSON.parse(response.body)).to have_deep_attributes(
-            'errors' => [
-              {
-                'title' => 'Proxy error',
-                'detail' => 'Can not determine eligibility for potential letters due to upstream server error',
-                'code' => '110',
-                'source' => 'EVSS::Letters::Service',
-                'status' => '502',
-                'meta' => {
-                  'messages' => [
-                    {
-                      'key' => 'letterGeneration.letterEligibilityError',
-                      'severity' => 'FATAL',
-                      'text' => 'Unable to determine eligibility on potential letters'
-                    }
-                  ]
-                }
-              }
-            ]
-          )
-        end
+        expect(response).to have_http_status(:not_found)
+        expect(response.parsed_body).to eq({ 'errors' =>
+                                             [{ 'title' => 'Record not found',
+                                                'detail' =>
+                                                  'The record identified by ICN: 24811694708759028 could not be found',
+                                                'code' => '404',
+                                                'status' => '404' }] })
       end
     end
   end

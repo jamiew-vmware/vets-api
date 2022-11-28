@@ -1,17 +1,23 @@
+# frozen_string_literal: true
+
 module Mobile
   module V0
     module LighthouseLetters
       class Service < Common::Client::Base
         configuration Configuration
 
+        # rubocop:disable Lint/MissingSuper
         def initialize(user)
           @user = user
         end
+        # rubocop:enable Lint/MissingSuper
 
         def get_letters
           response = perform(:get, 'eligible-letters', params, headers)
+          body = response.body
+          raise Common::Exceptions::RecordNotFound, "ICN: #{@user.icn}" if response[:status] == 404
 
-          response.body
+          body
         end
 
         def headers

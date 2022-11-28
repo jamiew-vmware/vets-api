@@ -10,20 +10,7 @@ module Mobile
 
       def initialize(id, letters, options = {})
         if Flipper.enabled?(:mobile_lighthouse_letters, @current_user)
-          letters = letters.map do |letter|
-            letter[:letter_type] = letter[:letter_type].downcase
-            letter[:letter_name] = case letter[:letter_type]
-                                   when 'benefit_summary'
-                                     'Benefit Summary and Service Verification Letter'
-                                   when 'benefit_summary_dependent'
-                                     'Dependent Benefit Summary and Service Verification Letter'
-                                   else
-                                     letter[:letter_name]
-                                   end
-
-            Mobile::V0::Letter.new(name: letter[:letter_name],letter_type: letter[:letter_type])
-          end
-
+          letters = lighthouse_letters_serializer(letters)
         else
           letters = letters.map! do |letter|
             letter.name = 'Benefit Summary and Service Verification Letter' if letter.letter_type == 'benefit_summary'
@@ -36,6 +23,22 @@ module Mobile
         resource = LettersStruct.new(id, letters)
 
         super(resource, options)
+      end
+
+      def lighthouse_letters_serializer(letters)
+        letters.map do |letter|
+          letter[:letter_type] = letter[:letter_type].downcase
+          letter[:letter_name] = case letter[:letter_type]
+                                 when 'benefit_summary'
+                                   'Benefit Summary and Service Verification Letter'
+                                 when 'benefit_summary_dependent'
+                                   'Dependent Benefit Summary and Service Verification Letter'
+                                 else
+                                   letter[:letter_name]
+                                 end
+
+          Mobile::V0::Letter.new(name: letter[:letter_name], letter_type: letter[:letter_type])
+        end
       end
     end
 
