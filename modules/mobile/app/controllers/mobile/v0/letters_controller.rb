@@ -22,8 +22,7 @@ module Mobile
 
       # returns options and info needed to create user form required for benefit letter download
       def beneficiary
-        render json: Mobile::V0::LettersBeneficiarySerializer.new(@current_user.uuid,
-                                                                  evss_service.get_letter_beneficiary)
+        render json: Mobile::V0::LettersBeneficiarySerializer.new(@current_user.uuid, evss_service.get_letter_beneficiary)
       end
 
       # returns a pdf of the requested letter type given the user has that letter type available
