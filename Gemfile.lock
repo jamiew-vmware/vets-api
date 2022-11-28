@@ -119,6 +119,7 @@ PATH
 
 GEM
   remote: https://rubygems.org/
+  remote: https://enterprise.contribsys.com/
   specs:
     Ascii85 (1.1.0)
     aasm (5.4.0)
@@ -355,6 +356,7 @@ GEM
       dry-schema (~> 1.8, >= 1.8.0)
     ecma-re-validator (0.4.0)
       regexp_parser (~> 2.2)
+    einhorn (1.0.0)
     erubi (1.11.0)
     et-orbi (1.2.7)
       tzinfo
@@ -866,6 +868,12 @@ GEM
       connection_pool (>= 2.2.5)
       rack (~> 2.0)
       redis (>= 4.5.0, < 5)
+    sidekiq-ent (2.5.2)
+      einhorn (>= 0.7.4)
+      sidekiq (>= 6.5.0)
+      sidekiq-pro (>= 5.5.0)
+    sidekiq-pro (5.5.4)
+      sidekiq (>= 6.5.6)
     sidekiq-scheduler (4.0.3)
       redis (>= 4.2.0)
       rufus-scheduler (~> 3.2)
@@ -1135,6 +1143,8 @@ DEPENDENCIES
   sentry-raven
   shrine
   sidekiq (>= 6.4.0)
+  sidekiq-ent!
+  sidekiq-pro!
   sidekiq-scheduler
   sidekiq_alive
   simplecov
