@@ -1403,7 +1403,7 @@ test_user_dashboard:
 
 mobile_lighthouse:
   client_id: '0oad0xggirKLf2ger2p7'
-  key_path: ~
+  key_path: /srv/vets-api/secret/mobile_lh_health_api.key
   health:
     aud_claim_url: 'https://deptva-eval.okta.com/oauth2/aus8nm1q0f7VQ0a482p7/v1/token'
     access_token_url: 'https://sandbox-api.va.gov/oauth2/health/system/v1/token'
