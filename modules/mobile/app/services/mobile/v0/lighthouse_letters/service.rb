@@ -6,12 +6,12 @@ module Mobile
       class Service < Common::Client::Base
         configuration Configuration
 
-        # rubocop:disable Lint/MissingSuper
         def initialize(user)
           @user = user
           raise Common::Exceptions::BackendServiceException, 'no ICN associated with user' if user.icn.blank?
+
+          super()
         end
-        # rubocop:enable Lint/MissingSuper
 
         def get_letters
           response = perform(:get, 'eligible-letters', params, headers)

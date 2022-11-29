@@ -17,7 +17,7 @@ module Mobile
                      evss_service.get_letters.letters
                    end
 
-        render json: Mobile::V0::LettersSerializer.new(@current_user.uuid, response)
+        render json: Mobile::V0::LettersSerializer.new(@current_user, response)
       end
 
       # returns options and info needed to create user form required for benefit letter download

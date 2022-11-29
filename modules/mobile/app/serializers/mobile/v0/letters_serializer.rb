@@ -8,8 +8,8 @@ module Mobile
       set_type :letters
       attributes :letters
 
-      def initialize(id, letters, options = {})
-        if Flipper.enabled?(:mobile_lighthouse_letters, @current_user)
+      def initialize(user, letters, options = {})
+        if Flipper.enabled?(:mobile_lighthouse_letters, user)
           letters = lighthouse_letters_serializer(letters)
         else
           letters = letters.map! do |letter|
@@ -20,7 +20,7 @@ module Mobile
             letter
           end
         end
-        resource = LettersStruct.new(id, letters)
+        resource = LettersStruct.new(user.uuid, letters)
 
         super(resource, options)
       end
