@@ -9,6 +9,7 @@ module Mobile
         # rubocop:disable Lint/MissingSuper
         def initialize(user)
           @user = user
+          raise Common::Exceptions::BackendServiceException, 'no ICN associated with user' if user&.icn.blank?
         end
         # rubocop:enable Lint/MissingSuper
 
