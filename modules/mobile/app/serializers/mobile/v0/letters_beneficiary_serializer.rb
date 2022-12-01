@@ -7,14 +7,18 @@ module Mobile
     class LettersBeneficiarySerializer
       include FastJsonapi::ObjectSerializer
 
-      set_type :evssLettersBeneficiaryResponses
+      set_type :LettersBeneficiaryResponses
       attributes :benefit_information, :military_service
 
-      def initialize(id, resource, options = {})
-        resource.military_service.each do |service_episode|
-          service_episode[:branch] = service_episode[:branch].titleize
+      def initialize(user, resource, options = {})
+        if Flipper.enabled?(:mobile_lighthouse_letters, user)
+          super(resource, options)
+        else
+          resource.military_service.each do |service_episode|
+            service_episode[:branch] = service_episode[:branch].titleize
+          end
         end
-        resource = LettersBeneficiaryStruct.new(id, resource.benefit_information, resource.military_service)
+        resource = LettersBeneficiaryStruct.new(user.uuid, resource.benefit_information, resource.military_service)
         super(resource, options)
       end
     end
