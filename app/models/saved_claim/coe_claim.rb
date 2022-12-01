@@ -87,6 +87,7 @@ class SavedClaim::CoeClaim < SavedClaim
   def relevant_prior_loans(form_copy)
     parsed_form['relevantPriorLoans'].each do |loan_info|
       property_zip, property_zip_suffix = loan_info['propertyAddress']['propertyZip'].split('-', 2)
+      loan_info['willRefinance'] ||= loan_info['intent'].include?(%w[REFI IRRRL])
       form_copy['relevantPriorLoans'] << {
         'vaLoanNumber' => loan_info['vaLoanNumber'].to_s,
         'startDate' => loan_info['dateRange']['from'],
@@ -96,6 +97,7 @@ class SavedClaim::CoeClaim < SavedClaim
         'propertyOwned' => loan_info['propertyOwned'] || false,
         'oneTimeRestorationRequested' => parsed_form['intent'] == 'ONETIMERESTORATION',
         'irrrlRequested' => parsed_form['intent'] == 'IRRRL',
+        # (sic)
         'cashoutRefinaceRequested' => parsed_form['intent'] == 'REFI',
         'noRestorationEntitlementIndicator' => parsed_form['intent'] == 'INQUIRY',
         # propertyOwned also maps to the the stillOwn indicator on the LGY side
@@ -108,7 +110,7 @@ class SavedClaim::CoeClaim < SavedClaim
         'propertyCounty' => '',
         'propertyZip' => property_zip,
         'propertyZipSuffix' => property_zip_suffix || '',
-        'willRefinance' => loan_info['willRefinance'] || loan_info['intent'] == 'REFI' || false
+        'willRefinance' => loan_info['willRefinance']
       }
     end
   end
