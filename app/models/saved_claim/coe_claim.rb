@@ -97,8 +97,7 @@ class SavedClaim::CoeClaim < SavedClaim
         'oneTimeRestorationRequested' => parsed_form['intent'] == 'ONETIMERESTORATION',
         'irrrlRequested' => parsed_form['intent'] == 'IRRRL',
         'cashoutRefinaceRequested' => parsed_form['intent'] == 'REFI',
-        'noRestorationEntitlementIndicator' => parsed_form['intent'] == 'INQUIRY' ||
-                                               parsed_form['intent'] == 'ONETIMERESTORATION',
+        'noRestorationEntitlementIndicator' => parsed_form['intent'] == 'INQUIRY',
         # propertyOwned also maps to the the stillOwn indicator on the LGY side
         'homeSellIndicator' => !loan_info['propertyOwned'] || false,
         'propertyAddress1' => loan_info['propertyAddress']['propertyAddress1'],
@@ -108,8 +107,8 @@ class SavedClaim::CoeClaim < SavedClaim
         # confirmed OK to omit propertyCounty, but LGY still requires a string
         'propertyCounty' => '',
         'propertyZip' => property_zip,
-        'propertyZipSuffix' => property_zip_suffix || ''
-        # 'willRefinance' => loan_info['propertyAddress']['willRefinance'] || false
+        'propertyZipSuffix' => property_zip_suffix || '',
+        'willRefinance' => loan_info['willRefinance'] || false
       }
     end
   end
