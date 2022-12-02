@@ -12,7 +12,7 @@ module Mobile
       # @return [String] the encoded token as JWT::Encode string
       #
       def token(api)
-        JWT.encode(claims(api), rsa_key, 'RS512')
+        JWT.encode(claims(api), rsa_key(api), 'RS512')
       end
 
       private
@@ -29,12 +29,15 @@ module Mobile
       end
 
       def aud_urls
-        { health: Settings.mobile_lighthouse.health.aud_claim_url,
-          letters: Settings.mobile_lighthouse.letters.aud_claim_url }
+        { health: Settings.lighthouse_health_immunization.audience_claim_url,
+          letters: Settings.mobile_lighthouse_letters.aud_claim_url }
       end
 
-      def rsa_key
-        OpenSSL::PKey::RSA.new(File.read(Settings.mobile_lighthouse.key_path))
+      def rsa_key(api)
+        key_paths = { health: Settings.lighthouse_health_immunization.key_path,
+                      letters: Settings.mobile_lighthouse_letters.key_path }
+
+        OpenSSL::PKey::RSA.new(File.read(key_paths[api]))
       end
     end
   end
