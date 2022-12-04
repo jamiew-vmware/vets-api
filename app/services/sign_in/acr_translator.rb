@@ -18,13 +18,13 @@ module SignIn
 
     def translate_acr
       case type
-      when 'idme'
+      when Constants::Auth::IDME
         translate_idme_values
-      when 'logingov'
+      when Constants::Auth::LOGINGOV
         translate_logingov_values
-      when 'dslogon'
+      when Constants::Auth::DSLOGON
         translate_dslogon_values
-      when 'mhv'
+      when Constants::Auth::MHV
         translate_mhv_values
       else
         raise Errors::InvalidTypeError, message: 'Invalid Type value'
@@ -55,10 +55,8 @@ module SignIn
 
     def translate_mhv_values
       case acr
-      when 'loa1', 'min'
+      when 'loa1', 'loa3', 'min'
         LOA::IDME_MHV_LOA1
-      when 'loa3'
-        uplevel ? LOA::IDME_MHV_LOA3 : LOA::IDME_MHV_LOA1
       else
         raise Errors::InvalidAcrError, message: 'Invalid ACR for mhv'
       end

@@ -2,9 +2,12 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Higher-Level Reviews",
-    "version": "v2",
+    "version": "v0",
+    "contact": {
+      "name": "developer.va.gov"
+    },
     "termsOfService": "https://developer.va.gov/terms-of-service",
-    "description": "\nThe Higher-Level Reviews API lets internal VA teams create and manage Higher-Level Reviews. Higher-Level Reviews can be requested after receiving an initial claim or a Supplemental Claims decision. [Learn more about VA Higher-Level Reviews](https://www.va.gov/decision-reviews/higher-level-review/).  \n\nTo check the status of all decision reviews and appeals for a specified individual, use the [Appeals Status API](https://developer.va.gov/explore/appeals/docs/appeals?version=current).\n\n## Technical overview\nThe Higher-Level Reviews API pulls data from Caseflow, a case management system. It provides decision review and appeal data that can be used for submitting a Higher-Level Review.\n\n### Authorization and Access\nTo gain access to the Higher-Level Reviews API you must [request an API Key](https://developer.va.gov/apply). API requests are authorized through a symmetric API token which is provided in an HTTP header named `apikey`.\n\nBecause this application is designed to let third-parties request information on behalf of a claimant, we are not using VA Authentication Federation Infrastructure (VAAFI) headers or Single Sign On External (SSOe).\n\n### Submission Statuses\nUse the correct GET endpoint to check the status of a Higher-Level Review submission. \n\nThese endpoints return the status of the submission in Caseflow but not the status of the submission in VBMS, which is the status visible to claimants. Therefore, VBMS statuses are different from the statuses this API returns. \n\nTo check the status of an appeal as it will appear to a claimant, use the [Appeals Status API](https://developer.va.gov/explore/appeals/docs/appeals?version=current).\n\n| Status      | What it means |\n| ---        |     ---     |\n| pending      | Submission successfully received by the API but has not yet started processing. |\n| submitting   | Data is transferring to upstream systems but is not yet complete. |\n| submitted   | A submitted status means the data was successfully transferred to the central mail portal.<br /><br />A submitted status is confirmation from the central mail portal that they have received the PDF, but the data is not yet being processed. The Date of Receipt is set when this status is achieved.<br /><br />Submitted is the final status in the sandbox environment.<p> |\n| processing   | Indicates intake has begun, the Intake, Conversion and Mail Handling Services (ICMHS) group is processing the appeal data. |\n| success   | The centralized mail portal, Digital Mail Handling System (DHMS), has received the data. |\n| complete   | Final status. Indicates the document package has been successfully associated with the Veteran and has been received in the correct business area for processing. Claim is now established in VBMS. |\n| error   | An error occurred. See the error code and message for further information. |\n\n#### Status simulation in sandbox and staging\n\nTest submissions do not progress through the same statuses as the production environment. In sandbox and staging, the final status of a submission is `submitted`; however, we allow passing a `Status-Simulation` header on the show endpoints so that you can simulate all production statuses.\n\n#### Status Caching\nDue to system limitations, status attribute data for the GET `/forms/200996/{uuid}` endpoint is cached for 1 hour. The updated_at field indicates the last time the status for a given GUID was updated.\n\n### [Terms of service](https://developer.va.gov/terms-of-service)\n"
+    "description": "The Higher-Level Reviews API lets internal VA teams create and manage Higher-Level Reviews. Higher-Level Reviews can be requested after receiving an initial claim or a Supplemental Claims decision. [Learn more about VA Higher-Level Reviews](https://www.va.gov/decision-reviews/higher-level-review/).  \n\nTo check the status of all decision reviews and appeals for a specified individual, use the [Appeals Status API](https://developer.va.gov/explore/appeals/docs/appeals?version=current).\n\n## Technical overview\nThe Higher-Level Reviews API pulls data from Caseflow, a case management system. It provides decision review and appeal data that can be used for submitting a Higher-Level Review.\n\n### Authorization and Access\nTo gain access to the Higher-Level Reviews API you must [request an API Key](https://developer.va.gov/apply). API requests are authorized through a symmetric API token which is provided in an HTTP header named `apikey`.\n\nBecause this application is designed to let third-parties request information on behalf of a claimant, we are not using VA Authentication Federation Infrastructure (VAAFI) headers or Single Sign On External (SSOe).\n\n### Submission Statuses\nUse the correct GET endpoint to check the status of a Higher-Level Review submission. \n\nThese endpoints return the status of the submission in Caseflow but not the status of the submission in VBMS, which is the status visible to claimants. Therefore, VBMS statuses are different from the statuses this API returns. \n\nTo check the status of an appeal as it will appear to a claimant, use the [Appeals Status API](https://developer.va.gov/explore/appeals/docs/appeals?version=current).\n\n| Status      | What it means |\n| ---        |     ---     |\n| pending      | Submission successfully received by the API but has not yet started processing. |\n| submitting   | Data is transferring to upstream systems but is not yet complete. |\n| submitted   | A submitted status means the data was successfully transferred to the central mail portal.<br /><br />A submitted status is confirmation from the central mail portal that they have received the PDF, but the data is not yet being processed. The Date of Receipt is set when this status is achieved.<br /><br />Submitted is the final status in the sandbox environment.<p> |\n| processing   | Indicates intake has begun, the Intake, Conversion and Mail Handling Services (ICMHS) group is processing the appeal data. |\n| success   | The centralized mail portal, Digital Mail Handling System (DHMS), has received the data. |\n| complete   | Final status. Indicates the document package has been successfully associated with the Veteran and has been received in the correct business area for processing. Claim is now established in VBMS. |\n| error   | An error occurred. See the error code and message for further information. |\n\n#### Status simulation in sandbox and staging\n\nTest submissions do not progress through the same statuses as the production environment. In sandbox and staging, the final status of a submission is `submitted`; however, we allow passing a `Status-Simulation` header on the show endpoints so that you can simulate all production statuses.\n\n#### Status Caching\nDue to system limitations, status attribute data for the GET `/forms/200996/{uuid}` endpoint is cached for 1 hour. The updated_at field indicates the last time the status for a given GUID was updated.\n\n### [Terms of service](https://developer.va.gov/terms-of-service)\n"
   },
   "tags": [
     {
@@ -26,6 +29,21 @@
             "apikey": [
 
             ]
+          },
+          {
+            "productionOauth": [
+              "claim.write"
+            ]
+          },
+          {
+            "sandboxOauth": [
+              "claim.write"
+            ]
+          },
+          {
+            "bearer_token": [
+
+            ]
           }
         ],
         "parameters": [
@@ -36,7 +54,7 @@
             "description": "Veteran's SSN",
             "example": "706547821",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-SSN"
             }
           },
           {
@@ -46,7 +64,7 @@
             "description": "Veteran's first name",
             "example": "Cara",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-First-Name"
             }
           },
           {
@@ -55,7 +73,7 @@
             "required": false,
             "description": "Veteran's middle initial",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Middle-Initial"
             }
           },
           {
@@ -65,7 +83,7 @@
             "description": "Veteran's last name",
             "example": "Bartlett",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Last-Name"
             }
           },
           {
@@ -75,7 +93,7 @@
             "description": "Veteran's birth date",
             "example": "1975-02-14",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Birth-Date"
             }
           },
           {
@@ -84,7 +102,7 @@
             "required": false,
             "description": "Veteran's file number",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-File-Number"
             }
           },
           {
@@ -93,7 +111,7 @@
             "required": false,
             "description": "Veteran's insurance policy number",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Insurance-Policy-Number"
             }
           },
           {
@@ -102,7 +120,7 @@
             "required": false,
             "description": "Non-Veteran claimant's first name",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-First-Name"
             }
           },
           {
@@ -111,7 +129,7 @@
             "required": false,
             "description": "Non-Veteran claimant's middle initial",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-Middle-Initial"
             }
           },
           {
@@ -120,7 +138,7 @@
             "required": false,
             "description": "Non-Veteran claimant's last name",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-Last-Name"
             }
           },
           {
@@ -129,7 +147,7 @@
             "required": false,
             "description": "Non-Veteran claimant's SSN",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-SSN"
             }
           },
           {
@@ -138,25 +156,7 @@
             "required": false,
             "description": "Non-Veteran claimant's Birth Date",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Consumer-Username",
-            "required": false,
-            "description": "Consumer User Name (passed from Kong)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Consumer-ID",
-            "required": false,
-            "description": "Consumer GUID",
-            "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-Birth-Date"
             }
           }
         ],
@@ -443,6 +443,26 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "title": "Internal server error",
+                      "detail": "Internal server error",
+                      "code": "500",
+                      "status": "500"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/errorModel"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -692,6 +712,21 @@
             "apikey": [
 
             ]
+          },
+          {
+            "productionOauth": [
+              "claim.read"
+            ]
+          },
+          {
+            "sandboxOauth": [
+              "claim.read"
+            ]
+          },
+          {
+            "bearer_token": [
+
+            ]
           }
         ],
         "parameters": [
@@ -699,8 +734,8 @@
             "name": "uuid",
             "in": "path",
             "description": "Higher-Level Review UUID",
-            "required": true,
             "example": "44e08764-6008-46e8-a95e-eb21951a5b68",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -735,34 +770,35 @@
                 "example": {
                   "errors": [
                     {
-                      "status": 404,
-                      "detail": "HigherLevelReview with uuid \"invalid\" not found."
+                      "code": "404",
+                      "detail": "HigherLevelReview with uuid invalid not found",
+                      "status": "404",
+                      "title": "Record not found"
                     }
                   ]
                 },
                 "schema": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "errors": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "status": {
-                              "type": "integer",
-                              "enum": [
-                                404
-                              ]
-                            },
-                            "detail": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
+                  "$ref": "#/components/schemas/errorModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "title": "Internal server error",
+                      "detail": "Internal server error",
+                      "code": "500",
+                      "status": "500"
                     }
-                  }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/errorModel"
                 }
               }
             }
@@ -776,10 +812,26 @@
         "tags": [
           "Higher-Level Reviews"
         ],
+        "operationId": "hlrSchema",
         "description": "Returns the [JSON Schema](https://json-schema.org) related to the `POST /forms/200996` endpoint",
         "security": [
           {
             "apikey": [
+
+            ]
+          },
+          {
+            "productionOauth": [
+              "claim.read"
+            ]
+          },
+          {
+            "sandboxOauth": [
+              "claim.read"
+            ]
+          },
+          {
+            "bearer_token": [
 
             ]
           }
@@ -1998,44 +2050,49 @@
             "content": {
               "application/json": {
                 "example": {
-                  "title": "not_found",
-                  "detail": "The 'invalid_schema_type' request parameter is invalid",
-                  "code": "InvalidSchemaType",
-                  "status": "404",
-                  "source": {
-                    "parameter": "invalid_schema_type"
-                  },
-                  "meta": [
-                    "200996",
-                    "address",
-                    "non_blank_string",
-                    "phone",
-                    "timezone"
+                  "errors": [
+                    {
+                      "title": "not_found",
+                      "detail": "The 'invalid_schema_type' request parameter is invalid",
+                      "code": "InvalidSchemaType",
+                      "status": "404",
+                      "source": {
+                        "parameter": "invalid_schema_type"
+                      },
+                      "meta": {
+                        "available_options": [
+                          "200996",
+                          "address",
+                          "non_blank_string",
+                          "phone",
+                          "timezone"
+                        ]
+                      }
+                    }
                   ]
                 },
                 "schema": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "errors": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "status": {
-                              "type": "integer",
-                              "enum": [
-                                404
-                              ]
-                            },
-                            "detail": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
+                  "$ref": "#/components/schemas/errorModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "title": "Internal server error",
+                      "detail": "Internal server error",
+                      "code": "500",
+                      "status": "500"
                     }
-                  }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/errorModel"
                 }
               }
             }
@@ -2056,6 +2113,21 @@
             "apikey": [
 
             ]
+          },
+          {
+            "productionOauth": [
+              "claim.write"
+            ]
+          },
+          {
+            "sandboxOauth": [
+              "claim.write"
+            ]
+          },
+          {
+            "bearer_token": [
+
+            ]
           }
         ],
         "parameters": [
@@ -2066,7 +2138,7 @@
             "description": "Veteran's SSN",
             "example": "706547821",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-SSN"
             }
           },
           {
@@ -2076,7 +2148,7 @@
             "description": "Veteran's first name",
             "example": "Cara",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-First-Name"
             }
           },
           {
@@ -2085,7 +2157,7 @@
             "required": false,
             "description": "Veteran's middle initial",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Middle-Initial"
             }
           },
           {
@@ -2095,7 +2167,7 @@
             "description": "Veteran's last name",
             "example": "Bartlett",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Last-Name"
             }
           },
           {
@@ -2105,7 +2177,7 @@
             "description": "Veteran's birth date",
             "example": "1975-02-14",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Birth-Date"
             }
           },
           {
@@ -2114,7 +2186,7 @@
             "required": false,
             "description": "Veteran's file number",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-File-Number"
             }
           },
           {
@@ -2123,7 +2195,7 @@
             "required": false,
             "description": "Veteran's insurance policy number",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-Insurance-Policy-Number"
             }
           },
           {
@@ -2132,7 +2204,7 @@
             "required": false,
             "description": "Non-Veteran claimant's first name",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-First-Name"
             }
           },
           {
@@ -2141,7 +2213,7 @@
             "required": false,
             "description": "Non-Veteran claimant's middle initial",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-Middle-Initial"
             }
           },
           {
@@ -2150,7 +2222,7 @@
             "required": false,
             "description": "Non-Veteran claimant's last name",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-Last-Name"
             }
           },
           {
@@ -2159,7 +2231,7 @@
             "required": false,
             "description": "Non-Veteran claimant's SSN",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-SSN"
             }
           },
           {
@@ -2168,25 +2240,7 @@
             "required": false,
             "description": "Non-Veteran claimant's Birth Date",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Consumer-Username",
-            "required": false,
-            "description": "Consumer User Name (passed from Kong)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Consumer-ID",
-            "required": false,
-            "description": "Consumer GUID",
-            "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/X-VA-NonVeteranClaimant-Birth-Date"
             }
           }
         ],
@@ -2218,27 +2272,25 @@
                   }
                 },
                 "schema": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "higherLevelReviewValidation"
-                            ]
-                          },
-                          "attributes": {
-                            "type": "object",
-                            "properties": {
-                              "status": {
-                                "type": "string",
-                                "enum": [
-                                  "valid"
-                                ]
-                              }
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "higherLevelReviewValidation"
+                          ]
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "valid"
+                              ]
                             }
                           }
                         }
@@ -2278,54 +2330,37 @@
                     "value": {
                       "errors": [
                         {
-                          "status": 422,
+                          "code": "109",
                           "detail": "The request body isn't a JSON object",
-                          "source": null
+                          "status": "422",
+                          "title": "Validation error"
                         }
                       ]
                     }
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/errorModel",
-                  "required": [
-                    "errors"
-                  ],
-                  "properties": {
-                    "errors": {
-                      "type": "array",
-                      "items": {
-                        "additionalProperties": false,
-                        "required": [
-                          "detail",
-                          "source",
-                          "status"
-                        ],
-                        "properties": {
-                          "detail": {
-                            "type": "string",
-                            "description": "HTTP error detail",
-                            "enum": [
-                              "The request body isn't a JSON object"
-                            ]
-                          },
-                          "source": {
-                            "type": "null",
-                            "enum": [
-                              null
-                            ]
-                          },
-                          "status": {
-                            "enum": [
-                              422
-                            ],
-                            "type": "integer",
-                            "description": "HTTP error code"
-                          }
-                        }
-                      }
+                  "$ref": "#/components/schemas/errorModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "title": "Internal server error",
+                      "detail": "Internal server error",
+                      "code": "500",
+                      "status": "500"
                     }
-                  }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/errorModel"
                 }
               }
             }
@@ -2572,6 +2607,39 @@
         "type": "apiKey",
         "name": "apikey",
         "in": "header"
+      },
+      "bearer_token": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "productionOauth": {
+        "type": "oauth2",
+        "description": "This API uses OAuth 2 with the authorization code grant flow. [More info](https://developer.va.gov/explore/authorization?api=claims)",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.va.gov/oauth2/authorization",
+            "tokenUrl": "https://api.va.gov/oauth2/token",
+            "scopes": {
+              "claim.read": "Retrieve claim data",
+              "claim.write": "Submit claim data"
+            }
+          }
+        }
+      },
+      "sandboxOauth": {
+        "type": "oauth2",
+        "description": "This API uses OAuth 2 with the authorization code grant flow. [More info](https://developer.va.gov/explore/authorization?api=claims)",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://sandbox-api.va.gov/oauth2/authorization",
+            "tokenUrl": "https://sandbox-api.va.gov/oauth2/token",
+            "scopes": {
+              "claim.read": "Retrieve claim data",
+              "claim.write": "Submit claim data"
+            }
+          }
+        }
       }
     },
     "schemas": {
@@ -2691,145 +2759,6 @@
           "zipCode5"
         ]
       },
-      "contestableIssue": {
-        "type": "object",
-        "description": "A contestable issue (to contest this, you include it as a RequestIssue when creating a HigherLevelReview, SupplementalClaim, or Appeal)",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "contestableIssue"
-            ]
-          },
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "attributes": {
-            "type": "object",
-            "properties": {
-              "ratingIssueReferenceId": {
-                "type": "string",
-                "nullable": true,
-                "description": "RatingIssue ID",
-                "example": "2385"
-              },
-              "ratingIssueProfileDate": {
-                "type": "string",
-                "nullable": true,
-                "format": "date",
-                "description": "(yyyy-mm-dd) RatingIssue profile date",
-                "example": "2006-05-31"
-              },
-              "ratingIssueDiagnosticCode": {
-                "type": "string",
-                "nullable": true,
-                "description": "RatingIssue diagnostic code",
-                "example": "5005"
-              },
-              "ratingDecisionReferenceId": {
-                "type": "string",
-                "nullable": true,
-                "description": "The BGS ID for the contested rating decision. This may be populated while ratingIssueReferenceId is nil",
-                "example": null
-              },
-              "decisionIssueId": {
-                "type": "integer",
-                "nullable": true,
-                "description": "DecisionIssue ID",
-                "example": null
-              },
-              "approxDecisionDate": {
-                "type": "string",
-                "nullable": true,
-                "format": "date",
-                "description": "(yyyy-mm-dd) Approximate decision date",
-                "example": "2006-11-27"
-              },
-              "description": {
-                "type": "string",
-                "nullable": true,
-                "description": "Description",
-                "example": "Service connection for hypertension is granted with an evaluation of 10 percent effective July 24, 2005."
-              },
-              "rampClaimId": {
-                "type": "string",
-                "nullable": true,
-                "description": "RampClaim ID",
-                "example": null
-              },
-              "titleOfActiveReview": {
-                "type": "string",
-                "nullable": true,
-                "description": "Title of DecisionReview that this issue is still active on",
-                "example": null
-              },
-              "sourceReviewType": {
-                "type": "string",
-                "nullable": true,
-                "description": "The type of DecisionReview (HigherLevelReview, SupplementalClaim, Appeal) the issue was last decided on (if any)",
-                "example": null
-              },
-              "timely": {
-                "type": "boolean",
-                "description": "An issue is timely if the receipt date is within 372 dates of the decision date.",
-                "example": false
-              },
-              "latestIssuesInChain": {
-                "type": "array",
-                "description": "Shows the chain of decision and rating issues that preceded this issue. Only the most recent issue can be contested (the object itself that contains the latestIssuesInChain attribute).",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": [
-                        "integer",
-                        "string"
-                      ],
-                      "nullable": true,
-                      "example": null
-                    },
-                    "approxDecisionDate": {
-                      "type": "string",
-                      "nullable": true,
-                      "format": "date",
-                      "example": "2006-11-27"
-                    }
-                  }
-                }
-              },
-              "ratingIssueSubjectText": {
-                "type": "string",
-                "nullable": true,
-                "description": "Short description of RatingIssue",
-                "example": "Hypertension"
-              },
-              "ratingIssuePercentNumber": {
-                "type": "string",
-                "nullable": true,
-                "description": "Numerical rating for RatingIssue",
-                "example": "10"
-              },
-              "isRating": {
-                "type": "boolean",
-                "description": "Whether or not this is a RatingIssue",
-                "example": true
-              }
-            }
-          }
-        }
-      },
-      "contestableIssues": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/contestableIssue"
-            }
-          }
-        }
-      },
       "errorModel": {
         "required": [
           "errors"
@@ -2840,10 +2769,7 @@
             "items": {
               "additionalProperties": false,
               "required": [
-                "title",
-                "detail",
-                "code",
-                "status"
+                "title"
               ],
               "properties": {
                 "title": {
@@ -2866,6 +2792,14 @@
                     "pointer": {
                       "type": "string",
                       "description": "Pointer to source of error"
+                    },
+                    "parameter": {
+                      "type": "string",
+                      "description": "Invalid request parameter"
+                    },
+                    "header": {
+                      "type": "string",
+                      "description": "Invalid header"
                     }
                   }
                 },
@@ -2887,20 +2821,6 @@
                   }
                 }
               }
-            }
-          }
-        }
-      },
-      "errorWithTitleAndDetail": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "title": {
-              "type": "string"
-            },
-            "detail": {
-              "type": "string"
             }
           }
         }
@@ -3232,10 +3152,6 @@
           "areaCode",
           "phoneNumber"
         ]
-      },
-      "timeStamp": {
-        "type": "string",
-        "pattern": "\\d{4}(-\\d{2}){2}T\\d{2}(:\\d{2}){2}\\.\\d{3}Z"
       },
       "timezone": {
         "type": "string",
@@ -3989,26 +3905,6 @@
         "type": "string",
         "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
       },
-      "X-Consumer-ID": {
-        "allOf": [
-          {
-            "description": "Consumer GUID"
-          },
-          {
-            "$ref": "#/components/schemas/non_blank_string"
-          }
-        ]
-      },
-      "X-Consumer-Username": {
-        "allOf": [
-          {
-            "description": "Consumer Username (passed from Kong)"
-          },
-          {
-            "$ref": "#/components/schemas/non_blank_string"
-          }
-        ]
-      },
       "X-VA-Birth-Date": {
         "description": "Veteran's birth date",
         "type": "string",
@@ -4034,6 +3930,17 @@
           },
           {
             "type": "string"
+          }
+        ]
+      },
+      "X-VA-Insurance-Policy-Number": {
+        "allOf": [
+          {
+            "description": "Veteran's insurance policy number",
+            "maxLength": 18
+          },
+          {
+            "$ref": "#/components/schemas/non_blank_string"
           }
         ]
       },
@@ -4093,10 +4000,8 @@
         ]
       },
       "X-VA-NonVeteranClaimant-SSN": {
-        "description": "social security number",
         "type": "string",
-        "minLength": 9,
-        "maxLength": 9,
+        "description": "Non-Veteran claimants's SSN",
         "pattern": "^[0-9]{9}$"
       },
       "X-VA-SSN": {
@@ -4114,7 +4019,7 @@
       "description": "VA.gov API sandbox environment",
       "variables": {
         "version": {
-          "default": "v2"
+          "default": "v0"
         }
       }
     },
@@ -4123,7 +4028,7 @@
       "description": "VA.gov API production environment",
       "variables": {
         "version": {
-          "default": "v2"
+          "default": "v0"
         }
       }
     }

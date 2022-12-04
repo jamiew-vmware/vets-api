@@ -164,8 +164,8 @@ class User < Common::RedisStore
     ssn&.gsub(/[^\d]/, '')
   end
 
-  def zip
-    identity&.zip || mpi&.profile&.address&.postal_code
+  def postal_code
+    identity&.postal_code || mpi&.profile&.address&.postal_code
   end
 
   # MPI getter methods
@@ -242,10 +242,6 @@ class User < Common::RedisStore
     mpi_profile&.normalized_suffix
   end
 
-  def person_types
-    identity_person_types.presence || mpi_person_types
-  end
-
   def ssn_mpi
     mpi_profile&.ssn
   end
@@ -292,7 +288,6 @@ class User < Common::RedisStore
   delegate :idme_uuid, to: :identity, allow_nil: true
   delegate :logingov_uuid, to: :identity, allow_nil: true
   delegate :verified_at, to: :identity, allow_nil: true
-  delegate :person_types, to: :identity, allow_nil: true, prefix: true
   delegate :sign_in, to: :identity, allow_nil: true, prefix: true
 
   # mpi attributes
@@ -306,7 +301,7 @@ class User < Common::RedisStore
   delegate :icn_with_aaid, to: :mpi
   delegate :vet360_id, to: :mpi
   delegate :search_token, to: :mpi
-  delegate :person_types, to: :mpi, prefix: true
+  delegate :person_types, to: :mpi
   delegate :id_theft_flag, to: :mpi
   delegate :status, to: :mpi, prefix: true
   delegate :error, to: :mpi, prefix: true
@@ -372,7 +367,9 @@ class User < Common::RedisStore
   end
 
   def mhv_account
-    @mhv_account ||= MHVAccount.find_or_initialize_by(user_uuid: uuid, mhv_correlation_id: mhv_correlation_id)
+    @mhv_account ||= MHVAccount.find_or_initialize_by(user_uuid: uuid,
+                                                      mhv_correlation_id: mhv_correlation_id,
+                                                      user_account: user_account)
                                .tap { |m| m.user = self } # MHV account should not re-initialize use
   end
 

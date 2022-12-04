@@ -24,14 +24,36 @@ module DocHelpers
     data
   end
 
+  # NOTE: you must set `let(:Authorization) { 'Bearer <any-value-here>' }` in combination with this helper
+  def with_rswag_auth(scopes = %w[], valid: true, &block)
+    if DocHelpers.decision_reviews?
+      block.call
+    else
+      with_openid_auth(scopes, valid: valid) do |auth_header|
+        block.call(auth_header)
+      end
+    end
+  end
+
+  def self.security_config(oauth_scopes = [])
+    config = [{ apikey: [] }]
+    return config if DocHelpers.decision_reviews?
+
+    config + [{ productionOauth: oauth_scopes }, { sandboxOauth: oauth_scopes }, { bearer_token: [] }]
+  end
+
   # @param [Hash] opts
   # @option opts [String] :desc The description of the test. Required.
   # @option opts [Symbol] :response_wrapper Method name to wrap the response, to modify the output of the example
   # @option opts [Boolean] :extract_desc Whether to use the example name
   # @option opts [Boolean] :skip_match Whether to skip the match metadata assertion
+  # @option opts [Array<String>] :scopes OAuth scopes to use when making the request, if any
+  # @option opts [Boolean] :token_valid Whether the OAuth token (if any) should be recognized as valid
   shared_examples 'rswag example' do |opts|
     before do |example|
-      submit_request(example.metadata)
+      with_rswag_auth(opts[:scopes], valid: opts.fetch(:token_valid, true)) do
+        submit_request(example.metadata)
+      end
     end
 
     it opts[:desc] do |example|
@@ -57,6 +79,25 @@ module DocHelpers
     end
   end
 
+  shared_examples 'rswag 500 response' do
+    response '500', 'Internal Server Error' do
+      schema '$ref' => '#/components/schemas/errorModel'
+
+      after do |example|
+        example.metadata[:response][:content] = {
+          'application/json' => { example: { errors: [{ title: 'Internal server error',
+                                                        detail: 'Internal server error',
+                                                        code: '500',
+                                                        status: '500' }] } }
+        }
+      end
+
+      it 'returns a 500 response' do
+        # No-Op
+      end
+    end
+  end
+
   def self.wip_doc_enabled?(sym, require_env_slug = false) # rubocop:disable Style/OptionalBooleanParameter
     # Only block doc generation if we still flag it as a WIP
     return true unless Settings.modules_appeals_api.documentation.wip_docs&.include?(sym.to_s)
@@ -67,7 +108,7 @@ module DocHelpers
     return false if enabled_docs.blank?
 
     if require_env_slug
-      enabled_docs.include?(sym) && ENV.key?('RSWAG_SECTION_SLUG')
+      enabled_docs.include?(sym) && ENV.key?('API_NAME')
     else
       enabled_docs.include?(sym)
     end

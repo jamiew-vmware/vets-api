@@ -166,7 +166,7 @@ edu:
       - PIERRE.BROWN@va.gov
       - VAVBAHIN/TIMS@vba.va.gov
       - EDUAPPMGMT.VBACO@VA.GOV
-      - abelardo.blanco@va.gov
+      - vfep_support_team@va.gov
       - eugenia.gina.ronat@accenturefederal.com
       - morgan.whaley@accenturefederal.com
       - m.c.shah@accenturefederal.com
@@ -236,10 +236,14 @@ mdot:
 
 # Settings for Decision Reviews
 decision_review:
+  benchmark_performance: true
   prefill: true
   url: https://sandbox-api.va.gov/services/appeals/v1/decision_reviews
   api_key: abcd1234abcd1234abcd1234abcd1234abcd1234
   mock: false
+  pdf_validation:
+    enabled: true
+    url: https://sandbox-api.va.gov/services/vba_documents/v1
   s3:
     aws_access_key_id: ~
     aws_secret_access_key: ~
@@ -668,7 +672,7 @@ reports:
       - Lucas.Tickner@va.gov
       - Ricardo.DaSilva@va.gov
       - tammy.hurley1@va.gov
-      - abelardo.blanco@va.gov
+      - vfep_support_team@va.gov
       - eugenia.gina.ronat@accenturefederal.com
       - morgan.whaley@accenturefederal.com
       - m.c.shah@accenturefederal.com
@@ -698,7 +702,7 @@ reports:
       - Lucas.Tickner@va.gov
       - Ricardo.DaSilva@va.gov
       - tammy.hurley1@va.gov
-      - abelardo.blanco@va.gov
+      - vfep_support_team@va.gov
       - eugenia.gina.ronat@accenturefederal.com
       - morgan.whaley@accenturefederal.com
       - m.c.shah@accenturefederal.com
@@ -739,7 +743,7 @@ reports:
       - robyn.noles@va.gov
       - Ricardo.DaSilva@va.gov
       - tammy.hurley1@va.gov
-      - abelardo.blanco@va.gov
+      - vfep_support_team@va.gov
       - eugenia.gina.ronat@accenturefederal.com
       - morgan.whaley@accenturefederal.com
       - m.c.shah@accenturefederal.com
@@ -957,7 +961,7 @@ flipper:
     - zmorel@governmentcio.com
     - kha.huynh@thoughtworks.com # Virtual Agent
     - zach.morel@gcio.com
-    - abelardo.blanco@va.gov
+    - vfep_support_team@va.gov
     - eugenia.gina.ronat@accenturefederal.com
     - m.c.shah@accenturefederal.com
     - mrmanishs@gmail.com
@@ -1145,8 +1149,7 @@ covid_vaccine:
       password: fake_password
 
 virtual_agent:
-  webchat_secret_a: fake_secret_a
-  webchat_secret_b: fake_secret_b
+  webchat_secret: fake_secret
   lighthouse_api_uri: https://sandbox-api.va.gov/services/appeals/v0/appeals
   lighthouse_api_key: fake_api_key
   cxdw_client_secret: fake_secret
@@ -1166,6 +1169,7 @@ vanotify:
         ch31_vbms_form_confirmation_email: ch31_vbms_fake_template_id
         ch31_central_mail_form_confirmation_email: ch31_central_mail_fake_template_id
         career_counseling_confirmation_email: career_counseling_confirmation_email_template_id
+        preneeds_burial_form_email: preneeds_burial_form_email_template_id
         contact_info_change: fake_template_id
         form526_confirmation_email: fake_template_id
         form526_submission_failed_email: fake_template_id

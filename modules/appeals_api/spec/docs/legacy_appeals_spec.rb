@@ -10,12 +10,14 @@ require AppealsApi::Engine.root.join('spec', 'spec_helper.rb')
 describe 'Legacy Appeals', swagger_doc: DocHelpers.output_json_path, type: :request do
   include DocHelpers
   let(:apikey) { 'apikey' }
+  let(:Authorization) { 'Bearer TEST_TOKEN' }
 
   path '/legacy_appeals' do
     get 'Returns eligible appeals in the legacy process for a Veteran.' do
+      scopes = %w[claim.read]
       tags 'Legacy Appeals'
       operationId 'getLegacyAppeals'
-      security [{ apikey: [] }]
+      security DocHelpers.security_config(scopes)
       consumes 'application/json'
       produces 'application/json'
       description = 'Returns eligible legacy appeals for a Veteran. A legacy appeal is eligible if a statement of ' \
@@ -38,7 +40,9 @@ describe 'Legacy Appeals', swagger_doc: DocHelpers.output_json_path, type: :requ
 
         before do |example|
           VCR.use_cassette('caseflow/legacy_appeals_get_by_ssn') do
-            submit_request(example.metadata)
+            with_rswag_auth(scopes) do
+              submit_request(example.metadata)
+            end
           end
         end
 
@@ -58,13 +62,13 @@ describe 'Legacy Appeals', swagger_doc: DocHelpers.output_json_path, type: :requ
       response '404', 'Veteran record not found' do
         let(:'X-VA-SSN') { '234840293' }
 
-        schema JSON.parse(
-          File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'errors', '404.json'))
-        )
+        schema '$ref' => '#/components/schemas/errorModel'
 
         before do |example|
           VCR.use_cassette('caseflow/legacy_appeals_no_veteran_record') do
-            submit_request(example.metadata)
+            with_rswag_auth(scopes) do
+              submit_request(example.metadata)
+            end
           end
         end
 
@@ -89,7 +93,9 @@ describe 'Legacy Appeals', swagger_doc: DocHelpers.output_json_path, type: :requ
           schema '$ref' => '#/components/schemas/errorModel'
 
           before do |example|
-            submit_request(example.metadata)
+            with_rswag_auth(scopes) do
+              submit_request(example.metadata)
+            end
           end
 
           after do |example|
@@ -115,7 +121,9 @@ describe 'Legacy Appeals', swagger_doc: DocHelpers.output_json_path, type: :requ
           schema '$ref' => '#/components/schemas/errorModel'
 
           before do |example|
-            submit_request(example.metadata)
+            with_rswag_auth(scopes) do
+              submit_request(example.metadata)
+            end
           end
 
           after do |example|
@@ -135,6 +143,8 @@ describe 'Legacy Appeals', swagger_doc: DocHelpers.output_json_path, type: :requ
           end
         end
       end
+
+      it_behaves_like 'rswag 500 response'
 
       response '502', 'Unknown Error' do
         let(:'X-VA-SSN') { nil }
@@ -167,10 +177,12 @@ describe 'Legacy Appeals', swagger_doc: DocHelpers.output_json_path, type: :requ
                }
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
-        it 'returns a 500 response' do |example|
+        it 'returns a 502 response' do |example|
           # NOOP
         end
       end

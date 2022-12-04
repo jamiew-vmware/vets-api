@@ -13,6 +13,7 @@ class AppealsApi::RswagConfig
         info: {
           title: DocHelpers.api_title,
           version: DocHelpers.api_version,
+          contact: { name: 'developer.va.gov' },
           termsOfService: 'https://developer.va.gov/terms-of-service',
           description: File.read(DocHelpers.api_description_file_path)
         },
@@ -21,13 +22,7 @@ class AppealsApi::RswagConfig
         # basePath helps with rswag runs, but is not valid OAS v3. rswag.rake removes it from the output file.
         basePath: DocHelpers.api_base_path,
         components: {
-          securitySchemes: {
-            apikey: {
-              type: :apiKey,
-              name: :apikey,
-              in: :header
-            }
-          },
+          securitySchemes: security_schemes,
           schemas: schemas(DocHelpers.api_name)
         },
         servers: [
@@ -56,44 +51,99 @@ class AppealsApi::RswagConfig
 
   private
 
+  def security_schemes
+    schemes = {
+      apikey: {
+        type: :apiKey,
+        name: :apikey,
+        in: :header
+      }
+    }
+
+    return schemes if DocHelpers.decision_reviews?
+
+    schemes.merge(
+      {
+        bearer_token: {
+          type: :http,
+          scheme: :bearer,
+          bearerFormat: :JWT
+        },
+        productionOauth: {
+          type: :oauth2,
+          description: 'This API uses OAuth 2 with the authorization code grant flow. [More info](https://developer.va.gov/explore/authorization?api=claims)',
+          flows: {
+            authorizationCode: {
+              authorizationUrl: 'https://api.va.gov/oauth2/authorization',
+              tokenUrl: 'https://api.va.gov/oauth2/token',
+              scopes: {
+                'claim.read': 'Retrieve claim data',
+                'claim.write': 'Submit claim data'
+              }
+            }
+          }
+        },
+        sandboxOauth: {
+          type: :oauth2,
+          description: 'This API uses OAuth 2 with the authorization code grant flow. [More info](https://developer.va.gov/explore/authorization?api=claims)',
+          flows: {
+            authorizationCode: {
+              authorizationUrl: 'https://sandbox-api.va.gov/oauth2/authorization',
+              tokenUrl: 'https://sandbox-api.va.gov/oauth2/token',
+              scopes: {
+                'claim.read': 'Retrieve claim data',
+                'claim.write': 'Submit claim data'
+              }
+            }
+          }
+        }
+      }
+    )
+  end
+
   def schemas(api_name = nil)
     a = []
     case api_name
     when 'higher_level_reviews'
       a << hlr_v2_create_schemas
       a << hlr_v2_response_schemas('#/components/schemas')
-      a << contestable_issues_schema('#/components/schemas')
-      a << generic_schemas('#/components/schemas')
-      a << {
-        'X-VA-NonVeteranClaimant-SSN': {
-          'description': 'social security number',
-          'type': 'string',
-          'minLength': 9,
-          'maxLength': 9,
-          'pattern': '^[0-9]{9}$'
-        }
-      }
+      a << generic_schemas('#/components/schemas').except(
+        *%i[
+          errorWithTitleAndDetail timeStamp X-Consumer-Username X-Consumer-ID
+        ]
+      )
       a << shared_schemas
     when 'notice_of_disagreements'
       a << nod_v2_create_schemas
       a << nod_v2_response_schemas('#/components/schemas')
-      a << contestable_issues_schema('#/components/schemas')
-      a << generic_schemas('#/components/schemas')
-      a << shared_schemas
+      a << contestable_issues_schema('#/components/schemas').slice(*%i[contestableIssue])
+      a << generic_schemas('#/components/schemas').except(
+        *%i[
+          errorWithTitleAndDetail timeStamp X-Consumer-ID X-Consumer-Username X-VA-Insurance-Policy-Number
+          X-VA-NonVeteranClaimant-SSN X-VA-SSN
+        ]
+      )
+      a << shared_schemas.slice(*%I[address phone timezone #{nbs_key}])
     when 'supplemental_claims'
       a << sc_create_schemas
       a << sc_response_schemas('#/components/schemas')
-      a << contestable_issues_schema('#/components/schemas')
-      a << generic_schemas('#/components/schemas')
-      a << shared_schemas
+      a << sc_alternate_signer_schemas('#/components/schemas')
+      a << contestable_issues_schema('#/components/schemas').slice(*%i[contestableIssue])
+      a << generic_schemas('#/components/schemas').except(
+        *%i[
+          errorWithTitleAndDetail timeStamp uuid X-Consumer-ID X-Consumer-Username X-VA-NonVeteranClaimant-SSN
+          X-VA-NonVeteranClaimant-Birth-Date
+        ]
+      )
+      a << shared_schemas.slice(*%I[address phone timezone #{nbs_key}])
     when 'contestable_issues'
       a << contestable_issues_schema('#/components/schemas')
-      a << generic_schemas('#/components/schemas').slice(*%i[errorModel errorWithTitleAndDetail X-VA-SSN X-VA-File-Number])
-      a << shared_schemas.slice(*%i[non_blank_string])
+      a << generic_schemas('#/components/schemas').slice(*%i[errorModel X-VA-SSN X-VA-File-Number])
+      a << shared_schemas.slice(*%I[#{nbs_key}])
     when 'legacy_appeals'
       a << legacy_appeals_schema('#/components/schemas')
-      a << generic_schemas('#/components/schemas').slice(*%i[errorModel errorWithTitleAndDetail X-VA-SSN X-VA-File-Number])
-      a << shared_schemas.slice(*%i[non_blank_string])
+      a << generic_schemas('#/components/schemas').slice(*%i[errorModel X-VA-SSN X-VA-File-Number])
+      a << shared_schemas.slice(*%I[#{nbs_key}])
     when nil
       a << hlr_v2_create_schemas
       a << hlr_v2_response_schemas('#/components/schemas')
@@ -112,7 +162,7 @@ class AppealsApi::RswagConfig
   end
 
   def generic_schemas(ref_root)
-    nbs_ref = DocHelpers.wip_doc_enabled?(:segmented_apis, true) ? "#{ref_root}/non_blank_string" : "#{ref_root}/nonBlankString"
+    nbs_ref = "#{ref_root}/#{nbs_key}"
 
     schemas = {
       'errorModel': JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'errors', 'default.json'))),
@@ -160,6 +210,11 @@ class AppealsApi::RswagConfig
         'type': 'string',
         'format': 'date'
       },
+      'X-VA-NonVeteranClaimant-SSN': {
+        'type': 'string',
+        'description': 'Non-Veteran claimants\'s SSN',
+        'pattern': '^[0-9]{9}$'
+      },
       'X-VA-NonVeteranClaimant-First-Name': {
         'allOf': [
           { 'description': 'first name' },
@@ -190,6 +245,12 @@ class AppealsApi::RswagConfig
           { '$ref': nbs_ref }
         ]
       },
+      'X-VA-Insurance-Policy-Number': {
+        'allOf': [
+          { "description": "Veteran's insurance policy number", "maxLength": 18 },
+          { "$ref": nbs_ref }
+        ]
+      },
       'X-Consumer-Username': {
         'allOf': [
           { 'description': 'Consumer Username (passed from Kong)' },
@@ -212,7 +273,7 @@ class AppealsApi::RswagConfig
       }
     }
 
-    return schemas if ENV['RSWAG_SECTION_SLUG'].in?(%w[hlr])
+    return schemas if ENV['API_NAME'].in?(%w[higher_level_reviews])
 
     # Add in extra schemas for non-HLR api docs
     schemas['documentUploadMetadata'] = JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'document_upload_metadata.json')))
@@ -232,7 +293,12 @@ class AppealsApi::RswagConfig
           }
         }
       },
-      'contestableIssue': JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'contestable_issue.json')))
+      'contestableIssue': JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'contestable_issue.json'))),
+      'X-VA-Receipt-Date': {
+        "description": '(yyyy-mm-dd) Date to limit the contestable issues',
+        "type": 'string',
+        "format": 'date'
+      }
     }
   end
 
@@ -389,12 +455,13 @@ class AppealsApi::RswagConfig
                       'type': 'object',
                       'properties': {
                         'id': {
-                          'type': %w[
-                            integer
-                            string
-                          ],
-                          'nullable': true,
-                          'example': 'null'
+                          'type': {
+                            "oneOf": [
+                              { 'type': 'string', 'nullable': true },
+                              { 'type': 'integer' }
+                            ],
+                            'example': nil
+                          }
                         },
                         'approxDecisionDate': {
                           'type': 'string',
@@ -558,10 +625,12 @@ class AppealsApi::RswagConfig
                     'enum': VBADocuments::UploadSubmission::ALL_STATUSES
                   },
                   'code': {
-                    'type': %i[string null]
+                    'type': 'string',
+                    'nullable': true
                   },
                   'detail': {
-                    'type': %i[string null],
+                    'type': 'string',
+                    'nullable': true,
                     'description': 'Human readable error detail. Only present if status = "error"'
                   },
                   'appealType': {
@@ -571,14 +640,16 @@ class AppealsApi::RswagConfig
                   },
                   'appealId': {
                     'description': 'GUID of associated appeal',
-                    'type': 'uuid',
+                    'type': 'string',
+                    'format': 'uuid',
                     'example': '2926ad2a-9372-48cf-8ec1-69e08e4799ef'
                   },
                   'location': {
-                    'type': %i[string null],
+                    'type': 'string',
+                    'nullable': true,
                     'description': 'Location to which to PUT document Payload',
                     'format': 'uri',
-                    'example': 'https://sandbox-api.va.gov/example_path_here/{idpath}'
+                    'example': 'https://sandbox-api.va.gov/example_path_here/6d8433c1-cd55-4c24-affd-f592287a7572'
                   },
                   'updatedAt': {
                     'description': 'The last time the submission was updated',
@@ -612,6 +683,10 @@ class AppealsApi::RswagConfig
     else
       parse_create_schema 'v2', '200995.json'
     end
+  end
+
+  def nbs_key
+    DocHelpers.decision_reviews? ? 'nonBlankString' : 'non_blank_string'
   end
 
   def sc_response_schemas(ref_root)
@@ -688,10 +763,12 @@ class AppealsApi::RswagConfig
                     'enum': VBADocuments::UploadSubmission::ALL_STATUSES
                   },
                   'code': {
-                    'type': %i[string null]
+                    'type': 'string',
+                    'nullable': true
                   },
                   'detail': {
-                    'type': %i[string null],
+                    'type': 'string',
+                    'nullable': true,
                     'description': 'Human readable error detail. Only present if status = "error"'
                   },
                   'appealType': {
@@ -701,14 +778,16 @@ class AppealsApi::RswagConfig
                   },
                   'appealId': {
                     'description': 'GUID of associated appeal',
-                    'type': 'uuid',
+                    'type': 'string',
+                    'format': 'uuid',
                     'example': '2926ad2a-9372-48cf-8ec1-69e08e4799ef'
                   },
                   'location': {
-                    'type': %i[string null],
+                    'type': 'string',
+                    'nullable': true,
                     'description': 'Location to which to PUT document Payload',
                     'format': 'uri',
-                    'example': 'https://sandbox-api.va.gov/example_path_here/{idpath}'
+                    'example': 'https://sandbox-api.va.gov/example_path_here/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
                   },
                   'updatedAt': {
                     'description': 'The last time the submission was updated',
@@ -729,6 +808,30 @@ class AppealsApi::RswagConfig
           }
         },
         'required': ['data']
+      }
+    }
+  end
+
+  def sc_alternate_signer_schemas(ref_root)
+    # Taken from 200995_headers.json
+    {
+      'X-Alternate-Signer-First-Name': {
+        'description': 'Alternate signer\'s first name',
+        'type': 'string',
+        'minLength': 1,
+        'maxLength': 30
+      },
+      'X-Alternate-Signer-Middle-Initial': {
+        'description': 'Alternate signer\'s middle initial',
+        'minLength': 1,
+        'maxLength': 1,
+        '$ref': "#{ref_root}/#{nbs_key}"
+      },
+      'X-Alternate-Signer-Last-Name': {
+        'description': 'Alternate signer\'s last name',
+        'minLength': 1,
+        'maxLength': 40,
+        '$ref': "#{ref_root}/#{nbs_key}"
       }
     }
   end

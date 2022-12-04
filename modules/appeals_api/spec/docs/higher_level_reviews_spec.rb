@@ -10,19 +10,19 @@ require AppealsApi::Engine.root.join('spec', 'spec_helper.rb')
 describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type: :request do
   include DocHelpers
   let(:apikey) { 'apikey' }
+  let(:Authorization) { 'Bearer TEST_TOKEN' }
 
   p = DocHelpers.decision_reviews? ? '/higher_level_reviews' : '/forms/200996'
   path p do
     post 'Creates a new Higher-Level Review' do
+      scopes = %w[claim.write]
       description 'Submits an appeal of type Higher Level Review. ' \
                   'This endpoint is the same as submitting [VA Form 20-0996](https://www.va.gov/decision-reviews/higher-level-review/request-higher-level-review-form-20-0996)' \
                   ' via mail or fax directly to the Board of Veterans’ Appeals.'
 
       tags 'Higher-Level Reviews'
       operationId 'createHlr'
-      security [
-        { apikey: [] }
-      ]
+      security DocHelpers.security_config(scopes)
       consumes 'application/json'
       produces 'application/json'
 
@@ -60,8 +60,10 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
       parameter AppealsApi::SwaggerSharedComponents.header_params[:claimant_ssn_header]
       parameter AppealsApi::SwaggerSharedComponents.header_params[:claimant_birth_date_header]
 
-      parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_username_header]
-      parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_id_header]
+      if DocHelpers.decision_reviews?
+        parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_username_header]
+        parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_id_header]
+      end
 
       response '200', 'Info about a single Higher-Level Review' do
         let(:hlr_body) do
@@ -71,7 +73,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         schema '$ref' => '#/components/schemas/hlrShow'
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
         after do |example|
@@ -104,7 +108,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         schema '$ref' => '#/components/schemas/hlrShow'
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
         after do |example|
@@ -135,7 +141,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         end
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
         after do |example|
@@ -150,80 +158,60 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
           assert_response_matches_metadata(example.metadata)
         end
       end
+
+      it_behaves_like 'rswag 500 response'
     end
   end
 
   p = DocHelpers.decision_reviews? ? '/higher_level_reviews/{uuid}' : '/forms/200996/{uuid}'
   path p do
     get 'Shows a specific Higher-Level Review. (a.k.a. the Show endpoint)' do
+      scopes = %w[claim.read]
       description 'Returns all of the data associated with a specific Higher-Level Review.'
       tags 'Higher-Level Reviews'
       operationId 'showHlr'
-      security [
-        { apikey: [] }
-      ]
+      security DocHelpers.security_config(scopes)
       produces 'application/json'
 
-      parameter name: :uuid, in: :path, type: :string, description: 'Higher-Level Review UUID'
+      parameter name: :uuid,
+                in: :path,
+                type: :string,
+                description: 'Higher-Level Review UUID',
+                example: '44e08764-6008-46e8-a95e-eb21951a5b68'
 
       response '200', 'Info about a single Higher-Level Review' do
         schema '$ref' => '#/components/schemas/hlrShow'
 
         let(:uuid) { FactoryBot.create(:minimal_higher_level_review_v2).id }
 
-        before do |example|
-          submit_request(example.metadata)
-        end
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: normalize_appeal_response(response)
-            }
-          }
-        end
-
-        it 'returns a 200 response' do |example|
-          assert_response_matches_metadata(example.metadata)
-        end
+        it_behaves_like 'rswag example', desc: 'returns a 200 response',
+                                         response_wrapper: :normalize_appeal_response,
+                                         scopes: scopes
       end
 
       response '404', 'Higher-Level Review not found' do
-        schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'errors', '404.json')))
+        schema '$ref' => '#/components/schemas/errorModel'
 
         let(:uuid) { 'invalid' }
 
-        before do |example|
-          submit_request(example.metadata)
-        end
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-
-        it 'returns a 404 response' do |example|
-          assert_response_matches_metadata(example.metadata)
-        end
+        it_behaves_like 'rswag example', desc: 'returns a 404 response', scopes: scopes
       end
+
+      it_behaves_like 'rswag 500 response'
     end
   end
 
   if DocHelpers.decision_reviews?
     path '/higher_level_reviews/contestable_issues/{benefit_type}' do
       get 'Returns all contestable issues for a specific veteran.' do
+        scopes = %w[claim.read]
         tags 'Higher-Level Reviews'
         operationId 'hlrContestableIssues'
         description = 'Returns all issues associated with a Veteran that have been decided by a ' \
                       'Higher-Level Review as of the receiptDate and bound by benefitType. Not all issues returned are guaranteed '\
                       'to be eligible for appeal. Associate these results when creating a new Higher-Level Review.'
         description description
-        security [
-          { apikey: [] }
-        ]
+        security DocHelpers.security_config(scopes)
         produces 'application/json'
 
         parameter name: :benefit_type, in: :path, type: :string,
@@ -244,7 +232,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
 
           before do |example|
             VCR.use_cassette('caseflow/higher_level_reviews/contestable_issues') do
-              submit_request(example.metadata)
+              with_rswag_auth(scopes) do
+                submit_request(example.metadata)
+              end
             end
           end
 
@@ -262,7 +252,7 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         end
 
         response '404', 'Veteran not found' do
-          schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'errors', '404.json')))
+          schema '$ref' => '#/components/schemas/errorModel'
 
           let(:benefit_type) { 'compensation' }
           let(:'X-VA-SSN') { '000000000' }
@@ -270,7 +260,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
 
           before do |example|
             VCR.use_cassette('caseflow/higher_level_reviews/not_found') do
-              submit_request(example.metadata)
+              with_rswag_auth(scopes) do
+                submit_request(example.metadata)
+              end
             end
           end
 
@@ -296,7 +288,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
 
           before do |example|
             VCR.use_cassette('caseflow/higher_level_reviews/bad_date') do
-              submit_request(example.metadata)
+              with_rswag_auth(scopes) do
+                submit_request(example.metadata)
+              end
             end
           end
 
@@ -313,6 +307,8 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
           end
         end
 
+        it_behaves_like 'rswag 500 response'
+
         response '502', 'Unknown error' do
           # schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'errors', 'default.json')))
           # #/errors/0/source is a string 'Appeals Caseflow' instead of an object...
@@ -323,7 +319,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
 
           before do |example|
             VCR.use_cassette('caseflow/higher_level_reviews/server_error') do
-              submit_request(example.metadata)
+              with_rswag_auth(scopes) do
+                submit_request(example.metadata)
+              end
             end
           end
 
@@ -349,22 +347,24 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         tags 'Higher-Level Reviews'
         operationId 'hlrSchema'
         description 'Returns the [JSON Schema](https://json-schema.org/) for the `POST /higher_level_reviews` endpoint.'
-        security [
-          { apikey: [] }
-        ]
+        security DocHelpers.security_config
         produces 'application/json'
 
         response '200', 'the JSON Schema for POST /higher_level_reviews' do
           it_behaves_like 'rswag example', desc: 'returns a 200 response'
         end
+
+        it_behaves_like 'rswag 500 response'
       end
     end
   else
     path '/schemas/{schema_type}' do
       get 'Gets JSON schema related to Higher-Level Review.' do
+        scopes = %w[claim.read]
         tags 'Higher-Level Reviews'
+        operationId 'hlrSchema'
         description 'Returns the [JSON Schema](https://json-schema.org) related to the `POST /forms/200996` endpoint'
-        security [{ apikey: [] }]
+        security DocHelpers.security_config(scopes)
         produces 'application/json'
 
         examples = {
@@ -385,15 +385,17 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         examples.each do |_, v|
           response '200', 'The JSON schema for the given `schema_type` parameter' do
             let(:schema_type) { v[:value] }
-            it_behaves_like 'rswag example', desc: v[:value], extract_desc: true
+            it_behaves_like 'rswag example', desc: v[:value], extract_desc: true, scopes: scopes
           end
         end
 
         response '404', '`schema_type` not found' do
-          schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'errors', '404.json')))
+          schema '$ref' => '#/components/schemas/errorModel'
           let(:schema_type) { 'invalid_schema_type' }
-          it_behaves_like 'rswag example', desc: 'schema type not found'
+          it_behaves_like 'rswag example', desc: 'schema type not found', scopes: scopes
         end
+
+        it_behaves_like 'rswag 500 response'
       end
     end
   end
@@ -401,12 +403,11 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
   p = DocHelpers.decision_reviews? ? '/higher_level_reviews/validate' : '/forms/200996/validate'
   path p do
     post 'Validates a POST request body against the JSON schema.' do
+      scopes = %w[claim.write]
       tags 'Higher-Level Reviews'
       operationId 'hlrValidate'
       description 'Like the POST /higher_level_reviews, but only does the validations <b>—does not submit anything.</b>'
-      security [
-        { apikey: [] }
-      ]
+      security DocHelpers.security_config(scopes)
       consumes 'application/json'
       produces 'application/json'
 
@@ -444,8 +445,10 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
       parameter AppealsApi::SwaggerSharedComponents.header_params[:claimant_ssn_header]
       parameter AppealsApi::SwaggerSharedComponents.header_params[:claimant_birth_date_header]
 
-      parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_username_header]
-      parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_id_header]
+      if DocHelpers.decision_reviews?
+        parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_username_header]
+        parameter AppealsApi::SwaggerSharedComponents.header_params[:consumer_id_header]
+      end
 
       response '200', 'Valid' do
         let(:hlr_body) do
@@ -455,7 +458,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'hlr_validate.json')))
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
         after do |example|
@@ -488,7 +493,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'hlr_validate.json')))
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
         after do |example|
@@ -519,7 +526,9 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
         end
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
         after do |example|
@@ -541,14 +550,16 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
       end
 
       response '422', 'Error' do
-        schema JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'errors',
-                                                                 'not_json.json')))
+        schema '$ref' => '#/components/schemas/errorModel'
+
         let(:hlr_body) do
           nil
         end
 
         before do |example|
-          submit_request(example.metadata)
+          with_rswag_auth(scopes) do
+            submit_request(example.metadata)
+          end
         end
 
         after do |example|
@@ -568,6 +579,8 @@ describe 'Higher-Level Reviews', swagger_doc: DocHelpers.output_json_path, type:
           assert_response_matches_metadata(example.metadata)
         end
       end
+
+      it_behaves_like 'rswag 500 response'
     end
   end
 end

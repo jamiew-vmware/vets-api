@@ -40,10 +40,6 @@ features:
     actor_type: user
     description: Enables American Indian SIGI question page.
     enable_in_development: true
-  hca_medicare_claim_number_enabled:
-    actor_type: user
-    description: Enables a form field for Medicare Claim Number.
-    enable_in_development: true
   hca_short_form_enabled:
     actor_type: user
     description: Enables Short Form for users with or self discloser of high disability.
@@ -357,9 +353,9 @@ features:
     actor_type: user
     description: Form 10182 Notice of Disagreement - Request a board appeal
     enable_in_development: true
-  form686c_confirmation_email:
+  form674_confirmation_email:
     actor_type: user
-    description: Form 686c - Email submission confirmation
+    description: Form 674 - Email submission confirmation
     enable_in_development: true
   fsr_confirmation_email:
     actor_type: user
@@ -457,6 +453,14 @@ features:
     actor_type: user
     description: This determines the visibility of the OmniChannel link in the claim status tool
     enable_in_development: true
+  preneeds_burial_form_confirmation_email:
+    actor_type: user
+    description: Enables preneeds burial form email submission confirmation
+    enable_in_development: true
+  pdf_warning_banner:
+    description: "When enabled, will allow display of PDF cert warnings in find-a-form"
+    actor_type: user
+    enable_in_development: true
   pre_entry_covid19_screener:
     actor_type: user
     description: >
@@ -500,7 +504,7 @@ features:
   profile_show_payments_notification_setting:
     actor_type: user
     description: Show/Hide the payments section of notifications in profile
-  profile_show_appeal_status_notification_setting':
+  profile_show_appeal_status_notification_setting:
     actor_type: user
     description: Show/Hide the appeal status change notification setting in profile
   profile_show_pronouns_and_sexual_orientation:
@@ -512,6 +516,10 @@ features:
     actor_type: user
   profile_use_vafsc:
     description: "Use VA Forms System Core for forms instead of schema based forms"
+    actor_type: user
+    enable_in_development: true
+  profile_block_for_fiduciary_deceased_or_incompetent:
+    description: "Blocks profile access when a user has 1 of 3 user criteria, fiduciary, deceased, or incompetent flag"
     actor_type: user
     enable_in_development: true
   pw_ehr_cta_drupal_source_of_truth:
@@ -627,10 +635,6 @@ features:
   show_header_v2:
     action_type: user
     description: Enables the new header
-    enable_in_development: true
-  show_meb_mock_endpoints:
-    actor_type: user
-    description: Allows for frontend to have progressivley enhanced backend endpoints to consume in staging.
     enable_in_development: true
   show_meb_unverified_user_alert:
     actor_type: user
@@ -789,18 +793,6 @@ features:
   va_view_dependents_access:
     actor_type: user
     description: Allows us to gate the View/ Modify dependents content in a progressive rollout
-  virtual_agent_bot_a:
-    actor_type: user
-    description: Points to Bot A
-    enable_in_development: true
-  virtual_agent_token:
-    actor_type: user
-    description: Enables connection to webchat
-    enable_in_development: true
-  virtual_agent_auth:
-    actor_type: user
-    description: Enables auth lock in order to access bot
-    enable_in_development: true
   virtual_agent_user_access_records:
     actor_type: user
     description: Enables collection of user data for VBA
