@@ -11,7 +11,7 @@ module AppealsApi
     RECIPIENTS_FILENAME = 'decision_review_error_report_daily.yml'
 
     def perform
-      config = Rails.root.join('modules', 'appeals_api', 'config', 'mailinglists', RECIPIENTS_FILENAME)
+      config = AppealsApi::Engine.root.join('config', 'mailinglists', RECIPIENTS_FILENAME)
       recipients = ReportRecipientsReader.fetch_recipients(config)
       DailyErrorReportMailer.build(recipients: recipients).deliver_now if enabled?
     end
