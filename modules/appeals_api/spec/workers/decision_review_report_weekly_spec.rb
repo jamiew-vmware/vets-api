@@ -11,7 +11,7 @@ describe AppealsApi::DecisionReviewReportWeekly, type: :job do
       laura.trager@adhocteam.us
       nathan.wright@oddball.io
     ]
-  
+
     before do
       stub_const("#{described_class}::RECIPIENTS", recipients)
     end
