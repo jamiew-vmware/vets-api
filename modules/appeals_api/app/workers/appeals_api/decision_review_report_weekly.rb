@@ -8,14 +8,12 @@ module AppealsApi
     # Only retry for ~48 hours since the job is run weekly
     sidekiq_options retry: 16, unique_for: 48.hours
 
-    RECIPIENTS_FILENAME = 'decision_review_report_weekly.yml'
+    RECIPIENTS = ReportRecipientsReader.load_recipients(:report_weekly).freeze
 
     def perform(to: Time.zone.now, from: 1.week.ago.beginning_of_day)
-      config = Rails.root.join('modules', 'appeals_api', 'config', 'mailinglists', RECIPIENTS_FILENAME)
-      recipients = ReportRecipientsReader.fetch_recipients(config)
       if enabled?
         DecisionReviewMailer.build(date_from: from, date_to: to, friendly_duration: 'Weekly',
-                                   recipients: recipients).deliver_now
+                                   recipients: RECIPIENTS).deliver_now
       end
     end
 

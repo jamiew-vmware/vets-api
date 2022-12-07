@@ -8,12 +8,10 @@ module AppealsApi
     # Only retry for ~8 hours since the job is run daily
     sidekiq_options retry: 11, unique_for: 8.hours
 
-    RECIPIENTS_FILENAME = 'decision_review_error_report_daily.yml'
+    RECIPIENTS = ReportRecipientsReader.load_recipients(:error_report_daily).freeze
 
     def perform
-      config = AppealsApi::Engine.root.join('config', 'mailinglists', RECIPIENTS_FILENAME)
-      recipients = ReportRecipientsReader.fetch_recipients(config)
-      DailyErrorReportMailer.build(recipients: recipients).deliver_now if enabled?
+      DailyErrorReportMailer.build(recipients: RECIPIENTS).deliver_now if enabled?
     end
 
     private
