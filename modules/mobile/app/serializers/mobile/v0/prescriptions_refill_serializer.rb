@@ -15,8 +15,9 @@ module Mobile
                  :info_messages
 
       def initialize(id, resource)
-        super(PrescriptionsRefillStruct.new(id, resource[:failed_station_list], resource[:successful_station_list], resource[:last_updated_time],
-                                            resource[:prescription_list], resource[:errors], resource[:info_messages]))
+        super(PrescriptionsRefillStruct.new(id, resource[:failed_station_list], resource[:successful_station_list],
+                                            resource[:last_updated_time], resource[:prescription_list],
+                                            resource[:errors], resource[:info_messages]))
       end
     end
     PrescriptionsRefillStruct = Struct.new(:id, :failed_station_list, :successful_station_list, :last_updated_time,
