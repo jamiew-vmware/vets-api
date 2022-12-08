@@ -36,20 +36,50 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
     iam_sign_in(current_user)
   end
 
-  describe 'GET /mobile/v0/health/rx/prescriptions/:id/refill', :aggregate_failures do
-    it 'returns 204 no content' do
-      VCR.use_cassette('rx_refill/prescriptions/refills_a_prescription') do
-        put '/mobile/v0/health/rx/prescriptions/13650545/refill', headers: iam_headers
+  describe 'GET /mobile/v0/health/rx/prescriptions/refill', :aggregate_failures do
+    it 'returns all successful refills' do
+      VCR.use_cassette('rx_refill/prescriptions/refills_prescriptions') do
+        put '/mobile/v0/health/rx/prescriptions/refill', params: { ids: [21_530_889, 21_539_942] }, headers: iam_headers
       end
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['data']).to eq({ 'id' => '3097e489-ad75-5746-ab1a-e0aabc1b426a',
+                                                   'type' => 'PrescriptionRefill',
+                                                   'attributes' =>
+                                                    { 'failedStationList' => '',
+                                                      'successfulStationList' => 'DAYT29, DAYT29',
+                                                      'lastUpdatedTime' => 'Thu, 08 Dec 2022 12:11:33 EST',
+                                                      'prescriptionList' => nil,
+                                                      'errors' => [],
+                                                      'infoMessages' => [] } })
+    end
 
-      expect(response).to have_http_status(:no_content)
-      expect(response.body).to be_empty
+    context 'refill multiple prescription, one of which is non-refillable' do
+      it 'returns error and successful refills' do
+        VCR.use_cassette('rx_refill/prescriptions/refills_prescriptions_with_error') do
+          put '/mobile/v0/health/rx/prescriptions/refill', params: { ids: [7_417_954, 6_970_769, 8_398_465] },
+                                                           headers: iam_headers
+        end
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['data']).to eq({ 'id' => '3097e489-ad75-5746-ab1a-e0aabc1b426a',
+                                                     'type' => 'PrescriptionRefill',
+                                                     'attributes' =>
+                                                      { 'failedStationList' => '',
+                                                        'successfulStationList' => 'SLC4, VAMCSLC-OUTPTRX',
+                                                        'lastUpdatedTime' => 'Tue, 30 Aug 2022 12:30:38 EDT',
+                                                        'prescriptionList' => nil,
+                                                        'errors' =>
+                                                         [{ 'errorCode' => 139,
+                                                            'developerMessage' =>
+                                                             'Prescription not refillable for id : 8398465',
+                                                            'message' => 'Prescription is not Refillable' }],
+                                                        'infoMessages' => [] } })
+      end
     end
 
     context 'prescription does not exist' do
       it 'returns 404 not found' do
         VCR.use_cassette('rx_refill/prescriptions/prescription_refill_error') do
-          put '/mobile/v0/health/rx/prescriptions/1/refill', headers: iam_headers
+          put '/mobile/v0/health/rx/prescriptions/refill',params: { ids: [21_530_889, 21_539_942] }, headers: iam_headers
         end
         expect(response).to have_http_status(:not_found)
 
@@ -65,8 +95,8 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
       it 'flushes prescription cache on refill' do
         set_cache
 
-        VCR.use_cassette('rx_refill/prescriptions/refills_a_prescription') do
-          put '/mobile/v0/health/rx/prescriptions/13650545/refill', headers: iam_headers
+        VCR.use_cassette('rx_refill/prescriptions/refills_prescriptions') do
+          put '/mobile/v0/health/rx/prescriptions/refill',params: { ids: [21_530_889, 21_539_942] }, headers: iam_headers
         end
 
         get '/mobile/v0/health/rx/prescriptions', headers: iam_headers
@@ -77,7 +107,7 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
   end
 
   describe 'GET /mobile/v0/health/rx/prescriptions', :aggregate_failures do
-    context 'with a valid EVSS response and no failed facilities' do
+    context 'with a valid MHV response and no failed facilities' do
       it 'returns 200' do
         VCR.use_cassette('rx_refill/prescriptions/gets_a_list_of_all_prescriptions') do
           get '/mobile/v0/health/rx/prescriptions', headers: iam_headers
