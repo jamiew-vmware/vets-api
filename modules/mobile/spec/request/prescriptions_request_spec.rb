@@ -79,7 +79,8 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
     context 'prescription does not exist' do
       it 'returns 404 not found' do
         VCR.use_cassette('rx_refill/prescriptions/prescription_refill_error') do
-          put '/mobile/v0/health/rx/prescriptions/refill',params: { ids: [21_530_889, 21_539_942] }, headers: iam_headers
+          put '/mobile/v0/health/rx/prescriptions/refill', params: { ids: [21_530_889, 21_539_942] },
+                                                           headers: iam_headers
         end
         expect(response).to have_http_status(:not_found)
 
@@ -96,7 +97,8 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
         set_cache
 
         VCR.use_cassette('rx_refill/prescriptions/refills_prescriptions') do
-          put '/mobile/v0/health/rx/prescriptions/refill',params: { ids: [21_530_889, 21_539_942] }, headers: iam_headers
+          put '/mobile/v0/health/rx/prescriptions/refill', params: { ids: [21_530_889, 21_539_942] },
+                                                           headers: iam_headers
         end
 
         get '/mobile/v0/health/rx/prescriptions', headers: iam_headers
