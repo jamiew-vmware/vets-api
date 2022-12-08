@@ -60,35 +60,36 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
                                                            headers: iam_headers
         end
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body['data']).to eq({ 'id' => '3097e489-ad75-5746-ab1a-e0aabc1b426a',
-                                                     'type' => 'PrescriptionRefill',
-                                                     'attributes' =>
-                                                      { 'failedStationList' => '',
-                                                        'successfulStationList' => 'SLC4, VAMCSLC-OUTPTRX',
-                                                        'lastUpdatedTime' => 'Tue, 30 Aug 2022 12:30:38 EDT',
-                                                        'prescriptionList' => nil,
-                                                        'errors' =>
-                                                         [{ 'errorCode' => 139,
-                                                            'developerMessage' =>
-                                                             'Prescription not refillable for id : 8398465',
-                                                            'message' => 'Prescription is not Refillable' }],
-                                                        'infoMessages' => [] } })
+        attributes = response.parsed_body.dig('data', 'attributes')
+        expect(attributes).to eq({ 'failedStationList' => '',
+                                   'successfulStationList' => 'SLC4, VAMCSLC-OUTPTRX',
+                                   'lastUpdatedTime' => 'Tue, 30 Aug 2022 12:30:38 EDT',
+                                   'prescriptionList' => nil,
+                                   'errors' => [{ 'errorCode' => 139,
+                                                  'developerMessage' =>
+                                                    'Prescription not refillable for id : 8398465',
+                                                  'message' => 'Prescription is not Refillable' }],
+                                   'infoMessages' => [] })
       end
     end
 
-    context 'prescription does not exist' do
-      it 'returns 404 not found' do
-        VCR.use_cassette('rx_refill/prescriptions/prescription_refill_error') do
-          put '/mobile/v0/health/rx/prescriptions/refill', params: { ids: [21_530_889, 21_539_942] },
+    context 'refill multiple prescription, one of which does not exist' do
+      it 'returns error and successful refills' do
+        VCR.use_cassette('rx_refill/prescriptions/refills_prescriptions_not_found') do
+          put '/mobile/v0/health/rx/prescriptions/refill', params: { ids: [21_530_889, 21_539_942, 123_456] },
                                                            headers: iam_headers
         end
-        expect(response).to have_http_status(:not_found)
-
-        expect(response.parsed_body).to eq({ 'errors' =>
-                                               [{ 'title' => 'Operation failed',
-                                                  'detail' => 'Prescription requested could not be found',
-                                                  'code' => 'RX138',
-                                                  'status' => '404' }] })
+        expect(response).to have_http_status(:ok)
+        attributes = response.parsed_body.dig('data', 'attributes')
+        expect(attributes).to eq({ 'failedStationList' => '',
+                                   'successfulStationList' => 'DAYT29, DAYT29',
+                                   'lastUpdatedTime' => 'Thu, 08 Dec 2022 12:18:33 EST',
+                                   'prescriptionList' => nil,
+                                   'errors' => [{ 'errorCode' => 135,
+                                                  'developerMessage' =>
+                                                  'Prescription not found for id : 123456',
+                                                  'message' => 'Prescription not found' }],
+                                   'infoMessages' => [] })
       end
     end
 
