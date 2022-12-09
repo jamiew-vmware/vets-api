@@ -9,7 +9,7 @@ properties:
     example: "3097e489-ad75-5746-ab1a-e0aabc1b426a"
   type:
     type: string
-    example: "PrescriptionRefill"
+    example: "PrescriptionRefills"
   attributes:
     type: object
     required:

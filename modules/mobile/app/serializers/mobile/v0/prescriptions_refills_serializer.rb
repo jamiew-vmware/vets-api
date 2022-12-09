@@ -2,10 +2,10 @@
 
 module Mobile
   module V0
-    class PrescriptionsRefillSerializer
+    class PrescriptionsRefillsSerializer
       include FastJsonapi::ObjectSerializer
 
-      set_type :PrescriptionRefill
+      set_type :PrescriptionRefills
 
       attributes :failed_station_list,
                  :successful_station_list,
