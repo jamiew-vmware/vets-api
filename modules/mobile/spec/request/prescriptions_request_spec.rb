@@ -42,15 +42,13 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
         put '/mobile/v0/health/rx/prescriptions/refill', params: { ids: [21_530_889, 21_539_942] }, headers: iam_headers
       end
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body['data']).to eq({ 'id' => '3097e489-ad75-5746-ab1a-e0aabc1b426a',
-                                                   'type' => 'PrescriptionRefill',
-                                                   'attributes' =>
-                                                    { 'failedStationList' => '',
-                                                      'successfulStationList' => 'DAYT29, DAYT29',
-                                                      'lastUpdatedTime' => 'Thu, 08 Dec 2022 12:11:33 EST',
-                                                      'prescriptionList' => nil,
-                                                      'errors' => [],
-                                                      'infoMessages' => [] } })
+      attributes = response.parsed_body.dig('data', 'attributes')
+      expect(attributes).to eq({ 'failedStationList' => '',
+                                 'successfulStationList' => 'DAYT29, DAYT29',
+                                 'lastUpdatedTime' => 'Thu, 08 Dec 2022 12:11:33 EST',
+                                 'prescriptionList' => nil,
+                                 'errors' => [],
+                                 'infoMessages' => [] })
     end
 
     context 'refill multiple prescription, one of which is non-refillable' do
