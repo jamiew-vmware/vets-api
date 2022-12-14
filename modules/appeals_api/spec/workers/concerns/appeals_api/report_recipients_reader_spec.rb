@@ -12,7 +12,7 @@ describe AppealsApi::ReportRecipientsReader do
       end
     end
 
-    it 'loads no users when file is empty' do
+    it 'loads no users when file is empty(no keys)' do
       allow(YAML).to receive(:load_file).and_return(nil)
       with_settings(Settings, vsp_environment: 'production') do
         expect(subject.load_recipients(:error_report_daily)).to be_empty
