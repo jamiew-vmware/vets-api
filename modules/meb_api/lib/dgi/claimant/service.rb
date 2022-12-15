@@ -27,9 +27,9 @@ module MebApi
           with_monitoring do
             headers = request_headers
             options = { timeout: 60 }
-            raw_response = perform(:post, latest_endpoint(claimant_id, 'Chapter33'), { ssn: @user.ssn.to_s }.to_json, headers, options)
+            raw_response = perform(:post, letter_availability_endpoint(claimant_id, 'Chapter33'), { ssn: @user.ssn.to_s }.to_json, headers, options)
 
-            MebApi::DGI::Claimant::ClaimantResponse.new(raw_response.status, raw_response)
+            MebApi::DGI::Claimant::LetterAvailabilityResponse.new(raw_response.status, raw_response)
           end
         end
 
@@ -37,7 +37,7 @@ module MebApi
 
         # need to change function argument name: type -> claimantId
         def letter_availability_endpoint(claimant_id, type)
-          "/claimant/#{claimantId}/claimType/#{claimType}/letteravailabilitystatus"
+          "/claimant/#{claimant_id}/claimType/#{type}/letteravailabilitystatus"
         end
 
         def end_point(type)
