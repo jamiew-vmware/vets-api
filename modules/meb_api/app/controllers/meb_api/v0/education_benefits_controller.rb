@@ -38,14 +38,14 @@ module MebApi
         render json: response, serializer: serializer
       end
 
-      def get_latest_claim_status
-        claimant_response = claimant_service.get_latest_claimant_info
+      def letter_availability
+        claimant_response = claimant_service.get_claimant_info
         claimant_id = claimant_response['claimant_id']
 
-        claim_status_response = claim_status_service.get_claim_status(claimant_id)
+        letter_availability_response = claimant_service.get_letter_availability(claimant_id)
 
-        response = claimant_response.status == 201 ? claim_status_response : claimant_response
-        serializer = claimant_response.status == 201 ? ClaimStatusSerializer : ClaimantSerializer
+        response = claimant_response.status == 201 ? letter_availability_response : claimant_response
+        serializer = claimant_response.status == 201 ? LetterAvailabilityResponse : ClaimantSerializer
 
         render json: response, serializer: serializer
       end
