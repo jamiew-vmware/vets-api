@@ -65,7 +65,7 @@ module DebtManagementCenter
 
       # Edge case for old flow (pre-combined) that didn't include this field
       if form['selectedDebtsAndCopays'].blank? || selected_vba_debts(form['selectedDebtsAndCopays']).present?
-        create_vba_fsr(form)
+        submit_vba_fsr(form)
       end
       create_vha_fsr(form) if selected_vha_copays(form['selectedDebtsAndCopays']).present?
 
@@ -113,13 +113,21 @@ module DebtManagementCenter
 
     def submit_vba_fsr(form)
       Rails.logger.info('5655 Form Submitting to VBA')
-      response = perform(:post, 'financial-status-report/formtopdf', form)
+      debts = selected_vba_debts(form['selectedDebtsAndCopays'])
+      if debts.present?
+        form['personalIdentification']['fsrReason'] = debts.map do |debt|
+          debt['resolutionOption']
+        end.uniq.join(', ')
+      end
+      persist_form_submission(form, debts)
+      vba_form = form.deep_dup
+      vba_form.delete('selectedDebtsAndCopays')
+      response = perform(:post, 'financial-status-report/formtopdf', vba_form)
       fsr_response = DebtManagementCenter::FinancialStatusReportResponse.new(response.body)
 
       send_confirmation_email(VBA_CONFIRMATION_TEMPLATE) if response.success?
 
       update_filenet_id(fsr_response)
-
       { status: fsr_response.status }
     end
 
