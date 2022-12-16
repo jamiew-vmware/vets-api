@@ -56,5 +56,12 @@ describe AppealsApi::ReportRecipientsReader do
         expect(report.load_recipients(:error_report_daily)).to match_array(%w[cu1 cu2])
       end
     end
+
+    it 'loads common users with bad env key' do
+      allow(YAML).to receive(:load_file).and_return({ 'common' => %w[cu1 cu2], 'production' => %w[p1 p2] })
+      with_settings(Settings, vsp_environment: 'badenv') do
+        expect(report.load_recipients(:error_report_daily)).to match_array(%w[cu1 cu2])
+      end
+    end
   end
 end
