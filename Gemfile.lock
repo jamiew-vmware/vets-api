@@ -57,7 +57,7 @@ GIT
 
 GIT
   remote: https://github.com/department-of-veterans-affairs/ruby-saml
-  revision: c22d6bb9cdc6a409465692e8cca4e7bff3cb8df3
+  revision: 0b388803f9484e473bf3ca217ff40f822d93335a
   branch: master
   specs:
     ruby-saml (1.14.1)
@@ -531,7 +531,7 @@ GEM
       ruby-vips (>= 2.0.17, < 3)
     iso_country_codes (0.7.8)
     jmespath (1.6.2)
-    json (2.6.2)
+    json (2.6.3)
     json-schema (2.8.1)
       addressable (>= 2.4)
     json_schemer (0.2.22)
@@ -562,7 +562,7 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     lockbox (1.1.0)
-    loofah (2.19.0)
+    loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     lumberjack (1.2.8)
@@ -578,7 +578,7 @@ GEM
     mimemagic (0.4.3)
       nokogiri (~> 1)
       rake
-    mini_magick (4.11.0)
+    mini_magick (4.12.0)
     mini_mime (1.1.2)
     mini_portile2 (2.8.0)
     minitest (5.16.3)
@@ -727,8 +727,8 @@ GEM
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
-    rails-html-sanitizer (1.4.3)
-      loofah (~> 2.3)
+    rails-html-sanitizer (1.4.4)
+      loofah (~> 2.19, >= 2.19.1)
     rails-session_cookie (0.3.0)
       rails (>= 4.0)
     rails_semantic_logger (4.11.0)
@@ -880,7 +880,7 @@ GEM
       rufus-scheduler (~> 3.2)
       sidekiq (>= 4, < 7)
       tilt (>= 1.4.0)
-    sidekiq_alive (2.1.6)
+    sidekiq_alive (2.1.7)
       sidekiq
       webrick
     signet (0.17.0)

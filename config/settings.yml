@@ -930,6 +930,7 @@ flipper:
     - mark.dewey@va.gov
     - metrowebz@gmail.com
     - micah@adhocteam.us
+    - michael.moyer@va.gov # MHV Secure Messaging Team
     - michel.mcdonald@adhocteam.us
     - michael.chaffee@va.gov # DHP team tech lead
     - michael.chelen@va.gov
@@ -938,6 +939,7 @@ flipper:
     - n.ratana@gmail.com
     - nathaniel.buck@gmail.com # AFS - My Education Benefits
     - narin@adhocteam.us
+    - oleksii.morgun@va.gov # MHV Secure Messaging Team
     - patrick.bateman@va.gov
     - patrick@adhocteam.us
     - patrickryll@yahoo.com
@@ -1362,7 +1364,7 @@ check_in:
     host: vpce-06399548ef94bdb41-lk4qp2nd.execute-api.us-gov-west-1.vpce.amazonaws.com
     base_path: dev
     api_id: 22t00c6f97
-    api_key: Xc7k35oE2H9aDeUEpeGa38PzAHyLT9jb5HiKeBfs
+    api_key: fake_key
     service_name: LoROTA-API
     mock: false
     key_path: fake_api_path
@@ -1420,6 +1422,15 @@ lighthouse_health_immunization:
     - "patient/Immunization.read"
     - "patient/Location.read"
 
+mobile_lighthouse_letters:
+  client_id: '0oajpx78t3M8kurld2p7'
+  key_path: ~
+  aud_claim_url: "https://deptva-eval.okta.com/oauth2/ausftw7zk6eHr7gMN2p7/v1/token"
+  access_token_url: 'https://sandbox-api.va.gov/oauth2/va-letter-generator/system/v1/token'
+  api_url: 'https://sandbox-api.va.gov/services/va-letter-generator/v1/'
+  api_scopes:
+    - "letters.read"
+
 token_validation:
   url: https://dev-api.va.gov/internal/auth
 
@@ -1438,6 +1449,13 @@ lgy:
   app_id: ~
   api_key: ~
   mock_coe: true
+
+form526_backup:
+  enabled: false
+  # Can be single or multi, to send 1 payload or many, to central mail
+  submission_method: 'single'
+  api_key: ~
+  url: https://sandbox-api.va.gov/services/vba_documents/v1/
 
 form1095_b:
   s3:
