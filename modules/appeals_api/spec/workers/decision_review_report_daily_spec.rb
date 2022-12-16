@@ -12,16 +12,12 @@ describe AppealsApi::DecisionReviewReportDaily, type: :job do
       nathan.wright@oddball.io
     ]
 
-    before do
-      stub_const("#{described_class}::RECIPIENTS", recipients)
-    end
-
     it 'sends mail' do
       with_settings(Settings.modules_appeals_api.reports.daily_decision_review, enabled: true) do
         Timecop.freeze
         date_to = Time.zone.now
         date_from = date_to.monday? ? 3.days.ago : 1.day.ago
-
+        allow(YAML).to receive(:load_file).and_return({ 'common' => recipients })
         expect(AppealsApi::DecisionReviewMailer).to receive(:build).once.with(
           date_from: date_from.beginning_of_day,
           date_to: date_to,

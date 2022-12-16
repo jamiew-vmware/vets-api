@@ -8,20 +8,16 @@ describe AppealsApi::DecisionReviewReportWeekly, type: :job do
       drew.fisher@adhocteam.us
       jack.schuss@oddball.io
       kelly@adhocteam.us
-      laura.trager@adhocteam.us
       nathan.wright@oddball.io
     ]
-
-    before do
-      stub_const("#{described_class}::RECIPIENTS", recipients)
-    end
 
     it 'sends mail' do
       with_settings(Settings.modules_appeals_api.reports.weekly_decision_review, enabled: true) do
         Timecop.freeze
         date_to = Time.zone.now
         date_from = 1.week.ago.beginning_of_day
-
+        allow(YAML).to receive(:load_file).and_return({ 'common' => recipients,
+                                                        'production' => ['laura.trager@adhocteam.us'] })
         expect(AppealsApi::DecisionReviewMailer).to receive(:build).once.with(
           date_from: date_from,
           date_to: date_to,
