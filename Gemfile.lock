@@ -57,7 +57,7 @@ GIT
 
 GIT
   remote: https://github.com/department-of-veterans-affairs/ruby-saml
-  revision: c22d6bb9cdc6a409465692e8cca4e7bff3cb8df3
+  revision: 0b388803f9484e473bf3ca217ff40f822d93335a
   branch: master
   specs:
     ruby-saml (1.14.1)
@@ -880,7 +880,7 @@ GEM
       rufus-scheduler (~> 3.2)
       sidekiq (>= 4, < 7)
       tilt (>= 1.4.0)
-    sidekiq_alive (2.1.6)
+    sidekiq_alive (2.1.7)
       sidekiq
       webrick
     signet (0.17.0)
