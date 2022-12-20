@@ -7,23 +7,23 @@ describe AppealsApi::ReportRecipientsReader do
   let(:report) { test_class.new }
 
   describe 'load_recipients' do
-    let(:expected_file_path) { AppealsApi::Engine.root.join('config', 'mailinglists', 'error_report_daily.yml').to_s }
+    let(:recipient_file_folder) { AppealsApi::Engine.root.join('config', 'mailinglists') }
+    let(:recipient_file_path) { recipient_file_folder.join('error_report_daily.yml').to_s }
     let(:messager_instance) { instance_double('AppealsApi::Slack::Messager') }
 
     it 'loads no users when file is missing' do
       expected_notify = { warning: ':warning:  recipients file does not exist',
-                          recipient_file: expected_file_path }
+                          recipient_file: recipient_file_folder.join('file_does_not_exist.yml').to_s }
       allow(AppealsApi::Slack::Messager).to receive(:new).with(expected_notify).and_return(messager_instance)
       expect(messager_instance).to receive(:notify!)
-      expect(File).to receive(:exist?).and_return(false)
       with_settings(Settings, vsp_environment: 'production') do
-        expect(report.load_recipients(:error_report_daily)).to be_empty
+        expect(report.load_recipients(:file_does_not_exist)).to be_empty
       end
     end
 
     it 'loads no users when file is empty(no keys)' do
       expected_notify = { warning: ':warning:  report has no configured recipients',
-                          recipient_file: expected_file_path }
+                          recipient_file: recipient_file_path }
       allow(AppealsApi::Slack::Messager).to receive(:new).with(expected_notify).and_return(messager_instance)
       expect(messager_instance).to receive(:notify!)
       allow(YAML).to receive(:load_file).and_return(nil)
@@ -34,7 +34,7 @@ describe AppealsApi::ReportRecipientsReader do
 
     it 'loads no users when file has keys but no values' do
       expected_notify = { warning: ':warning:  report has no configured recipients',
-                          recipient_file: expected_file_path }
+                          recipient_file: recipient_file_path }
       allow(AppealsApi::Slack::Messager).to receive(:new).with(expected_notify).and_return(messager_instance)
       expect(messager_instance).to receive(:notify!)
       allow(YAML).to receive(:load_file).and_return({ 'common' => nil, 'production' => nil })
