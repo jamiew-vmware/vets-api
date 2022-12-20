@@ -10,10 +10,12 @@ module AppealsApi
     sidekiq_options retry: 16, unique_for: 48.hours
 
     def perform(to: Time.zone.now, from: 1.week.ago.beginning_of_day)
-      recipients = load_recipients(:error_report_weekly)
-      if enabled? && !recipients.empty?
-        WeeklyErrorReportMailer.build(date_from: from, date_to: to, friendly_duration: 'Weekly',
-                                      recipients: recipients).deliver_now
+      if enabled?
+        recipients = load_recipients(:error_report_weekly)
+        if recipients.present?
+          WeeklyErrorReportMailer.build(date_from: from, date_to: to, friendly_duration: 'Weekly',
+                                        recipients: recipients).deliver_now
+        end
       end
     end
 

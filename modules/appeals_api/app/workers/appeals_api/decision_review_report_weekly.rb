@@ -12,8 +12,10 @@ module AppealsApi
     def perform(to: Time.zone.now, from: 1.week.ago.beginning_of_day)
       if enabled?
         recipients = load_recipients(:report_weekly)
-        DecisionReviewMailer.build(date_from: from, date_to: to, friendly_duration: 'Weekly',
-                                   recipients: recipients).deliver_now
+        if recipients.present?
+          DecisionReviewMailer.build(date_from: from, date_to: to, friendly_duration: 'Weekly',
+                                     recipients: recipients).deliver_now
+        end
       end
     end
 

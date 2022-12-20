@@ -10,8 +10,10 @@ module AppealsApi
     sidekiq_options retry: 11, unique_for: 8.hours
 
     def perform
-      recipients = load_recipients(:error_report_daily)
-      DailyErrorReportMailer.build(recipients: recipients).deliver_now if enabled?
+      if enabled?
+        recipients = load_recipients(:error_report_daily)
+        DailyErrorReportMailer.build(recipients: recipients).deliver_now if recipients.present?
+      end
     end
 
     private
