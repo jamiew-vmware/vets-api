@@ -16,6 +16,14 @@ module AppealsApi
       end
     end
 
+    def retry_limits_for_notification
+      [11]
+    end
+
+    def notify(retry_params)
+      AppealsApi::Slack::Messager.new(retry_params, notification_type: :error_retry).notify!
+    end
+
     private
 
     def enabled?
