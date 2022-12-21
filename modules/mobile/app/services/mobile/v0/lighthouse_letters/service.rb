@@ -14,7 +14,7 @@ module Mobile
         end
 
         def get_letters
-          response = perform(:get, 'eligible-letters', params, headers)
+          response = perform(:get, 'eligible-letters', { icn: @user.icn }, headers)
           body = response.body
           raise Common::Exceptions::RecordNotFound, "ICN: #{@user.icn}" if response[:status] == 404
           raise Common::Exceptions::BackendServiceException, 'MOBL_502_upstream_error' if response[:status] == 500
@@ -22,12 +22,12 @@ module Mobile
           body
         end
 
-        def headers
-          config.base_request_headers.merge(Authorization: "Bearer #{access_token}")
+        def download_letter(type, params)
+          perform(:get, "letters/#{type}/letter", { icn: @user.icn }, headers)
         end
 
-        def params
-          { icn: @user.icn }
+        def headers
+          config.base_request_headers.merge(Authorization: "Bearer #{access_token}")
         end
 
         def access_token

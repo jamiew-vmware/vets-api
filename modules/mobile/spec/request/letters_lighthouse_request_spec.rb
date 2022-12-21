@@ -98,6 +98,21 @@ RSpec.describe 'letters', type: :request do
     end
   end
 
+  describe 'GET /mobile/v0/letters/:type/download' do
+    context 'with a valid lighthouse response' do
+      it 'returns pdf' do
+        VCR.use_cassette('lighthouse_letters/letter_download_201', match_requests_on: %i[method uri]) do
+          post "/mobile/v0/letters/BENEFIT_SUMMARY/download", params: {}, headers: iam_headers
+          binding.pry
+
+          allow(File).to receive(:read).and_call_original
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to match_json_schema('letter_beneficiary')
+        end
+      end
+    end
+  end
+
   describe 'Error Handling' do
     context 'with general service error' do
       it 'returns a not found response' do
