@@ -74,7 +74,7 @@ FactoryBot.define do
   end
 
   factory :bnft_claim_dto, class: OpenStruct do
-    bnft_claim_id { Faker::Number.number(digits: 9) }
+    bnft_claim_id { '111111111' }
     bnft_claim_type_cd { Faker::Alphanumeric.alpha(number: 9) }
     bnft_claim_type_label { 'Compensation' }
     bnft_claim_type_nm { 'Claim for Increase' }
@@ -105,5 +105,45 @@ FactoryBot.define do
     svc_type_cd { 'CP' }
     termnl_digit_nbr { Faker::Number.number(digits: 2) }
     filed5103_waiver_ind { 'Y' }
+  end
+  factory :evss_response_without_lc_status, class: OpenStruct do
+    bnft_claim_dto { (association :evss_bnft_claim_dto_without_lc_status) }
+  end
+  factory :evss_response_with_lc_status, class: OpenStruct do
+    bnft_claim_dto { (association :evss_bnft_claim_dto_with_lc_status).to_h }
+  end
+  factory :evss_bnft_claim_dto_without_lc_status, class: OpenStruct do
+    benefit_claim_id { '111111111' }
+    phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
+    phase_type { 'Pending Decision Approval' }
+    ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
+    ptcpnt_vet_id { Faker::Number.number(digits: 17) }
+    phase_type_change_ind { '76' }
+  end
+  factory :evss_bnft_claim_dto_with_lc_status, class: OpenStruct do
+    benefit_claim_id { '111111111' }
+    phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
+    phase_type { 'Pending Decision Approval' }
+    ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
+    ptcpnt_vet_id { Faker::Number.number(digits: 17) }
+    phase_type_change_ind { '76' }
+    bnft_claim_lc_status { (association :bnft_claim_lc_status).to_h}
+  end
+  factory :bnft_claim_lc_status, class: OpenStruct do
+    bnft_claim_lc_status { [(association :bnft_claim_lc_status_1), (association :bnft_claim_lc_status_2)] }
+  end
+  factory :bnft_claim_lc_status_1, class: OpenStruct do
+    max_est_claim_complete_dt { Faker::Time.backward(days: 5, period: :morning) }
+    min_est_claim_complete_dt { Faker::Time.backward(days: 7, period: :morning) }
+    phase_chngd_dt { Faker::Time.backward(days: 6, period: :morning) }
+    phase_type { 'Claim Received' }
+    phase_type_change_ind { 'N' }
+  end
+  factory :bnft_claim_lc_status_2, class: OpenStruct do
+    max_est_claim_complete_dt { Faker::Time.backward(days: 5, period: :morning) }
+    min_est_claim_complete_dt { Faker::Time.backward(days: 7, period: :morning) }
+    phase_chngd_dt { Faker::Time.backward(days: 6, period: :morning) }
+    phase_type { 'Under Review' }
+    phase_type_change_ind { '12' }
   end
 end

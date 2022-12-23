@@ -50,7 +50,7 @@ module ClaimsApi
 
         def generate_show_output(bgs_claim:, lighthouse_claim:) # rubocop:disable Metrics/MethodLength
           if lighthouse_claim.present? && bgs_claim.present?
-            bgs_details = bgs_claim[:benefit_claim_details_dto]
+            bgs_details = bgs_claim[:benefit_claim_details_dto] || bgs_claim[:bnft_claim_dto]
             structure = build_claim_structure(
               data: bgs_details,
               lighthouse_id: lighthouse_claim.id,
@@ -201,6 +201,25 @@ module ClaimsApi
           end
         end
 
+        def get_bgs_phase_completed_dates(data)
+          details = data[:benefit_claim_details_dto] || data[:bnft_claim_dto]
+          return if details[:bnft_claim_lc_status].nil?
+          phaseDates = {}
+          details[:bnft_claim_lc_status].each do |lc|
+            if lc.is_a?(Hash) && lc.include?('type')
+              change_ind = lc[:phase_type_change_ind] || lc[:phas_type_change_ind]
+              phaseNumber = change_ind == 'N' ? "1" : change_ind.split('').last
+              phaseDates['phase'+phaseNumber+'CompleteDate'] = format_bgs_date(lc[:max_est_claim_complete_dt])
+            end
+          end
+          phaseDates
+        end
+
+        def format_bgs_date(phase_change_date)
+          d = Date.parse(phase_change_date.to_s)
+          d.strftime('%Y-%m-%d')
+        end
+
         def format_bgs_phase_chng_dates(data)
           if data[:phase_chngd_dt].nil? &&
              (data[:benefit_claim_details_dto].nil? || data[:benefit_claim_details_dto][:phase_chngd_dt].nil?)
@@ -208,8 +227,7 @@ module ClaimsApi
           end
 
           phase_change_date = data[:phase_chngd_dt] || data[:benefit_claim_details_dto][:phase_chngd_dt]
-          d = Date.parse(phase_change_date.to_s)
-          d.strftime('%Y-%m-%d')
+          format_bgs_date(phase_change_date)
         end
 
         def detect_status(data)
@@ -359,7 +377,8 @@ module ClaimsApi
                 {
                   phase_change_date: format_bgs_phase_chng_dates(bgs_claim),
                   current_phase_back: current_phase_back(bgs_claim),
-                  latest_phase_type: latest_phase_type(bgs_claim)
+                  latest_phase_type: latest_phase_type(bgs_claim),
+                  previous_phases: get_bgs_phase_completed_dates(bgs_claim)
                 }
             }
           when 'index'
