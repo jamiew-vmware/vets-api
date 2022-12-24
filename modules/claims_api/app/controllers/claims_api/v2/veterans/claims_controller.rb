@@ -50,7 +50,7 @@ module ClaimsApi
 
         def generate_show_output(bgs_claim:, lighthouse_claim:) # rubocop:disable Metrics/MethodLength
           if lighthouse_claim.present? && bgs_claim.present?
-            bgs_details = bgs_claim[:benefit_claim_details_dto] || bgs_claim[:bnft_claim_dto]
+            bgs_details = bgs_claim[:benefit_claim_details_dto]
             structure = build_claim_structure(
               data: bgs_details,
               lighthouse_id: lighthouse_claim.id,
@@ -148,7 +148,7 @@ module ClaimsApi
 
         def build_claim_structure(data:, lighthouse_id:, upstream_id:) # rubocop:disable Metrics/MethodLength
           {
-            claim_date: data[:claim_dt].present? ? data[:claim_dt].strftime('%D') : nil,
+            claim_date: data[:claim_dt].present? ? Date.parse(data[:claim_dt].to_s).strftime('%D') : nil,
             claim_id: upstream_id,
             claim_phase_dates: build_claim_phase_attributes(data, 'index'),
             claim_type_code: data[:bnft_claim_type_cd],
@@ -164,7 +164,7 @@ module ClaimsApi
             lighthouse_id: lighthouse_id,
             max_est_claim_date: data[:max_est_claim_complete_dt],
             min_est_claim_date: data[:min_est_claim_complete_dt],
-            status: detect_status(data),
+            status: detect_current_status(data),
             submitter_application_code: data[:submtr_applcn_type_cd],
             submitter_role_code: data[:submtr_role_type_cd],
             temp_jurisdiction: data[:temp_regional_office_jrsdctn]
@@ -190,10 +190,10 @@ module ClaimsApi
         end
 
         def latest_phase_type(data)
-          return if data[:benefit_claim_details_dto][:phase_type_change_ind].nil?
+          return if data.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).nil?
 
-          if !data[:benefit_claim_details_dto][:phase_type].nil?
-            data[:benefit_claim_details_dto][:phase_type]
+          if !data[:benefit_claim_details_dto][:bnft_claim_lc_status][0][:phase_type].nil?
+            data[:benefit_claim_details_dto][:bnft_claim_lc_status][0][:phase_type]
           else
             pt_ind_array = get_phase_type_indicator_array(data)
             claim = get_bgs_phase_name(data, pt_ind_array.last.to_i)
@@ -202,17 +202,16 @@ module ClaimsApi
         end
 
         def get_bgs_phase_completed_dates(data)
-          details = data[:benefit_claim_details_dto] || data[:bnft_claim_dto]
-          return if details[:bnft_claim_lc_status].nil?
-          phaseDates = {}
-          details[:bnft_claim_lc_status].each do |lc|
-            if lc.is_a?(Hash) && lc.include?('type')
-              change_ind = lc[:phase_type_change_ind] || lc[:phas_type_change_ind]
-              phaseNumber = change_ind == 'N' ? "1" : change_ind.split('').last
-              phaseDates['phase'+phaseNumber+'CompleteDate'] = format_bgs_date(lc[:max_est_claim_complete_dt])
+          return if data.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).nil?
+
+          phase_dates = {}
+          data[:benefit_claim_details_dto][:bnft_claim_lc_status].each do |lc|
+            unless lc[:phase_type_change_ind].nil?
+              phase_number = lc[:phase_type_change_ind] == 'N' ? '1' : lc[:phase_type_change_ind].split('').last
+              phase_dates["phase#{phase_number}CompleteDate"] = format_bgs_date(lc[:max_est_claim_complete_dt])
             end
           end
-          phaseDates
+          phase_dates
         end
 
         def format_bgs_date(phase_change_date)
@@ -230,10 +229,11 @@ module ClaimsApi
           format_bgs_date(phase_change_date)
         end
 
-        def detect_status(data)
-          return data[:phase_type] if data.key?(:phase_type)
+        def detect_current_status(data_details)
+          return if data_details[:bnft_claim_lc_status].nil?
 
-          cast_claim_lc_status(data[:bnft_claim_lc_status])
+          phase_data = data_details[:bnft_claim_lc_status]
+          cast_claim_lc_status(phase_data)
         end
 
         def get_errors(lighthouse_claim)
@@ -249,10 +249,10 @@ module ClaimsApi
 
         # The status can either be an object or array
         # This picks the most recent status from the array
-        def cast_claim_lc_status(status)
-          return if status.blank?
+        def cast_claim_lc_status(phase_data)
+          return if phase_data.blank?
 
-          stat = [status].flatten.max_by do |t|
+          stat = [phase_data].flatten.max_by do |t|
             t[:phase_chngd_dt]
           end
           stat[:phase_type]

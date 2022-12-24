@@ -337,20 +337,72 @@ RSpec.describe 'Claims', type: :request do
     end
 
     describe 'show' do
+      let(:bgs_claim_response) do
+        {
+          benefit_claim_details_dto: {
+            attention_needed: 'No',
+            base_end_prdct_type_cd: '020',
+            benefit_claim_id: '111111111',
+            bnft_claim_lc_status: [
+              {
+                max_est_claim_complete_dt: 'Thu, 13 Oct 2022',
+                min_est_claim_complete_dt: 'Mon, 03 Oct 2022',
+                phase_chngd_dt: 'Mon, 26 Sep 2022 11:43:04 +0000',
+                phase_type: 'Preparation for Decision',
+                phase_type_change_ind: '45'
+              },
+              {
+                max_est_claim_complete_dt: 'Thu, 29 Sep 2022',
+                min_est_claim_complete_dt: 'Tue, 27 Sep 2022',
+                phase_chngd_dt: 'Mon, 26 Sep 2022 11:43:00 +0000',
+                phase_type: 'Review of Evidence',
+                phase_type_change_ind: '34'
+              },
+              {
+                max_est_claim_complete_dt: 'Tue, 28 Feb 2023',
+                min_est_claim_complete_dt: 'Tue, 10 Jan 2023',
+                phase_chngd_dt: 'Mon, 26 Sep 2022 11:02:49 +0000',
+                phase_type: 'Gathering of Evidence',
+                phase_type_change_ind: '23'
+              },
+              { max_est_claim_complete_dt: 'Sat, 08 Oct 2022',
+                min_est_claim_complete_dt: 'Fri, 30 Sep 2022',
+                phase_chngd_dt: 'Fri, 23 Sep 2022 13:53:43 +0000',
+                phase_type: 'Under Review',
+                phase_type_change_ind: '12' },
+              { max_est_claim_complete_dt: 'Mon, 26 Sep 2022',
+                min_est_claim_complete_dt: 'Sat, 24 Sep 2022',
+                phase_chngd_dt: 'Fri, 23 Sep 2022 13:53:12 +0000',
+                phase_type: 'Claim Received',
+                phase_type_change_ind: 'N' }
+            ],
+            bnft_claim_type_cd: '020CLMINC',
+            claim_dt: 'Fri, 23 Sep 2022',
+            claim_status: 'RFD',
+            claim_status_type: 'Compensation',
+            contentions: 'bilateral hearing loss (Increase), tinnitus (New)',
+            decision_notification_sent: 'No',
+            development_letter_sent: 'Yes',
+            end_prdct_type_cd: '021',
+            filed5103_waiver_ind: 'Y',
+            max_est_claim_complete_dt: 'Mon, 31 Oct 2022',
+            min_est_claim_complete_dt: 'Tue, 11 Oct 2022',
+            poa: 'DISTRICT OF COLUMBIA, OFFICE OF VETERANS AFFAIRS',
+            program_type: 'CPL', ptcpnt_clmant_id: '600043201',
+            ptcpnt_vet_id: '600043201',
+            regional_office_jrsdctn: 'National Work Queue',
+            submtr_applcn_type_cd: 'VBMS',
+            submtr_role_type_cd: 'VBA',
+            temp_regional_office_jrsdctn: 'Waco',
+            wsyswwn: { address_line1: 'National Work Queue',
+                       address_line2: '810 Vermont Avenue NW',
+                       address_line3: nil, city: 'Washington',
+                       state: 'DC', zip: '20420' }
+          },
+          "@xmlns:ns0": 'http://claimstatus.services.ebenefits.vba.va.gov/'
+        }
+      end
       describe ' BGS attributes' do
-        let(:bgs_claim) do
-          {
-            benefit_claim_details_dto: {
-              benefit_claim_id: '111111111',
-              phase_chngd_dt: 'Wed, 18 Oct 2017',
-              phase_type: 'Pending Decision Approval',
-              ptcpnt_clmant_id: veteran_id,
-              ptcpnt_vet_id: veteran_id,
-              phase_type_change_ind: '76'
-            }
-          }
-        end
-
         it 'are listed' do
           lh_claim = create(:auto_established_claim, status: 'PENDING', veteran_icn: veteran_id,
                                                      evss_id: '111111111')
@@ -358,17 +410,19 @@ RSpec.describe 'Claims', type: :request do
             VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
               VCR.use_cassette('evss/documents/get_claim_documents') do
                 expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
-                  .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
+                  .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                 expect(ClaimsApi::AutoEstablishedClaim)
                   .to receive(:get_by_id_and_icn).and_return(lh_claim)
 
                 get claim_by_id_path, headers: auth_header
 
                 json_response = JSON.parse(response.body)
+
                 expect(response.status).to eq(200)
-                expect(json_response['claimPhaseDates']['currentPhaseBack']).to eq(true)
-                expect(json_response['claimPhaseDates']['latestPhaseType']).to eq('Pending Decision Approval')
-                expect(json_response['claimPhaseDates']['phaseChangeDate']).to eq('2017-10-18')
+                expect(json_response['claimPhaseDates']['currentPhaseBack']).to eq(false)
+                expect(json_response['claimPhaseDates']['latestPhaseType']).to eq('Preparation for Decision')
+                expect(json_response['claimPhaseDates']['previousPhases']['phase1CompleteDate']).to eq('2022-09-26')
+                expect(json_response['claimPhaseDates']['previousPhases']['phase2CompleteDate']).to eq('2022-10-08')
               end
             end
           end
@@ -600,25 +654,14 @@ RSpec.describe 'Claims', type: :request do
       end
 
       describe "handling the 'status'" do
-        context 'when there is 1 status' do
-          let(:bgs_claim) do
-            {
-              benefit_claim_details_dto: {
-                benefit_claim_id: '111111111',
-                claim_status_type: 'value from BGS',
-                bnft_claim_lc_status: {
-                  phase_type: 'Pending'
-                }
-              }
-            }
-          end
 
+        context 'when there is 1 status' do
           it "sets the 'status'" do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
-                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
+                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:get_by_id_and_icn).and_return(nil)
 
@@ -627,7 +670,7 @@ RSpec.describe 'Claims', type: :request do
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
-                  expect(json_response['status']).to eq('PENDING')
+                  expect(json_response['status']).to eq('EVIDENCE_GATHERING_REVIEW_DECISION')
                 end
               end
             end
@@ -635,33 +678,21 @@ RSpec.describe 'Claims', type: :request do
         end
 
         context 'when a typical status is received' do
-          let(:bgs_claim) do
-            {
-              benefit_claim_details_dto: {
-                benefit_claim_id: '111111111',
-                claim_status_type: 'value from BGS',
-                bnft_claim_lc_status: {
-                  phase_type: 'Preparation for Notification'
-                }
-              }
-            }
-          end
-
           it "the v2 mapper sets the correct 'status'" do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
-                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
+                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:get_by_id_and_icn).and_return(nil)
 
                   get claim_by_id_path, headers: auth_header
-
+                  
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
-                  expect(json_response['status']).to eq('PREPARATION_FOR_NOTIFICATION')
+                  expect(json_response['status']).to eq('EVIDENCE_GATHERING_REVIEW_DECISION')
                 end
               end
             end
@@ -686,7 +717,7 @@ RSpec.describe 'Claims', type: :request do
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
-                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
+                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:get_by_id_and_icn).and_return(nil)
 
@@ -703,28 +734,12 @@ RSpec.describe 'Claims', type: :request do
         end
 
         context 'it picks the newest status' do
-          let(:bgs_claim) do
-            {
-              benefit_claim_details_dto: {
-                benefit_claim_id: '111111111',
-                claim_status_type: 'value from BGS',
-                bnft_claim_lc_status: [{
-                  phas_chngd_dt: DateTime.now,
-                  phase_type: 'Pending'
-                }, {
-                  phas_chngd_dt: DateTime.now - 1.day,
-                  phase_type: 'Initial Review'
-                }]
-              }
-            }
-          end
-
           it "returns a claim with the 'claimId' and 'lighthouseId' set" do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
-                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
+                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:get_by_id_and_icn).and_return(nil)
 
@@ -733,8 +748,8 @@ RSpec.describe 'Claims', type: :request do
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
-                  expect(json_response['claimType']).to eq('value from BGS')
-                  expect(json_response['status']).to eq('PENDING')
+                  expect(json_response['claimType']).to eq('Compensation')
+                  expect(json_response['status']).to eq('EVIDENCE_GATHERING_REVIEW_DECISION')
                 end
               end
             end
@@ -744,28 +759,12 @@ RSpec.describe 'Claims', type: :request do
 
       describe "handling the 'supporting_documents'" do
         context 'it has documents' do
-          let(:bgs_claim) do
-            {
-              benefit_claim_details_dto: {
-                benefit_claim_id: '111111111',
-                claim_status_type: 'value from BGS',
-                bnft_claim_lc_status: [{
-                  phas_chngd_dt: DateTime.now,
-                  phase_type: 'Pending'
-                }, {
-                  phas_chngd_dt: DateTime.now - 1.day,
-                  phase_type: 'Initial Review'
-                }]
-              }
-            }
-          end
-
           it "returns a claim with 'supporting_documents'" do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
-                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
+                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:get_by_id_and_icn).and_return(nil)
 
@@ -775,7 +774,7 @@ RSpec.describe 'Claims', type: :request do
                   first_doc_id = json_response.dig('supportingDocuments', 0, 'documentId')
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
-                  expect(json_response['claimType']).to eq('value from BGS')
+                  expect(json_response['claimType']).to eq('Compensation')
                   expect(first_doc_id).to eq('{54EF0C16-A9E7-4C3F-B876-B2C7BEC1F834}')
                 end
               end
@@ -788,14 +787,7 @@ RSpec.describe 'Claims', type: :request do
             {
               benefit_claim_details_dto: {
                 benefit_claim_id: '222222222',
-                claim_status_type: 'value from BGS',
-                bnft_claim_lc_status: [{
-                  phas_chngd_dt: DateTime.now,
-                  phase_type: 'Pending'
-                }, {
-                  phas_chngd_dt: DateTime.now - 1.day,
-                  phase_type: 'Initial Review'
-                }]
+                claim_status_type: 'value from BGS'
               }
             }
           end
