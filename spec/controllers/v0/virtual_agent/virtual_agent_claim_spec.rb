@@ -331,7 +331,6 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
     end
 
     context 'when the virtual_agent_user_access_records toggle is on' do
-
       it 'runs with user info and claims as action type when claims retrieval is successful' do
         sign_in_as(user)
 
@@ -370,7 +369,6 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
     end
 
     context 'when the virtual_agent_user_access_records toggle is off' do
-
       it 'runs with user info and claims as action type when claims retrieval is successful' do
         sign_in_as(user)
 
