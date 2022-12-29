@@ -388,8 +388,6 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
         end
       end
     end
-<<<<<<< HEAD
-=======
 
     describe 'VirtualAgentStoreUserInfoJob' do
       context 'when virtual_agent_user_access_records toggle is on'
@@ -430,6 +428,5 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
         expect(VirtualAgentStoreUserInfoJob).not_to receive(:perform_async)
       end
     end
->>>>>>> e1a554829 ([va-virtual-agent#758] Removes dead code path and related toggle)
   end
 end

@@ -317,8 +317,6 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
       end
     end
   end
-<<<<<<< HEAD
-=======
 
   describe 'VirtualAgentStoreUserInfoJob' do
     before do
@@ -403,5 +401,4 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
       end
     end
   end
->>>>>>> e1a554829 ([va-virtual-agent#758] Removes dead code path and related toggle)
 end
