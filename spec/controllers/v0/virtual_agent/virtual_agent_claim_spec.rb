@@ -317,17 +317,4 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
       end
     end
   end
-
-  describe 'VirtualAgentStoreUserInfoJob' do
-    before do
-      @kms = instance_double(KmsEncrypted::Box)
-      allow(@kms).to receive(:encrypt).and_return('encrypted_ssn')
-
-      allow(KmsEncrypted::Box)
-        .to receive(:new)
-        .and_return(@kms)
-
-      allow(VirtualAgentStoreUserInfoJob).to receive(:perform_async)
-    end
-  end
 end
