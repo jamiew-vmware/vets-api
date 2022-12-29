@@ -6,6 +6,7 @@ module V0
   module VirtualAgent
     class VirtualAgentAppealController < AppealsBaseController
       def index
+        call_virtual_agent_store_user_info
         if Settings.vsp_environment == 'staging'
           @user_ssan, @user_name = set_user_credentials
           appeals_response = get_appeal_from_lighthouse(@user_ssan, @user_name)
