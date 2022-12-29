@@ -21,12 +21,12 @@ module V0
         when 'FAILED'
           error = EVSS::ErrorMiddleware::EVSSError.new('Could not retrieve claims')
           report_or_error(cxdw_reporting_service, conversation_id)
-          call_virtual_agent_store_user_info if Flipper.enabled?(:virtual_agent_user_access_records)
+          call_virtual_agent_store_user_info
           service_exception_handler(error)
         else
           data_for_three_most_recent_open_comp_claims(claims)
           report_or_error(cxdw_reporting_service, conversation_id)
-          call_virtual_agent_store_user_info if Flipper.enabled?(:virtual_agent_user_access_records)
+          call_virtual_agent_store_user_info
           render json: {
             data: data_for_three_most_recent_open_comp_claims(claims),
             meta: { sync_status: synchronized }
