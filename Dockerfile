@@ -51,11 +51,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 COPY --chown=vets-api:vets-api config/freshclam.conf docker-entrypoint.sh ./
 USER vets-api
 # XXX: this is tacky
+RUN clamscan --debug freshclam.conf
 RUN freshclam -v --debug --config-file freshclam.conf
 RUN gem install vtk
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "./docker-entrypoint.sh"]
 
-###
+###x
 # build stage; use --target=builder to stop here
 # Also be sure to add build-args from development stage above
 #
