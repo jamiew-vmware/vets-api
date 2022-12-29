@@ -392,7 +392,6 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
     describe 'VirtualAgentStoreUserInfoJob' do
       context 'when virtual_agent_user_access_records toggle is on'
       it 'runs with user info and appeals as action type' do
-        skip "the toggle has been removed, per va-virtual-agent#758; this test should be removed after verifying production"
         sign_in_as(user)
         kms = instance_double(KmsEncrypted::Box)
         allow(kms).to receive(:encrypt).and_return('encrypted_ssn')
@@ -417,7 +416,6 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
 
     context 'when virtual_agent_user_access_records toggle is off' do
       it 'does not store user data' do
-        skip "the toggle has been removed, per va-virtual-agent#758; this test should be removed after verifying production"
         sign_in_as(user)
         allow(VirtualAgentStoreUserInfoJob).to receive(:perform_async)
 
