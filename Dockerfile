@@ -52,7 +52,6 @@ COPY --chown=vets-api:vets-api config/freshclam.conf docker-entrypoint.sh ./
 USER vets-api
 # XXX: this is tacky
 RUN clamscan --debug freshclam.conf
-RUN freshclam -v --debug --config-file freshclam.conf
 RUN gem install vtk
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "./docker-entrypoint.sh"]
 
