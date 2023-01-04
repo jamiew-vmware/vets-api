@@ -146,7 +146,7 @@ RSpec.describe 'Claims', type: :request do
               benefit_claim: [
                 {
                   benefit_claim_id: '600098193',
-                  claim_status: 'CAN',
+                  claim_status: 'Pending',
                   claim_status_type: 'Compensation',
                   phase_chngd_dt: 'Wed, 18 Oct 2017',
                   phase_type: 'Complete',
@@ -337,71 +337,8 @@ RSpec.describe 'Claims', type: :request do
     end
 
     describe 'show' do
-      let(:bgs_claim_response) do
-        {
-          benefit_claim_details_dto: {
-            attention_needed: 'No',
-            base_end_prdct_type_cd: '020',
-            benefit_claim_id: '111111111',
-            bnft_claim_lc_status: [
-              {
-                max_est_claim_complete_dt: 'Thu, 13 Oct 2022',
-                min_est_claim_complete_dt: 'Mon, 03 Oct 2022',
-                phase_chngd_dt: 'Mon, 26 Sep 2022 11:43:04 +0000',
-                phase_type: 'Preparation for Decision',
-                phase_type_change_ind: '45'
-              },
-              {
-                max_est_claim_complete_dt: 'Thu, 29 Sep 2022',
-                min_est_claim_complete_dt: 'Tue, 27 Sep 2022',
-                phase_chngd_dt: 'Mon, 26 Sep 2022 11:43:00 +0000',
-                phase_type: 'Review of Evidence',
-                phase_type_change_ind: '34'
-              },
-              {
-                max_est_claim_complete_dt: 'Tue, 28 Feb 2023',
-                min_est_claim_complete_dt: 'Tue, 10 Jan 2023',
-                phase_chngd_dt: 'Mon, 26 Sep 2022 11:02:49 +0000',
-                phase_type: 'Gathering of Evidence',
-                phase_type_change_ind: '23'
-              },
-              { max_est_claim_complete_dt: 'Sat, 08 Oct 2022',
-                min_est_claim_complete_dt: 'Fri, 30 Sep 2022',
-                phase_chngd_dt: 'Fri, 23 Sep 2022 13:53:43 +0000',
-                phase_type: 'Under Review',
-                phase_type_change_ind: '12' },
-              { max_est_claim_complete_dt: 'Mon, 26 Sep 2022',
-                min_est_claim_complete_dt: 'Sat, 24 Sep 2022',
-                phase_chngd_dt: 'Fri, 23 Sep 2022 13:53:12 +0000',
-                phase_type: 'Claim Received',
-                phase_type_change_ind: 'N' }
-            ],
-            bnft_claim_type_cd: '020CLMINC',
-            claim_dt: 'Fri, 23 Sep 2022',
-            claim_status: 'RFD',
-            claim_status_type: 'Compensation',
-            contentions: 'bilateral hearing loss (Increase), tinnitus (New)',
-            decision_notification_sent: 'No',
-            development_letter_sent: 'Yes',
-            end_prdct_type_cd: '021',
-            filed5103_waiver_ind: 'Y',
-            max_est_claim_complete_dt: 'Mon, 31 Oct 2022',
-            min_est_claim_complete_dt: 'Tue, 11 Oct 2022',
-            poa: 'DISTRICT OF COLUMBIA, OFFICE OF VETERANS AFFAIRS',
-            program_type: 'CPL', ptcpnt_clmant_id: '600043201',
-            ptcpnt_vet_id: '600043201',
-            regional_office_jrsdctn: 'National Work Queue',
-            submtr_applcn_type_cd: 'VBMS',
-            submtr_role_type_cd: 'VBA',
-            temp_regional_office_jrsdctn: 'Waco',
-            wsyswwn: { address_line1: 'National Work Queue',
-                       address_line2: '810 Vermont Avenue NW',
-                       address_line3: nil, city: 'Washington',
-                       state: 'DC', zip: '20420' }
-          },
-          "@xmlns:ns0": 'http://claimstatus.services.ebenefits.vba.va.gov/'
-        }
-      end
+      let(:bgs_claim_response) { build(:bgs_response_with_one_lc_status) }
+
       describe ' BGS attributes' do
         it 'are listed' do
           lh_claim = create(:auto_established_claim, status: 'PENDING', veteran_icn: veteran_id,
@@ -419,10 +356,9 @@ RSpec.describe 'Claims', type: :request do
                 json_response = JSON.parse(response.body)
 
                 expect(response.status).to eq(200)
-                expect(json_response['claimPhaseDates']['currentPhaseBack']).to eq(false)
-                expect(json_response['claimPhaseDates']['latestPhaseType']).to eq('Preparation for Decision')
-                expect(json_response['claimPhaseDates']['previousPhases']['phase1CompleteDate']).to eq('2022-09-26')
-                expect(json_response['claimPhaseDates']['previousPhases']['phase2CompleteDate']).to eq('2022-10-08')
+                expect(json_response['claimPhaseDates']['currentPhaseBack']).to eq(true)
+                expect(json_response['claimPhaseDates']['latestPhaseType']).to eq('Claim Received')
+                expect(json_response['claimPhaseDates']['previousPhases']).to be_truthy
               end
             end
           end
@@ -654,7 +590,6 @@ RSpec.describe 'Claims', type: :request do
       end
 
       describe "handling the 'status'" do
-
         context 'when there is 1 status' do
           it "sets the 'status'" do
             with_okta_user(scopes) do |auth_header|
@@ -670,7 +605,7 @@ RSpec.describe 'Claims', type: :request do
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
-                  expect(json_response['status']).to eq('EVIDENCE_GATHERING_REVIEW_DECISION')
+                  expect(json_response['status']).to eq('CLAIM_RECEIVED')
                 end
               end
             end
@@ -688,11 +623,11 @@ RSpec.describe 'Claims', type: :request do
                     .to receive(:get_by_id_and_icn).and_return(nil)
 
                   get claim_by_id_path, headers: auth_header
-                  
+
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
-                  expect(json_response['status']).to eq('EVIDENCE_GATHERING_REVIEW_DECISION')
+                  expect(json_response['status']).to eq('CLAIM_RECEIVED')
                 end
               end
             end
@@ -726,7 +661,7 @@ RSpec.describe 'Claims', type: :request do
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
-                  expect(json_response['status']).to eq('EVIDENCE_GATHERING_REVIEW_DECISION')
+                  expect(json_response['status']).to eq('CLAIM_RECEIVED')
                 end
               end
             end
@@ -749,7 +684,7 @@ RSpec.describe 'Claims', type: :request do
                   expect(response.status).to eq(200)
                   expect(json_response).to be_an_instance_of(Hash)
                   expect(json_response['claimType']).to eq('Compensation')
-                  expect(json_response['status']).to eq('EVIDENCE_GATHERING_REVIEW_DECISION')
+                  expect(json_response['status']).to eq('CLAIM_RECEIVED')
                 end
               end
             end

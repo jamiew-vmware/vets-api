@@ -106,19 +106,21 @@ FactoryBot.define do
     termnl_digit_nbr { Faker::Number.number(digits: 2) }
     filed5103_waiver_ind { 'Y' }
   end
-  factory :bgs_response_without_lc_status, class: OpenStruct do
-    benefit_claim_details_dto { (association :bgs_claim_details_dto_without_lc_status).to_h }
+  factory :bgs_response_with_one_lc_status, class: OpenStruct do
+    benefit_claim_details_dto { (association :bgs_claim_details_dto_with_one_lc_status).to_h }
   end
   factory :bgs_response_with_lc_status, class: OpenStruct do
     benefit_claim_details_dto { (association :bgs_claim_details_dto_with_lc_status).to_h }
   end
-  factory :bgs_claim_details_dto_without_lc_status, class: OpenStruct do
+  factory :bgs_claim_details_dto_with_one_lc_status, class: OpenStruct do
     benefit_claim_id { '111111111' }
     phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
     phase_type { 'Pending Decision Approval' }
     ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
     ptcpnt_vet_id { Faker::Number.number(digits: 17) }
     phase_type_change_ind { '76' }
+    claim_status_type { 'Compensation' }
+    bnft_claim_lc_status { [(association :bnft_claim_lc_status_1).to_h] }
   end
   factory :bgs_claim_details_dto_with_lc_status, class: OpenStruct do
     benefit_claim_id { '111111111' }
@@ -127,10 +129,11 @@ FactoryBot.define do
     ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
     ptcpnt_vet_id { Faker::Number.number(digits: 17) }
     phase_type_change_ind { '76' }
+    claim_status_type { 'Compensation' }
     bnft_claim_lc_status {
-      [(association :bnft_claim_lc_status_1), (association :bnft_claim_lc_status_2),
-       (association :bnft_claim_lc_status_3),
-       (association :bnft_claim_lc_status_4), (association :bnft_claim_lc_status_5)]
+      [(association :bnft_claim_lc_status_1).to_h, (association :bnft_claim_lc_status_2).to_h,
+       (association :bnft_claim_lc_status_3).to_h,
+       (association :bnft_claim_lc_status_4).to_h, (association :bnft_claim_lc_status_5).to_h]
     }
   end
   factory :bnft_claim_lc_status_1, class: OpenStruct do

@@ -192,8 +192,10 @@ module ClaimsApi
         def latest_phase_type(data)
           return if data.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).nil?
 
-          if !data[:benefit_claim_details_dto][:bnft_claim_lc_status][0][:phase_type].nil?
+          if data&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).is_a?(Array)
             data[:benefit_claim_details_dto][:bnft_claim_lc_status][0][:phase_type]
+          elsif data&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status, :phase_type)
+            data[:benefit_claim_details_dto][:bnft_claim_lc_status][:phase_type]
           else
             pt_ind_array = get_phase_type_indicator_array(data)
             claim = get_bgs_phase_name(data, pt_ind_array.last.to_i)
@@ -202,7 +204,7 @@ module ClaimsApi
         end
 
         def get_bgs_phase_completed_dates(data)
-          return if data.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).nil?
+          return unless data&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).is_a?(Array)
 
           phase_dates = {}
           data[:benefit_claim_details_dto][:bnft_claim_lc_status].each do |lc|
@@ -229,11 +231,12 @@ module ClaimsApi
           format_bgs_date(phase_change_date)
         end
 
-        def detect_current_status(data_details)
-          return if data_details[:bnft_claim_lc_status].nil?
+        def detect_current_status(data)
+          return if data[:bnft_claim_lc_status].nil? && !data.include?(:claim_status)
 
-          phase_data = data_details[:bnft_claim_lc_status]
-          cast_claim_lc_status(phase_data)
+          phase_data = data[:bnft_claim_lc_status].nil? == true ? data[:claim_status] : data[:bnft_claim_lc_status]
+
+          phase_data.is_a?(Array) == true ? cast_claim_lc_status(phase_data) : phase_data
         end
 
         def get_errors(lighthouse_claim)
@@ -320,6 +323,8 @@ module ClaimsApi
                              'Preparation for Notification',
                              'Complete'].include? claim_status
                            'ACCEPTED'
+                         elsif ['CAN'].include? claim_status
+                           'CANCELLED'
                          else
                            'INITIAL_REVIEW_COMPLETE'
                          end
