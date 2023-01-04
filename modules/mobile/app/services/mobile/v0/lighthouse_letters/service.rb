@@ -22,7 +22,7 @@ module Mobile
           body
         end
 
-        def download_letter(type, params)
+        def download_letter(type, _params)
           perform(:get, "letters/#{type}/letter", { icn: @user.icn }, headers)
         end
 

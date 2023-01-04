@@ -102,8 +102,7 @@ RSpec.describe 'letters', type: :request do
     context 'with a valid lighthouse response' do
       it 'returns pdf' do
         VCR.use_cassette('lighthouse_letters/letter_download_201', match_requests_on: %i[method uri]) do
-          post "/mobile/v0/letters/BENEFIT_SUMMARY/download", params: {}, headers: iam_headers
-          binding.pry
+          post '/mobile/v0/letters/BENEFIT_SUMMARY/download', params: {}, headers: iam_headers
 
           allow(File).to receive(:read).and_call_original
           expect(response).to have_http_status(:ok)

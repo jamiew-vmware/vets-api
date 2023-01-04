@@ -33,14 +33,13 @@ module Mobile
       # returns a pdf of the requested letter type given the user has that letter type available
       def download
         if Flipper.enabled?(:mobile_lighthouse_letters, @current_user)
-          r = request.body.string
-          response = lighthouse_service.download_letter(type, {} )
+          # request.body.string
+          response = lighthouse_service.download_letter(type, {})
         else
           unless EVSS::Letters::Letter::LETTER_TYPES.include? params[:type]
             Raven.tags_context(team: 'va-mobile-app') # tag sentry logs with team name
             raise Common::Exceptions::ParameterMissing, 'letter_type', "#{params[:type]} is not a valid letter type"
           end
-
           response = download_service.download_letter(params[:type], request.body.string)
         end
 
