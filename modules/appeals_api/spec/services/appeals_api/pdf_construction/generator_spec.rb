@@ -20,25 +20,27 @@ describe AppealsApi::PdfConstruction::Generator do
     end
 
     context 'Notice Of Disagreement' do
-      context 'pdf minimum content verification' do
-        let(:notice_of_disagreement) { create(:minimal_notice_of_disagreement, created_at: '2021-02-03T14:15:16Z') }
+      context 'v1' do
+        context 'pdf minimum content verification' do
+          let(:notice_of_disagreement) { create(:minimal_notice_of_disagreement, created_at: '2021-02-03T14:15:16Z') }
 
-        it 'generates the expected pdf' do
-          generated_pdf = described_class.new(notice_of_disagreement).generate
-          expected_pdf = fixture_filepath('expected_10182_minimum.pdf', version: 'v1')
-          expect(generated_pdf).to match_pdf expected_pdf
-          File.delete(generated_pdf) if File.exist?(generated_pdf)
+          it 'generates the expected pdf' do
+            generated_pdf = described_class.new(notice_of_disagreement).generate
+            expected_pdf = fixture_filepath('expected_10182_minimum.pdf', version: 'v1')
+            expect(generated_pdf).to match_pdf expected_pdf
+            File.delete(generated_pdf) if File.exist?(generated_pdf)
+          end
         end
-      end
 
-      context 'pdf extra content verification' do
-        let(:notice_of_disagreement) { create(:notice_of_disagreement, created_at: '2021-02-03T14:15:16Z') }
+        context 'pdf extra content verification' do
+          let(:notice_of_disagreement) { create(:notice_of_disagreement, created_at: '2021-02-03T14:15:16Z') }
 
-        it 'generates the expected pdf' do
-          generated_pdf = described_class.new(notice_of_disagreement).generate
-          expected_pdf = fixture_filepath('expected_10182_extra.pdf', version: 'v1')
-          expect(generated_pdf).to match_pdf expected_pdf
-          File.delete(generated_pdf) if File.exist?(generated_pdf)
+          it 'generates the expected pdf' do
+            generated_pdf = described_class.new(notice_of_disagreement).generate
+            expected_pdf = fixture_filepath('expected_10182_extra.pdf', version: 'v1')
+            expect(generated_pdf).to match_pdf expected_pdf
+            File.delete(generated_pdf) if File.exist?(generated_pdf)
+          end
         end
       end
 
@@ -87,7 +89,7 @@ describe AppealsApi::PdfConstruction::Generator do
           # TODO: Try to figure out why the CI runner interprets our expected pdf differently than locally, despite
           #       being visually identical.
           # e.g. on CI, some text is interpreted in a slightly different order or W's are added in odd places.
-          xit 'generates the expected pdf' do
+          it 'generates the expected pdf' do
             nod.form_data = data
             # we tried to use JSON_SCHEMER, but it did not work with our headers, and chose not to invest more time atm.
             nod.auth_headers['X-VA-SSN'] = 'W' * 9
