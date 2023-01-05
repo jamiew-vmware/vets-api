@@ -212,7 +212,7 @@ module AppealsApi
 
           { veteran_first_name: { at: [3, 560], width: 195 },
             veteran_last_name: { at: [230, 560], width: 293 },
-            veteran_file_number: { at: [215, 527], width: 143 },
+            veteran_file_number: { at: [200, 527], width: 154 },
             veteran_number_and_street: { at: [29, 462], width: 512 },
             veteran_city: { at: [200, 441], width: 307 },
             veteran_zip_code: { at: [297, 418], width: 82 },
@@ -229,14 +229,14 @@ module AppealsApi
             claimant_phone_extension: { at: [225, 157], width: 50, height: 10 },
             claimant_international_number: { at: [382, 144], width: 115, height: 13 },
 
-            rep_first_name: { at: [11, 586], width: 195 },
-            rep_last_name: { at: [225, 586], width: 293 },
-            rep_email: { at: [11, 525], width: 513 },
-            rep_international_number: { at: [275, 555], width: 195 },
-            rep_domestic_ext: { at: [225, 555], width: 50 },
+            rep_first_name: { at: [11, 575], width: 195 },
+            rep_last_name: { at: [225, 575], width: 293 },
+            rep_email: { at: [11, 515], width: 513 },
+            rep_international_number: { at: [275, 545], width: 195 },
+            rep_domestic_ext: { at: [225, 545], width: 50 },
             issues_pg1: [].tap do |n|
               number_of_issues_on_first_pg.times do |i|
-                n << { at: [-3, 319 - (46.5 * i)], width: 369, height: 23, valign: :top }
+                n << { at: [-3, 355 - (46.5 * i)], width: 369, height: 23, valign: :top }
               end
             end,
             issues_pg2: [].tap do |n|
@@ -245,13 +245,13 @@ module AppealsApi
               end
             end,
             soc_date_pg1: [].tap do |n|
-              number_of_issues_on_first_pg.times { |i| n << { at: [375, 315 - (46.5 * i)], width: 160, height: 15 } }
+              number_of_issues_on_first_pg.times { |i| n << { at: [375, 351 - (46.5 * i)], width: 160, height: 15 } }
             end,
             soc_date_pg2: [].tap do |n|
               number_of_issues_on_second_pg.times { |i| n << { at: [380, 670 - (46.5 * i)], width: 160, height: 15 } }
             end,
             disagreement_area_pg1: [].tap do |n|
-              number_of_issues_on_first_pg.times { |i| n << { at: [-5, 293 - (46.5 * i)], width: 380, height: 15 } }
+              number_of_issues_on_first_pg.times { |i| n << { at: [-5, 331 - (46.5 * i)], width: 380, height: 15 } }
             end,
             disagreement_area_pg2: [].tap do |n|
               number_of_issues_on_second_pg.times { |i| n << { at: [-5, 647 - (46.5 * i)], width: 380, height: 15 } }
