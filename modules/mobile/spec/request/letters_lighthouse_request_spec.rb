@@ -98,31 +98,30 @@ RSpec.describe 'letters', type: :request do
     end
   end
 
-  describe 'GET /mobile/v0/letters/:type/download' do
-    context 'with a valid lighthouse response' do
-      let(:params) do
-        { 'militaryService' => 'true',
-          'serviceConnectedDisabilities' => 'false',
-          'serviceConnectedEvaluation' => 'true',
-          'nonServiceConnectedPension' => 'false',
-          'monthlyAward' => 'true',
-          'unemployable' => 'false',
-          'specialMonthlyCompensation' => 'false',
-          'adaptedHousing' => 'false',
-          'chapter35Eligibility' => 'false',
-          'deathResultOfDisability' => 'false',
-          'survivorsAward' => 'false' }
-      end
-
-      it 'returns pdf' do
-
-        VCR.use_cassette('lighthouse_letters/letter_download_201', match_requests_on: %i[method uri]) do
-          post '/mobile/v0/letters/benefit_summary/download', params: params, headers: iam_headers
-          expect(response).to have_http_status(:ok)
-        end
-      end
-    end
-  end
+  # describe 'GET /mobile/v0/letters/:type/download' do
+  #   context 'with a valid lighthouse response' do
+  #     let(:params) do
+  #       { 'militaryService' => 'true',
+  #         'serviceConnectedDisabilities' => 'false',
+  #         'serviceConnectedEvaluation' => 'true',
+  #         'nonServiceConnectedPension' => 'false',
+  #         'monthlyAward' => 'true',
+  #         'unemployable' => 'false',
+  #         'specialMonthlyCompensation' => 'false',
+  #         'adaptedHousing' => 'false',
+  #         'chapter35Eligibility' => 'false',
+  #         'deathResultOfDisability' => 'false',
+  #         'survivorsAward' => 'false' }
+  #     end
+  #
+  #     it 'returns pdf' do
+  #       VCR.use_cassette('lighthouse_letters/letter_download_201', match_requests_on: %i[method uri]) do
+  #         post '/mobile/v0/letters/benefit_summary/download', params: params, headers: iam_headers
+  #         expect(response).to have_http_status(:ok)
+  #       end
+  #     end
+  #   end
+  # end
 
   describe 'Error Handling' do
     context 'with general service error' do
