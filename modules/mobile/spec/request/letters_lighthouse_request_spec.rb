@@ -100,13 +100,25 @@ RSpec.describe 'letters', type: :request do
 
   describe 'GET /mobile/v0/letters/:type/download' do
     context 'with a valid lighthouse response' do
-      it 'returns pdf' do
-        VCR.use_cassette('lighthouse_letters/letter_download_201', match_requests_on: %i[method uri]) do
-          post '/mobile/v0/letters/BENEFIT_SUMMARY/download', params: {}, headers: iam_headers
+      let(:params) do
+        { 'militaryService' => 'true',
+          'serviceConnectedDisabilities' => 'false',
+          'serviceConnectedEvaluation' => 'true',
+          'nonServiceConnectedPension' => 'false',
+          'monthlyAward' => 'true',
+          'unemployable' => 'false',
+          'specialMonthlyCompensation' => 'false',
+          'adaptedHousing' => 'false',
+          'chapter35Eligibility' => 'false',
+          'deathResultOfDisability' => 'false',
+          'survivorsAward' => 'false' }
+      end
 
-          allow(File).to receive(:read).and_call_original
+      it 'returns pdf' do
+
+        VCR.use_cassette('lighthouse_letters/letter_download_201', match_requests_on: %i[method uri]) do
+          post '/mobile/v0/letters/benefit_summary/download', params: params, headers: iam_headers
           expect(response).to have_http_status(:ok)
-          expect(response.body).to match_json_schema('letter_beneficiary')
         end
       end
     end

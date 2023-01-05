@@ -22,8 +22,8 @@ module Mobile
           body
         end
 
-        def download_letter(type, _params)
-          perform(:get, "letters/#{type}/letter", { icn: @user.icn }, headers)
+        def download_letter(type, params)
+          perform(:get, "letters/#{type}/letter", { icn: @user.icn }.merge(params), headers)
         end
 
         def headers
