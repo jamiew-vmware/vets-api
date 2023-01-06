@@ -4,8 +4,6 @@ require 'login/errors'
 
 module Login
   class AfterLoginActions
-    include Accountable
-
     attr_reader :current_user
 
     def initialize(user)
@@ -16,7 +14,6 @@ module Login
       return unless current_user
 
       evss_create_account
-      update_account_login_stats(login_type)
 
       if Settings.test_user_dashboard.env == 'staging'
         TestUserDashboard::UpdateUser.new(current_user).call(Time.current)

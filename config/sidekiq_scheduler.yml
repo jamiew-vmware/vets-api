@@ -2,10 +2,6 @@
 # over all workers. The `every` option will run the job once per worker instance
 # at the specified interval.
 
-AccountLoginStatisticsJob:
-  cron: "0 6 * * * America/New_York"
-  description: "Gather account login statistics for statsd"
-
 AppealsApi::DailyErrorReport:
   cron: "0 23 * * MON-FRI America/New_York"
   class: AppealsApi::DailyErrorReport
