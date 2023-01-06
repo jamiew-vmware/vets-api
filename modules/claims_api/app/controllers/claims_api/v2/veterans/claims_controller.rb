@@ -190,7 +190,7 @@ module ClaimsApi
         end
 
         def latest_phase_type(data)
-          return if data.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).nil?
+          return if data&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).nil?
 
           if data&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).is_a?(Array)
             data[:benefit_claim_details_dto][:bnft_claim_lc_status][0][:phase_type]
