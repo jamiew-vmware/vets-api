@@ -388,6 +388,5 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
         end
       end
     end
-
   end
 end
