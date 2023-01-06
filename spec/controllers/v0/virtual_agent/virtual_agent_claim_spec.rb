@@ -332,7 +332,7 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
 
     context 'when the virtual_agent_user_access_records toggle is on' do
       it 'runs with user info and claims as action type when claims retrieval is successful' do
-        skip "the toggle has been removed, per va-virtual-agent#758; this test should be removed after verifying production"
+        skip 'the toggle has been removed, per va-virtual-agent#758; should be removed after verifying production'
         sign_in_as(user)
 
         VCR.use_cassette('evss/claims/claims_multiple_open_compensation_claims') do
@@ -351,7 +351,7 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
       end
 
       it 'runs with user info and claims as action type when claims retrieval fails' do
-        skip "the toggle has been removed, per va-virtual-agent#758; this test should be removed after verifying production"
+        skip 'the toggle has been removed, per va-virtual-agent#758; should be removed after verifying production'
         sign_in_as(user)
 
         VCR.use_cassette('evss/claims/claims_with_errors') do
@@ -372,7 +372,7 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
 
     context 'when the virtual_agent_user_access_records toggle is off' do
       it 'runs with user info and claims as action type when claims retrieval is successful' do
-        skip "the toggle has been removed, per va-virtual-agent#758; this test should be removed after verifying production"
+        skip 'the toggle has been removed, per va-virtual-agent#758; should be removed after verifying production'
         sign_in_as(user)
 
         VCR.use_cassette('evss/claims/claims_multiple_open_compensation_claims') do
@@ -387,7 +387,7 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
       end
 
       it 'runs with user info and claims as action type when claims retrieval fails' do
-        skip "the toggle has been removed, per va-virtual-agent#758; this test should be removed after verifying production"
+        skip 'the toggle has been removed, per va-virtual-agent#758; should be removed after verifying production'
         sign_in_as(user)
         VCR.use_cassette('evss/claims/claims_with_errors') do
           EVSS::RetrieveClaimsFromRemoteJob.new.perform(user.uuid)
