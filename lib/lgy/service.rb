@@ -17,26 +17,32 @@ module LGY
     end
 
     def coe_status
-      if get_determination.body['status'] == 'ELIGIBLE' && get_application.status == 404
-        { status: 'ELIGIBLE', reference_number: get_determination.body['reference_number'] }
-      elsif get_determination.body['status'] == 'UNABLE_TO_DETERMINE_AUTOMATICALLY' && get_application.status == 404
-        { status: 'UNABLE_TO_DETERMINE_AUTOMATICALLY', reference_number: get_determination.body['reference_number'] }
-      elsif get_determination.body['status'] == 'ELIGIBLE' && get_application.status == 200
-        { status: 'AVAILABLE', application_create_date: get_application.body['create_date'],
-          reference_number: get_determination.body['reference_number'] }
-      elsif get_determination.body['status'] == 'NOT_ELIGIBLE'
+      determination_status = get_determination.body['status']
+      determination_ref_num = get_determination.body['reference_number'] 
+      app_status = get_application.status
+      app_create_date = get_application.body['create_date']
+
+      case
+      when determination_status == 'ELIGIBLE' && app_status == 404
+        { status: 'ELIGIBLE', reference_number: determination_ref_num }
+      when determination_status == 'UNABLE_TO_DETERMINE_AUTOMATICALLY' && app_status == 404
+        { status: 'UNABLE_TO_DETERMINE_AUTOMATICALLY', reference_number: determination_ref_num }
+      when determination_status == 'ELIGIBLE' && app_status == 200
+        { status: 'AVAILABLE', application_create_date: app_create_date,
+          reference_number: determination_ref_num }
+      when determination_status == 'NOT_ELIGIBLE'
         { status: 'DENIED', application_create_date: get_determination.body['determination_date'],
-          reference_number: get_determination.body['reference_number'] }
-      elsif get_determination.body['status'] == 'PENDING' && get_application.status == 404
+          reference_number: determination_ref_num }
+      when determination_status == 'PENDING' && app_status == 404
         # Kelli said we'll never having a pending status w/o an application, but LGY sqa data is getting hand crafted
-        { status: 'PENDING', reference_number: get_determination.body['reference_number'] }
-      elsif get_determination.body['status'] == 'PENDING' && get_application.body['status'] == 'SUBMITTED'
+        { status: 'PENDING', reference_number: determination_ref_num }
+      when determination_status == 'PENDING' && get_application.body['status'] == 'SUBMITTED'
         # SUBMITTED & RECEIVED ARE COMBINED ON LGY SIDE
-        { status: 'PENDING', application_create_date: get_application.body['create_date'],
-          reference_number: get_determination.body['reference_number'] }
-      elsif get_determination.body['status'] == 'PENDING' && get_application.body['status'] == 'RETURNED'
-        { status: 'PENDING_UPLOAD', application_create_date: get_application.body['create_date'],
-          reference_number: get_determination.body['reference_number'] }
+        { status: 'PENDING', application_create_date: app_create_date,
+          reference_number: determination_ref_num }
+      when determination_status == 'PENDING' && get_application.body['status'] == 'RETURNED'
+        { status: 'PENDING_UPLOAD', application_create_date: app_create_date,
+          reference_number: determination_ref_num }
       end
     end
 
