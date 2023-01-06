@@ -95,11 +95,19 @@ class SavedClaim::CoeClaim < SavedClaim
         'loanEntitlementCharged' => loan_info['loanEntitlementCharged'],
         # propertyOwned also maps to the the stillOwn indicator on the LGY side
         'propertyOwned' => loan_info['propertyOwned'] || false,
+        # In UI: "A one-time restoration of entitlement"
+        # In LGY: "One Time Resto"
         'oneTimeRestorationRequested' => parsed_form['intent'] == 'ONETIMERESTORATION',
+        # In UI: "An Interest Rate Reduction Refinance Loan (IRRRL) to refinance the balance of a current VA home loan"
+        # In LGY: "IRRRL Ind"
         'irrrlRequested' => parsed_form['intent'] == 'IRRRL',
+        # In UI: "A regular cash-out refinance of a current VA home loan"
+        # In LGY: "Cash Out Refi"
         'cashoutRefinaceRequested' => parsed_form['intent'] == 'REFI',
-        'noRestorationEntitlementIndicator' => parsed_form['intent'] == 'INQUIRY' ||
-                                               parsed_form['intent'] == 'ONETIMERESTORATION',
+        # In UI: "An entitlement inquiry only"
+        # In LGY: "Entitlement Inquiry Only"
+        'noRestorationEntitlementIndicator' => parsed_form['intent'] == 'INQUIRY',
+        # LGY has requested `homeSellIndicator` always be null
         'homeSellIndicator' => nil,
         'propertyAddress1' => loan_info['propertyAddress']['propertyAddress1'],
         'propertyAddress2' => loan_info['propertyAddress']['propertyAddress2'] || '',
@@ -125,13 +133,19 @@ class SavedClaim::CoeClaim < SavedClaim
       military_branch = service_info['serviceBranch'].parameterize.underscore.upcase
       service_type = 'ACTIVE_DUTY'
 
+      # "Marine Corps" must be converted to "Marines" here, so that the `.any`
+      # block below can convert "Marine Corps" and "Marine Corps Reserve" to
+      # "MARINES", to meet LGY's requirements.
+      military_branch = military_branch.gsub('MARINE_CORPS', 'MARINES')
+
       %w[RESERVE NATIONAL_GUARD].any? do |service_branch|
         next unless military_branch.include?(service_branch)
 
         index = military_branch.index('_NATIONAL_GUARD') || military_branch.index('_RESERVE')
         military_branch = military_branch[0, index]
-        military_branch = 'AIR_FORCE' if military_branch == 'AIR' # Air National Guard
-        military_branch = 'MARINES' if military_branch == 'MARINE_CORPS' # Marine Corps Reserve
+        # "Air National Guard", unlike "Air Force Reserve", needs to be manually
+        # transformed to AIR_FORCE here, to meet LGY's requirements.
+        military_branch = 'AIR_FORCE' if military_branch == 'AIR'
         service_type = 'RESERVE_NATIONAL_GUARD'
       end
 

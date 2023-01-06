@@ -260,7 +260,7 @@ class User < Common::RedisStore
     add_person_identity = identity
     add_person_identity.edipi = edipi
     add_person_identity.ssn = ssn
-    add_person_identity.icn_with_aaid = icn_with_aaid
+    add_person_identity.icn = icn
     add_person_identity.search_token = search_token
     mpi.user_identity = add_person_identity
     mpi.add_person_proxy
@@ -360,10 +360,6 @@ class User < Common::RedisStore
       ID_CARD_ALLOWED_STATUSES.include?(veteran_status.title38_status)
   rescue # Default to false for any veteran_status error
     false
-  end
-
-  def identity_proofed?
-    loa3?
   end
 
   def mhv_account

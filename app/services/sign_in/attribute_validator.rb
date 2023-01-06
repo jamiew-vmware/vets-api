@@ -86,7 +86,16 @@ module SignIn
       return if auto_uplevel
 
       user_attribute_mismatch_checks
-      update_profile_response = mpi_service.update_profile(user_identity_from_attributes)
+      update_profile_response = mpi_service.update_profile(last_name: last_name,
+                                                           ssn: ssn,
+                                                           birth_date: birth_date,
+                                                           icn: mhv_icn || user_identity_from_attributes.icn,
+                                                           email: credential_email,
+                                                           address: address,
+                                                           idme_uuid: idme_uuid,
+                                                           logingov_uuid: logingov_uuid,
+                                                           edipi: edipi,
+                                                           first_name: first_name)
       unless update_profile_response&.ok?
         handle_error('User MPI record cannot be updated', Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE)
       end
@@ -144,12 +153,11 @@ module SignIn
                      Constants::ErrorCode::GENERIC_EXTERNAL_ISSUE,
                      error: Errors::MHVMissingMPIRecordError)
       end
-      user_identity_from_attributes.first_name = mpi_response_profile.given_names.first
-      user_identity_from_attributes.last_name = mpi_response_profile.family_name
-      user_identity_from_attributes.birth_date = mpi_response_profile.birth_date
-      user_identity_from_attributes.ssn = mpi_response_profile.ssn
-      user_identity_from_attributes.icn = mpi_response_profile.icn
-      user_identity_from_attributes.mhv_icn = mpi_response_profile.icn
+      @first_name = mpi_response_profile.given_names.first
+      @last_name = mpi_response_profile.family_name
+      @birth_date = mpi_response_profile.birth_date
+      @ssn = mpi_response_profile.ssn
+      @mhv_icn = mpi_response_profile.icn
     end
 
     def user_identity_from_attributes

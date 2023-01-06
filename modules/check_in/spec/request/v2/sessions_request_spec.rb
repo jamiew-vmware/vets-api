@@ -11,10 +11,6 @@ RSpec.describe 'V2::SessionsController', type: :request do
     allow(Flipper).to receive(:enabled?)
       .with('check_in_experience_enabled').and_return(true)
     allow(Flipper).to receive(:enabled?).with('check_in_experience_mock_enabled').and_return(false)
-    allow(Flipper).to receive(:enabled?).with('check_in_experience_chip_500_error_mapping_enabled')
-                                        .and_return(false)
-    allow(Flipper).to receive(:enabled?).with('check_in_experience_lorota_deletion_enabled')
-                                        .and_return(false)
 
     Rails.cache.clear
   end
@@ -153,51 +149,26 @@ RSpec.describe 'V2::SessionsController', type: :request do
       end
 
       context 'refresh_precheckin returns 500' do
-        context 'error mapping feature flag is off' do
-          before do
-            allow(Flipper).to receive(:enabled?).with('check_in_experience_chip_500_error_mapping_enabled')
-                                                .and_return(false)
-          end
-
-          it 'returns a valid unauthorized response ' do
-            VCR.use_cassette('check_in/chip/refresh_pre_check_in/refresh_pre_check_in_500', erb: { uuid: uuid }) do
-              VCR.use_cassette 'check_in/chip/token/token_200' do
-                get "/check_in/v2/sessions/#{uuid}?checkInType=preCheckIn"
-
-                expect(response.status).to eq(200)
-                expect(JSON.parse(response.body)).to eq(resp)
-              end
-            end
-          end
+        let(:error_resp) do
+          {
+            'errors' => [
+              {
+                'title' => 'Internal Server Error',
+                'detail' => 'Internal Server Error',
+                'code' => 'CHIP-API_500',
+                'status' => '500'
+              }
+            ]
+          }
         end
 
-        context 'error mapping feature flag is on' do
-          let(:error_resp) do
-            {
-              'errors' => [
-                {
-                  'title' => 'Internal Server Error',
-                  'detail' => 'Internal Server Error',
-                  'code' => 'CHIP-MAPPED-API_500',
-                  'status' => '500'
-                }
-              ]
-            }
-          end
+        it 'throws an error' do
+          VCR.use_cassette('check_in/chip/refresh_pre_check_in/refresh_pre_check_in_500', erb: { uuid: uuid }) do
+            VCR.use_cassette 'check_in/chip/token/token_200' do
+              get "/check_in/v2/sessions/#{uuid}?checkInType=preCheckIn"
 
-          before do
-            allow(Flipper).to receive(:enabled?).with('check_in_experience_chip_500_error_mapping_enabled')
-                                                .and_return(true)
-          end
-
-          it 'throws an error' do
-            VCR.use_cassette('check_in/chip/refresh_pre_check_in/refresh_pre_check_in_500', erb: { uuid: uuid }) do
-              VCR.use_cassette 'check_in/chip/token/token_200' do
-                get "/check_in/v2/sessions/#{uuid}?checkInType=preCheckIn"
-
-                expect(response.status).to eq(500)
-                expect(JSON.parse(response.body)).to eq(error_resp)
-              end
+              expect(response.status).to eq(500)
+              expect(JSON.parse(response.body)).to eq(error_resp)
             end
           end
         end
@@ -396,7 +367,18 @@ RSpec.describe 'V2::SessionsController', type: :request do
       end
 
       context 'in session created using last4' do
-        context 'with lorota delete feature flag turned off' do
+        context 'for retry_attempt < max_auth_retry_limit' do
+          let(:retry_count) { 1 }
+
+          before do
+            Rails.cache.write(
+              "authentication_retry_limit_#{uuid}",
+              retry_count,
+              namespace: 'check-in-lorota-v2-cache',
+              expires_in: 604_800
+            )
+          end
+
           it 'returns a 401 error' do
             VCR.use_cassette 'check_in/lorota/token/token_401' do
               post '/check_in/v2/sessions', session_params
@@ -405,69 +387,40 @@ RSpec.describe 'V2::SessionsController', type: :request do
               expect(JSON.parse(response.body)).to eq(resp)
             end
           end
+
+          it 'increments retry_attempt count in redis' do
+            VCR.use_cassette 'check_in/lorota/token/token_401' do
+              post '/check_in/v2/sessions', session_params
+
+              redis_retry_attempt = Rails.cache.read(
+                "authentication_retry_limit_#{uuid}",
+                namespace: 'check-in-lorota-v2-cache'
+              )
+              expect(redis_retry_attempt).to eq(retry_count + 1)
+            end
+          end
         end
 
-        context 'with lorota delete feature flag turned on' do
+        context 'for retry_attempt > max_auth_retry_limit' do
+          let(:retry_count) { 3 }
+
           before do
-            allow(Flipper).to receive(:enabled?).with('check_in_experience_lorota_deletion_enabled')
-                                                .and_return(true)
+            Rails.cache.write(
+              "authentication_retry_limit_#{uuid}",
+              retry_count,
+              namespace: 'check-in-lorota-v2-cache',
+              expires_in: 604_800
+            )
           end
 
-          context 'for retry_attempt < max_auth_retry_limit' do
-            let(:retry_count) { 1 }
+          it 'returns a 410 error' do
+            VCR.use_cassette('check_in/chip/delete/delete_from_lorota_200', erb: { uuid: uuid }) do
+              VCR.use_cassette 'check_in/chip/token/token_200' do
+                VCR.use_cassette 'check_in/lorota/token/token_401' do
+                  post '/check_in/v2/sessions', session_params
 
-            before do
-              Rails.cache.write(
-                "authentication_retry_limit_#{uuid}",
-                retry_count,
-                namespace: 'check-in-lorota-v2-cache',
-                expires_in: 604_800
-              )
-            end
-
-            it 'returns a 401 error' do
-              VCR.use_cassette 'check_in/lorota/token/token_401' do
-                post '/check_in/v2/sessions', session_params
-
-                expect(response.status).to eq(401)
-                expect(JSON.parse(response.body)).to eq(resp)
-              end
-            end
-
-            it 'increments retry_attempt count in redis' do
-              VCR.use_cassette 'check_in/lorota/token/token_401' do
-                post '/check_in/v2/sessions', session_params
-
-                redis_retry_attempt = Rails.cache.read(
-                  "authentication_retry_limit_#{uuid}",
-                  namespace: 'check-in-lorota-v2-cache'
-                )
-                expect(redis_retry_attempt).to eq(retry_count + 1)
-              end
-            end
-          end
-
-          context 'for retry_attempt > max_auth_retry_limit' do
-            let(:retry_count) { 3 }
-
-            before do
-              Rails.cache.write(
-                "authentication_retry_limit_#{uuid}",
-                retry_count,
-                namespace: 'check-in-lorota-v2-cache',
-                expires_in: 604_800
-              )
-            end
-
-            it 'returns a 410 error' do
-              VCR.use_cassette('check_in/chip/delete/delete_from_lorota_200', erb: { uuid: uuid }) do
-                VCR.use_cassette 'check_in/chip/token/token_200' do
-                  VCR.use_cassette 'check_in/lorota/token/token_401' do
-                    post '/check_in/v2/sessions', session_params
-
-                    expect(response.status).to eq(410)
-                    expect(JSON.parse(response.body)).to eq(error_response_410)
-                  end
+                  expect(response.status).to eq(410)
+                  expect(JSON.parse(response.body)).to eq(error_response_410)
                 end
               end
             end
@@ -488,7 +441,18 @@ RSpec.describe 'V2::SessionsController', type: :request do
           }
         end
 
-        context 'with lorota delete feature flag turned off' do
+        context 'for retry_attempt < max_auth_retry_limit' do
+          let(:retry_count) { 1 }
+
+          before do
+            Rails.cache.write(
+              "authentication_retry_limit_#{uuid}",
+              retry_count,
+              namespace: 'check-in-lorota-v2-cache',
+              expires_in: 604_800
+            )
+          end
+
           it 'returns a 401 error' do
             VCR.use_cassette 'check_in/lorota/token/token_401' do
               post '/check_in/v2/sessions', session_params_with_dob
@@ -497,95 +461,66 @@ RSpec.describe 'V2::SessionsController', type: :request do
               expect(JSON.parse(response.body)).to eq(resp)
             end
           end
+
+          it 'increments retry_attempt count in redis' do
+            VCR.use_cassette 'check_in/lorota/token/token_401' do
+              post '/check_in/v2/sessions', session_params_with_dob
+
+              redis_retry_attempt = Rails.cache.read(
+                "authentication_retry_limit_#{uuid}",
+                namespace: 'check-in-lorota-v2-cache'
+              )
+              expect(redis_retry_attempt).to eq(retry_count + 1)
+            end
+          end
         end
 
-        context 'with lorota delete feature flag turned on' do
+        context 'for retry_attempt > max_auth_retry_limit' do
+          let(:retry_count) { 4 }
+
           before do
-            allow(Flipper).to receive(:enabled?).with('check_in_experience_lorota_deletion_enabled')
-                                                .and_return(true)
+            Rails.cache.write(
+              "authentication_retry_limit_#{uuid}",
+              retry_count,
+              namespace: 'check-in-lorota-v2-cache',
+              expires_in: 604_800
+            )
           end
 
-          context 'for retry_attempt < max_auth_retry_limit' do
-            let(:retry_count) { 1 }
+          it 'returns a 410 error' do
+            VCR.use_cassette('check_in/chip/delete/delete_from_lorota_200', erb: { uuid: uuid }) do
+              VCR.use_cassette 'check_in/chip/token/token_200' do
+                VCR.use_cassette 'check_in/lorota/token/token_401' do
+                  post '/check_in/v2/sessions', session_params_with_dob
 
-            before do
-              Rails.cache.write(
-                "authentication_retry_limit_#{uuid}",
-                retry_count,
-                namespace: 'check-in-lorota-v2-cache',
-                expires_in: 604_800
-              )
-            end
-
-            it 'returns a 401 error' do
-              VCR.use_cassette 'check_in/lorota/token/token_401' do
-                post '/check_in/v2/sessions', session_params_with_dob
-
-                expect(response.status).to eq(401)
-                expect(JSON.parse(response.body)).to eq(resp)
-              end
-            end
-
-            it 'increments retry_attempt count in redis' do
-              VCR.use_cassette 'check_in/lorota/token/token_401' do
-                post '/check_in/v2/sessions', session_params_with_dob
-
-                redis_retry_attempt = Rails.cache.read(
-                  "authentication_retry_limit_#{uuid}",
-                  namespace: 'check-in-lorota-v2-cache'
-                )
-                expect(redis_retry_attempt).to eq(retry_count + 1)
+                  expect(response.status).to eq(410)
+                  expect(JSON.parse(response.body)).to eq(error_response_410)
+                end
               end
             end
           end
 
-          context 'for retry_attempt > max_auth_retry_limit' do
-            let(:retry_count) { 4 }
+          it 'returns a 410 unique error message for any token endpoint failure message' do
+            VCR.use_cassette('check_in/chip/delete/delete_from_lorota_200', erb: { uuid: uuid }) do
+              VCR.use_cassette 'check_in/chip/token/token_200' do
+                VCR.use_cassette 'check_in/lorota/token/token_dob_mismatch_401' do
+                  post '/check_in/v2/sessions', session_params_with_dob
 
-            before do
-              Rails.cache.write(
-                "authentication_retry_limit_#{uuid}",
-                retry_count,
-                namespace: 'check-in-lorota-v2-cache',
-                expires_in: 604_800
-              )
-            end
-
-            it 'returns a 410 error' do
-              VCR.use_cassette('check_in/chip/delete/delete_from_lorota_200', erb: { uuid: uuid }) do
-                VCR.use_cassette 'check_in/chip/token/token_200' do
-                  VCR.use_cassette 'check_in/lorota/token/token_401' do
-                    post '/check_in/v2/sessions', session_params_with_dob
-
-                    expect(response.status).to eq(410)
-                    expect(JSON.parse(response.body)).to eq(error_response_410)
-                  end
+                  expect(response.status).to eq(410)
+                  expect(JSON.parse(response.body)).to eq(error_response_410)
                 end
               end
             end
+          end
 
-            it 'returns a 410 unique error message for any token endpoint failure message' do
-              VCR.use_cassette('check_in/chip/delete/delete_from_lorota_200', erb: { uuid: uuid }) do
-                VCR.use_cassette 'check_in/chip/token/token_200' do
-                  VCR.use_cassette 'check_in/lorota/token/token_dob_mismatch_401' do
-                    post '/check_in/v2/sessions', session_params_with_dob
+          it 'still returns a 410 error message if delete endpoint fails' do
+            VCR.use_cassette('check_in/chip/delete/delete_from_lorota_500', erb: { uuid: uuid }) do
+              VCR.use_cassette 'check_in/chip/token/token_200' do
+                VCR.use_cassette 'check_in/lorota/token/token_dob_mismatch_401' do
+                  post '/check_in/v2/sessions', session_params_with_dob
 
-                    expect(response.status).to eq(410)
-                    expect(JSON.parse(response.body)).to eq(error_response_410)
-                  end
-                end
-              end
-            end
-
-            it 'still returns a 410 error message if delete endpoint fails' do
-              VCR.use_cassette('check_in/chip/delete/delete_from_lorota_500', erb: { uuid: uuid }) do
-                VCR.use_cassette 'check_in/chip/token/token_200' do
-                  VCR.use_cassette 'check_in/lorota/token/token_dob_mismatch_401' do
-                    post '/check_in/v2/sessions', session_params_with_dob
-
-                    expect(response.status).to eq(410)
-                    expect(JSON.parse(response.body)).to eq(error_response_410)
-                  end
+                  expect(response.status).to eq(410)
+                  expect(JSON.parse(response.body)).to eq(error_response_410)
                 end
               end
             end

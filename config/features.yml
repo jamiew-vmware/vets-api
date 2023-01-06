@@ -86,10 +86,6 @@ features:
     actor_type: user
     description: Enables the health care check-in experiences to show the pre-check-in experience.
     enable_in_development: true
-  check_in_experience_synthetic_metric_name:
-    actor_type: user
-    description: Enables updating the StatsD metric name for Synthetic check traffic
-    enable_in_development: true
   check_in_experience_translation_disclaimer_spanish_enabled:
     actor_type: user
     description: Enables disclaimer for possible untranslated content on spanish pages
@@ -110,14 +106,6 @@ features:
     actor_type: user
     description: Enables telephone appointments for check-in
     enable_in_development: false
-  check_in_experience_chip_500_error_mapping_enabled:
-    actor_type: user
-    description: Enables 500 mapping for CHIP endpoint in check-in & pre-checkin
-    enable_in_development: true
-  check_in_experience_lorota_deletion_enabled:
-    actor_type: cookie_id
-    description: Enables lorota delete endpoint call for users exceeding max auth attempts
-    enable_in_development: false
   check_in_experience_travel_reimbursement:
     actor_type: user
     description: Enables travel reimbursement workflow for day-of check-in application.
@@ -126,6 +114,10 @@ features:
     actor_type: user
     description: Enables browser monitoring for check-in applications.
     enable_in_development: false
+  check_in_experience_updated_appt_presentation:
+    actor_type: user
+    description: Enables updated appointment details presentation.
+    enable_in_development: true
   ch31_vbms_form_confirmation_email:
     actor_type: user
     description: Enables Ch31 form email submission confirmation after central mail
@@ -244,6 +236,9 @@ features:
   decision_review_daily_stuck_records_report_enabled:
     actor_type: user
     description: Enables the daily decision review stuck records Slack report
+  decision_review_monthly_stats_report_enabled:
+    actor_type: user
+    description: Enables the monthly decision review stats report email
   dependency_verification:
     actor_type: user
     description: Feature gates the dependency verification modal for updating the diaries service.
