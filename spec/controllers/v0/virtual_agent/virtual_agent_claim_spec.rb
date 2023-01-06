@@ -329,6 +329,5 @@ RSpec.describe 'VirtualAgentClaims', type: :request do
 
       allow(VirtualAgentStoreUserInfoJob).to receive(:perform_async)
     end
-
   end
 end
