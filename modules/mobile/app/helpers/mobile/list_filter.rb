@@ -9,33 +9,33 @@ module Mobile
 
     PERMITTED_OPERATIONS = %w[eq notEq].freeze
 
-    def initialize(collection, filter_params)
-      @collection = collection
+    def initialize(list, filter_params)
+      @list = list
       @filter_params = filter_params
     end
 
     # Accepts params:
-    #   @collection - a Common::Collection of Common::Base models
+    #   @list - a Common::Collection of Common::Base models
     #   @filter_params - should be an ActionController::Parameters object which should be passed in from the
     #     controller via @params[:filter]. This will pass in another ActionController::Parameters object.
     # Returns: a new Common::Collection of Common::Base models that match the provided filters
-    def self.matches(collection, filter_params)
-      filterer = new(collection, filter_params)
+    def self.matches(list, filter_params)
+      filterer = new(list, filter_params)
       filterer.result
     end
 
     def result
       validate!
-      metadata = @collection.metadata.merge(filter: filters)
-      Common::Collection.new(data: matches, metadata: metadata, errors: @collection.errors)
+      metadata = @list.metadata.merge(filter: filters)
+      Common::Collection.new(data: matches, metadata: metadata, errors: @list.errors)
     rescue FilterError => e
-      @collection.errors[:filter_error] = e.message if valid_collection?
+      @list.errors[:filter_error] = e.message if valid_collection?
       log_exception_to_sentry(e, extra_context_for_errors)
-      @collection
+      @list
     rescue => e
-      @collection.errors[:filter_error] = 'unknown filter error'
+      @list.errors[:filter_error] = 'unknown filter error'
       log_exception_to_sentry(e, extra_context_for_errors)
-      @collection
+      @list
     end
 
     # not adding full collection to extra context because it could be a large amount of data,
@@ -43,14 +43,13 @@ module Mobile
     def extra_context_for_errors
       extra_context = {}
       extra_context[:filters] = filters if filter_is_parameters?
-      extra_context[:collection_models] = filterable_models.map(&:to_s) if valid_collection?
       extra_context
     end
 
     private
 
     def matches
-      @collection.data.select { |record| record_matches_filters?(record) }
+      @list.data.select { |record| record_matches_filters?(record) }
     end
 
     def record_matches_filters?(record)
@@ -73,16 +72,11 @@ module Mobile
     end
 
     def validate!
-      raise FilterError, 'list must be a Common::Collection' unless valid_collection?
       raise FilterError, 'collection contains multiple models' unless collection_contains_single_model?
       raise FilterError, 'filters must be an ActionController::Parameters' unless filter_is_parameters?
       raise FilterError, 'invalid filter structure' unless valid_filter_structure?
       raise FilterError, 'invalid attribute' unless valid_filter_attributes?
       raise FilterError, 'invalid operation' unless valid_filter_operations?
-    end
-
-    def valid_collection?
-      @collection.is_a?(Common::Collection)
     end
 
     def collection_contains_single_model?
@@ -114,7 +108,7 @@ module Mobile
     end
 
     def filterable_models
-      @filterable_model ||= @collection.data.map(&:class).uniq
+      @filterable_model ||= @list.data.map(&:class).uniq
     end
 
     def model_attributes
