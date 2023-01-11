@@ -26,16 +26,13 @@ module Mobile
 
     def result
       validate!
-      metadata = @list.metadata.merge(filter: filters)
-      Common::Collection.new(data: matches, metadata: metadata, errors: @list.errors)
+      [matches, nil] # should errors be a hash?
     rescue FilterError => e
-      @list.errors[:filter_error] = e.message if valid_collection?
       log_exception_to_sentry(e, extra_context_for_errors)
-      @list
+      [@list, { filter_error: e.message }]
     rescue => e
-      @list.errors[:filter_error] = 'unknown filter error'
       log_exception_to_sentry(e, extra_context_for_errors)
-      @list
+      [@list, { filter_error: 'unknown filter error' }]
     end
 
     # not adding full collection to extra context because it could be a large amount of data,
@@ -43,13 +40,14 @@ module Mobile
     def extra_context_for_errors
       extra_context = {}
       extra_context[:filters] = filters if filter_is_parameters?
+      extra_context[:list_models] = filterable_models.map(&:to_s) # should probably be guarded
       extra_context
     end
 
     private
 
     def matches
-      @list.data.select { |record| record_matches_filters?(record) }
+      @list.select { |record| record_matches_filters?(record) }
     end
 
     def record_matches_filters?(record)
@@ -72,14 +70,14 @@ module Mobile
     end
 
     def validate!
-      raise FilterError, 'collection contains multiple models' unless collection_contains_single_model?
+      raise FilterError, 'list contains multiple models' unless list_contains_single_model?
       raise FilterError, 'filters must be an ActionController::Parameters' unless filter_is_parameters?
       raise FilterError, 'invalid filter structure' unless valid_filter_structure?
       raise FilterError, 'invalid attribute' unless valid_filter_attributes?
       raise FilterError, 'invalid operation' unless valid_filter_operations?
     end
 
-    def collection_contains_single_model?
+    def list_contains_single_model?
       filterable_models.count == 1
     end
 
@@ -108,7 +106,7 @@ module Mobile
     end
 
     def filterable_models
-      @filterable_model ||= @list.data.map(&:class).uniq
+      @filterable_model ||= @list.map(&:class).uniq
     end
 
     def model_attributes
