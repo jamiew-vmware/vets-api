@@ -8,6 +8,11 @@ require:
   - rubocop-rails
   - rubocop-rspec
   - rubocop-thread_safety
+  - ./last.rb
+
+Lint/LastKeywordArgument:
+  Enabled: true
+  Safe: false
 
 AllCops:
   NewCops: disable
