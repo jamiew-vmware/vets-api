@@ -299,6 +299,8 @@ GEM
     debase-ruby_core_source (0.10.18)
     declarative (0.0.20)
     deep_merge (1.2.2)
+    deprecation_toolkit (2.0.1)
+      activesupport (>= 5.2)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     diff-lcs (1.5.0)
@@ -994,6 +996,7 @@ DEPENDENCIES
   date_validator
   ddtrace
   debts_api!
+  deprecation_toolkit
   dhp_connected_devices!
   dogstatsd-ruby
   dry-struct
