@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_01_12_221719) do
+ActiveRecord::Schema.define(version: 2023_01_12_230529) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gin"
@@ -911,12 +911,14 @@ ActiveRecord::Schema.define(version: 2023_01_12_221719) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "backing_idme_uuid"
+    t.bigint "user_credential_emails_id"
     t.index ["backing_idme_uuid"], name: "index_user_verifications_on_backing_idme_uuid"
     t.index ["dslogon_uuid"], name: "index_user_verifications_on_dslogon_uuid", unique: true
     t.index ["idme_uuid"], name: "index_user_verifications_on_idme_uuid", unique: true
     t.index ["logingov_uuid"], name: "index_user_verifications_on_logingov_uuid", unique: true
     t.index ["mhv_uuid"], name: "index_user_verifications_on_mhv_uuid", unique: true
     t.index ["user_account_id"], name: "index_user_verifications_on_user_account_id"
+    t.index ["user_credential_emails_id"], name: "index_user_verifications_on_user_credential_emails_id"
     t.index ["verified_at"], name: "index_user_verifications_on_verified_at"
   end
 
@@ -1110,5 +1112,6 @@ ActiveRecord::Schema.define(version: 2023_01_12_221719) do
   add_foreign_key "oauth_sessions", "user_verifications"
   add_foreign_key "terms_and_conditions_acceptances", "user_accounts"
   add_foreign_key "user_verifications", "user_accounts"
+  add_foreign_key "user_verifications", "user_credential_emails", column: "user_credential_emails_id"
   add_foreign_key "veteran_device_records", "devices"
 end
