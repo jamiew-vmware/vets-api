@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_12_14_161602) do
+ActiveRecord::Schema.define(version: 2023_01_12_221719) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gin"
@@ -880,7 +880,6 @@ ActiveRecord::Schema.define(version: 2022_12_14_161602) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.text "services"
-    t.string "loa"
     t.uuid "idme_uuid"
     t.text "notes"
     t.string "mfa_code"
@@ -893,6 +892,13 @@ ActiveRecord::Schema.define(version: 2022_12_14_161602) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["icn"], name: "index_user_accounts_on_icn", unique: true
+  end
+
+  create_table "user_credential_emails", force: :cascade do |t|
+    t.text "credential_email_ciphertext"
+    t.text "encrypted_kms_key"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "user_verifications", force: :cascade do |t|
