@@ -148,7 +148,7 @@ module ClaimsApi
 
         def build_claim_structure(data:, lighthouse_id:, upstream_id:) # rubocop:disable Metrics/MethodLength
           {
-            claim_date: data[:claim_dt].present? ? Date.parse(data[:claim_dt].to_s).strftime('%D') : nil,
+            claim_date: data[:claim_dt].present? ? format_bgs_date(data[:claim_dt]) : nil,
             claim_id: upstream_id,
             claim_phase_dates: build_claim_phase_attributes(data, 'index'),
             claim_type_code: data[:bnft_claim_type_cd],
@@ -203,15 +203,22 @@ module ClaimsApi
           end
         end
 
-        def get_bgs_phase_completed_dates(data)
-          return unless data&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).is_a?(Array)
+        def bgs_details_is_array?(bgs_details)
+          bgs_details&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).is_a?(Array)
+        end
 
+        def get_bgs_phase_completed_dates(data)
           phase_dates = {}
-          data[:benefit_claim_details_dto][:bnft_claim_lc_status].each do |lc|
-            unless lc[:phase_type_change_ind].nil?
-              phase_number = lc[:phase_type_change_ind] == 'N' ? '1' : lc[:phase_type_change_ind].split('').last
-              phase_dates["phase#{phase_number}CompleteDate"] = format_bgs_date(lc[:max_est_claim_complete_dt])
+          if bgs_details_is_array?(data)
+            data[:benefit_claim_details_dto][:bnft_claim_lc_status].each do |lc|
+              unless lc[:phase_type_change_ind].nil?
+                phase_number = lc[:phase_type_change_ind] == 'N' ? '1' : lc[:phase_type_change_ind].split('').last
+                phase_dates["phase#{phase_number}CompleteDate"] = format_bgs_date(lc[:phase_chngd_dt])
+              end
             end
+          else
+            date = data[:benefit_claim_details_dto][:bnft_claim_lc_status][:phase_chngd_dt]
+            phase_dates["phase1CompleteDate"] = format_bgs_date(date)
           end
           phase_dates
         end
@@ -229,6 +236,19 @@ module ClaimsApi
 
           phase_change_date = data[:phase_chngd_dt] || data[:benefit_claim_details_dto][:phase_chngd_dt]
           format_bgs_date(phase_change_date)
+        end
+
+        def extract_date(bgs_details)
+          bgs_details.is_a?(Array) ? bgs_details.first[:phase_chngd_dt] : bgs_details[:phase_chngd_dt]
+        end
+
+        def format_bgs_phase_date(data)
+          bgs_details = data.dig(:bnft_claim_lc_status)
+          return {} if bgs_details.nil?
+
+          date = extract_date(bgs_details)
+
+          format_bgs_date(date)
         end
 
         def detect_current_status(data)
@@ -380,7 +400,7 @@ module ClaimsApi
             {
               claim_phase_dates:
                 {
-                  phase_change_date: format_bgs_phase_chng_dates(bgs_claim),
+                  phase_change_date: format_bgs_phase_date(bgs_claim[:benefit_claim_details_dto]),
                   current_phase_back: current_phase_back(bgs_claim),
                   latest_phase_type: latest_phase_type(bgs_claim),
                   previous_phases: get_bgs_phase_completed_dates(bgs_claim)
