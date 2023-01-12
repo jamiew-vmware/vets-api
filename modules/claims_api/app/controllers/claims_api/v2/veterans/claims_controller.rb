@@ -218,7 +218,7 @@ module ClaimsApi
             end
           else
             date = data[:benefit_claim_details_dto][:bnft_claim_lc_status][:phase_chngd_dt]
-            phase_dates["phase1CompleteDate"] = format_bgs_date(date)
+            phase_dates['phase1CompleteDate'] = format_bgs_date(date)
           end
           phase_dates
         end
@@ -243,7 +243,7 @@ module ClaimsApi
         end
 
         def format_bgs_phase_date(data)
-          bgs_details = data.dig(:bnft_claim_lc_status)
+          bgs_details = data[:bnft_claim_lc_status]
           return {} if bgs_details.nil?
 
           date = extract_date(bgs_details)
