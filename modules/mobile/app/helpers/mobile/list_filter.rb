@@ -15,10 +15,10 @@ module Mobile
     end
 
     # Accepts params:
-    #   @list - a Common::Collection of Common::Base models
+    #   @list - an array of Common::Base models
     #   @filter_params - should be an ActionController::Parameters object which should be passed in from the
     #     controller via @params[:filter]. This will pass in another ActionController::Parameters object.
-    # Returns: a new Common::Collection of Common::Base models that match the provided filters
+    # Returns: an array of Common::Base models that match the provided filters
     def self.matches(list, filter_params)
       filterer = new(list, filter_params)
       filterer.result
@@ -35,12 +35,10 @@ module Mobile
       [@list, { filter_error: 'unknown filter error' }]
     end
 
-    # not adding full collection to extra context because it could be a large amount of data,
-    # could expose PII, and isn't likely to be relevant
     def extra_context_for_errors
       extra_context = {}
       extra_context[:filters] = filters if filter_is_parameters?
-      extra_context[:list_models] = filterable_models.map(&:to_s) # should probably be guarded
+      extra_context[:list_models] = filterable_models.map(&:to_s) if valid_list?
       extra_context
     end
 
@@ -70,11 +68,16 @@ module Mobile
     end
 
     def validate!
+      raise FilterError, 'list must be an array' unless valid_list?
       raise FilterError, 'list contains multiple models' unless list_contains_single_model?
       raise FilterError, 'filters must be an ActionController::Parameters' unless filter_is_parameters?
       raise FilterError, 'invalid filter structure' unless valid_filter_structure?
       raise FilterError, 'invalid attribute' unless valid_filter_attributes?
       raise FilterError, 'invalid operation' unless valid_filter_operations?
+    end
+
+    def valid_list?
+      @list.is_a? Array
     end
 
     def list_contains_single_model?

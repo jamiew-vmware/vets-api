@@ -37,6 +37,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
 
       results, errors = Mobile::ListFilter.matches(list, params)
       expect(results).to eq([dog, puppy])
+      expect(errors).to be_nil
     end
 
     it 'excludes non-matches with the not_eq operator' do
@@ -45,6 +46,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
 
       results, errors = Mobile::ListFilter.matches(list, params)
       expect(results).to eq([cat])
+      expect(errors).to be_nil
     end
 
     it 'handles multiple filters' do
@@ -53,6 +55,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
 
       results, errors = Mobile::ListFilter.matches(list, params)
       expect(results).to eq([puppy])
+      expect(errors).to be_nil
     end
 
     it 'matches non-string attributes' do
@@ -61,6 +64,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
 
       results, errors = Mobile::ListFilter.matches(list, params)
       expect(results).to eq([puppy])
+      expect(errors).to be_nil
     end
 
     it 'returns a collection with an empty array of data when no matches are found' do
@@ -68,8 +72,8 @@ describe Mobile::ListFilter, aggregate_failures: true do
       params = paramiterize(filters)
 
       results, errors = Mobile::ListFilter.matches(list, params)
-      expect(results.class).to eq(Array)
       expect(results).to eq([])
+      expect(errors).to be_nil
     end
 
     it 'returns the collection when empty filters are provided' do
@@ -77,6 +81,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
 
       results, errors = Mobile::ListFilter.matches(list, params)
       expect(results).to eq(list)
+      expect(errors).to be_nil
     end
 
     describe 'data validation and error handling' do
@@ -88,14 +93,15 @@ describe Mobile::ListFilter, aggregate_failures: true do
         Settings.sentry.dsn = nil
       end
 
-      # it 'logs an error and returns original collection when collection is not a Common::Collection' do
-      #   params = paramiterize({})
+      it 'logs an error and returns original list when list is not an array' do
+        params = paramiterize({})
 
-      #   expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
-      #   expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash })
-      #   result, errors = Mobile::ListFilter.matches([], params)
-      #   expect(result).to eq([])
-      # end
+        expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
+        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash })
+        result, errors = Mobile::ListFilter.matches({}, params)
+        expect(result).to eq({})
+        expect(errors).to eq({ filter_error: 'list must be an array' })
+      end
 
       it 'logs an error and returns original collection when filters are not an ActionController::Params object' do
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
