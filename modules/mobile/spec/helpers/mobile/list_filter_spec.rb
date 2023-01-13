@@ -39,8 +39,8 @@ describe Mobile::ListFilter, aggregate_failures: true do
       expect(results).to eq([dog, puppy])
     end
 
-    it 'excludes non-matches with the notEq operator' do
-      filters = { species: { notEq: 'dog' } }
+    it 'excludes non-matches with the not_eq operator' do
+      filters = { species: { not_eq: 'dog' } }
       params = paramiterize(filters)
 
       results, errors = Mobile::ListFilter.matches(list, params)
@@ -48,7 +48,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
     end
 
     it 'handles multiple filters' do
-      filters = { species: { eq: 'dog' }, age: { notEq: 5 } }
+      filters = { species: { eq: 'dog' }, age: { not_eq: 5 } }
       params = paramiterize(filters)
 
       results, errors = Mobile::ListFilter.matches(list, params)
@@ -139,7 +139,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
       end
 
       it 'logs an error and returns original collection when the filter contains multiple operations' do
-        params = paramiterize({ genus: { eq: 'dog', notEq: 'cat' } })
+        params = paramiterize({ genus: { eq: 'dog', not_eq: 'cat' } })
 
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
         expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['Pet'] })

@@ -7,7 +7,7 @@ module Mobile
     class FilterError < StandardError
     end
 
-    PERMITTED_OPERATIONS = %w[eq notEq].freeze
+    PERMITTED_OPERATIONS = %w[eq not_eq].freeze
 
     def initialize(list, filter_params)
       @list = list
@@ -62,7 +62,7 @@ module Mobile
           case operation.to_sym
           when :eq
             record[match_attribute] == coerced_value
-          when :notEq
+          when :not_eq
             record[match_attribute] != coerced_value
           end
         end
