@@ -26,7 +26,7 @@ module Mobile
 
     def result
       validate!
-      [matches, nil] # should errors be a hash?
+      [matches, nil]
     rescue FilterError => e
       log_exception_to_sentry(e, extra_context_for_errors)
       [@list, { filter_error: e.message }]
@@ -69,7 +69,8 @@ module Mobile
 
     def validate!
       raise FilterError, 'list must be an array' unless valid_list?
-      raise FilterError, 'list contains multiple models' unless list_contains_single_model?
+      raise FilterError, 'list contains multiple data types' unless list_contains_single_type?
+      raise FilterError, 'list items must be Common::Base models' unless list_composed_of_models?
       raise FilterError, 'filters must be an ActionController::Parameters' unless filter_is_parameters?
       raise FilterError, 'invalid filter structure' unless valid_filter_structure?
       raise FilterError, 'invalid attribute' unless valid_filter_attributes?
@@ -80,8 +81,12 @@ module Mobile
       @list.is_a? Array
     end
 
-    def list_contains_single_model?
+    def list_contains_single_type?
       filterable_models.count == 1
+    end
+
+    def list_composed_of_models?
+      filterable_model.ancestors.include? Common::Base
     end
 
     def filter_is_parameters?
