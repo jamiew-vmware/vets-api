@@ -99,7 +99,7 @@ FactoryBot.define do
     ptcpnt_clmant_nm { Faker::Name.name }
     ptcpnt_mail_addrs_id { Faker::Number.number(digits: 8) }
     ptcpnt_pymt_addrs_id { Faker::Number.number(digits: 8) }
-    ptcpnt_vet_id { Faker::Number.number(digits: 9) }
+    ptcpnt_vet_id { '13367440' } #Faker::Number.number(digits: 9) }
     ptcpnt_vsr_id { Faker::Number.number(digits: 9) }
     station_of_jurisdiction { Faker::Number.number(digits: 3) }
     status_type_cd { 'RFD' }
@@ -121,7 +121,7 @@ FactoryBot.define do
     phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
     phase_type { 'Pending Decision Approval' }
     ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
-    ptcpnt_vet_id { Faker::Number.number(digits: 17) }
+    ptcpnt_vet_id { '13367440' } #Faker::Number.number(digits: 9) }
     phase_type_change_ind { '76' }
     claim_status_type { 'Compensation' }
     bnft_claim_lc_status { [(association :bnft_claim_lc_status_one).to_h] }
@@ -131,7 +131,7 @@ FactoryBot.define do
     phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
     phase_type { 'Pending Decision Approval' }
     ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
-    ptcpnt_vet_id { Faker::Number.number(digits: 17) }
+    ptcpnt_vet_id { '13367440' } #Faker::Number.number(digits: 9) }
     phase_type_change_ind { '76' }
     claim_status_type { 'Compensation' }
     bnft_claim_lc_status {

@@ -30,6 +30,8 @@ module ClaimsApi
           if lighthouse_claim.blank? && bgs_claim.blank?
             raise ::Common::Exceptions::ResourceNotFound.new(detail: 'Claim not found')
           end
+          debugger
+          validate_id_with_icn(bgs_claim, lighthouse_claim)
 
           output = generate_show_output(bgs_claim: bgs_claim, lighthouse_claim: lighthouse_claim)
           blueprint_options = { base_url: request.base_url, veteran_id: params[:veteranId] }
@@ -47,6 +49,14 @@ module ClaimsApi
         def evss_docs_service
           EVSS::DocumentsService.new(auth_headers)
         end
+
+
+      def validate_id_with_icn(bgs_claim, lighthouse_claim)
+        claim_prtcpnt_id = bgs_claim[:benefit_claim_details_dto].present? ? bgs_claim[:benefit_claim_details_dto][:ptcpnt_vet_id] : lighthouse_claim[:ptcpnt_vet_id]
+        if claim_prtcpnt_id != target_veteran.participant_id
+          raise ::Common::Exceptions::Forbidden.new(detail: 'The ICN does not match the participant id of the claim/s being requested')
+        end
+      end
 
         def generate_show_output(bgs_claim:, lighthouse_claim:) # rubocop:disable Metrics/MethodLength
           if lighthouse_claim.present? && bgs_claim.present?

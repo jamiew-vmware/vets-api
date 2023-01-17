@@ -4,11 +4,12 @@ require 'rails_helper'
 require 'token_validation/v2/client'
 
 RSpec.describe 'Claims', type: :request do
-  let(:veteran_id) { '1013062086V794840' }
-  let(:claim_id) { '600131328' }
+  let(:veteran_id) { '1000123456V123456' } #'1013062086V794840' }
+  let(:claim_id) { '600208426' } #'600131328' }
   let(:all_claims_path) { "/services/claims/v2/veterans/#{veteran_id}/claims" }
   let(:claim_by_id_path) { "/services/claims/v2/veterans/#{veteran_id}/claims/#{claim_id}" }
   let(:scopes) { %w[claim.read] }
+  let(:mvi_response) { build(:mvi_profile) }
 
   describe 'Claims' do
     describe 'index' do
@@ -24,8 +25,11 @@ RSpec.describe 'Claims', type: :request do
                 )
               expect(ClaimsApi::AutoEstablishedClaim)
                 .to receive(:where).and_return([])
+              expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                .to receive(:target_veteran).and_return(mvi_response)
 
               get all_claims_path, headers: auth_header
+              debugger
               expect(response.status).to eq(200)
             end
           end
@@ -350,6 +354,7 @@ RSpec.describe 'Claims', type: :request do
                   .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                 expect(ClaimsApi::AutoEstablishedClaim)
                   .to receive(:get_by_id_and_icn).and_return(lh_claim)
+                # expect_any_instance_of(ClaimsApi::V2::ApplicationController).to receive(:target_veteran).and_return(mvi_response)
 
                 get claim_by_id_path, headers: auth_header
 
@@ -665,7 +670,7 @@ RSpec.describe 'Claims', type: :request do
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:get_by_id_and_icn).and_return(nil)
-
+debugger
                   get claim_by_id_path, headers: auth_header
 
                   json_response = JSON.parse(response.body)
