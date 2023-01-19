@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'common/models/resource'
+
 module Mobile
   class ListFilter
     include SentryLogging
@@ -51,17 +53,13 @@ module Mobile
     def record_matches_filters?(record)
       filters.all? do |match_attribute, operations_and_values|
         match_attribute = match_attribute.to_sym
-        model_attribute = model_attributes.find { |att| att.name == match_attribute }
-        coercer = model_attribute.coercer
 
         operations_and_values.each_pair.all? do |operation, value|
-          coerced_value = coercer.call(value)
-
           case operation.to_sym
           when :eq
-            record[match_attribute] == coerced_value
+            record[match_attribute].to_s == value
           when :not_eq
-            record[match_attribute] != coerced_value
+            record[match_attribute].to_s != value
           end
         end
       end
@@ -86,7 +84,7 @@ module Mobile
     end
 
     def list_composed_of_models?
-      filterable_model.ancestors.include? Common::Base
+      common_base? || common_resource?
     end
 
     def filter_is_parameters?
@@ -102,7 +100,7 @@ module Mobile
     end
 
     def valid_filter_attributes?
-      filter_attributes.all? { |key| key.to_sym.in? model_attributes.map(&:name) }
+      filter_attributes.all? { |key| key.to_sym.in? model_attributes }
     end
 
     def valid_filter_operations?
@@ -117,8 +115,18 @@ module Mobile
       @filterable_model ||= @list.map(&:class).uniq
     end
 
+    def common_base?
+      filterable_model.ancestors.include?(Common::Base)
+    end
+
+    def common_resource?
+      filterable_model.ancestors.include?(Common::Resource)
+    end
+
     def model_attributes
-      filterable_model.attribute_set
+      return filterable_model.attribute_set.map(&:name) if common_base?
+
+      filterable_model.attribute_names
     end
 
     # to_unsafe_hash is only unsafe in the context of mass assignment as part of the strong params pattern
