@@ -1,22 +1,29 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'common/models/resource'
 
-class Pet < Common::Base
+class PetBase < Common::Base
   attribute :species, String
   attribute :age, Integer
   attribute :fully_vaccinated, Boolean
 end
 
+class PetResource < Common::Resource
+  attribute :species, Types::String
+  attribute :age, Types::Integer
+  attribute :fully_vaccinated, Types::Bool.optional
+end
+
 describe Mobile::ListFilter, aggregate_failures: true do
   let(:dog) do
-    Pet.new(species: 'dog', age: 5, fully_vaccinated: true)
+    PetResource.new(species: 'dog', age: 5, fully_vaccinated: true)
   end
   let(:puppy) do
-    Pet.new(species: 'dog', age: 1, fully_vaccinated: false)
+    PetResource.new(species: 'dog', age: 1, fully_vaccinated: false)
   end
   let(:cat) do
-    Pet.new(species: 'cat', age: 12, fully_vaccinated: true)
+    PetResource.new(species: 'cat', age: 12, fully_vaccinated: nil)
   end
   let(:list) do
     [dog, puppy, cat]
@@ -93,6 +100,28 @@ describe Mobile::ListFilter, aggregate_failures: true do
         Settings.sentry.dsn = nil
       end
 
+      it 'works with an array of Common::Resource objects' do
+        filters = { species: { eq: 'dog' } }
+        params = paramiterize(filters)
+
+        results, errors = Mobile::ListFilter.matches(list, params)
+        expect(results).to eq([dog, puppy])
+        expect(errors).to be_nil
+      end
+
+      it 'works with an array of Common::Base objects' do
+        filters = { species: { eq: 'dog' } }
+        params = paramiterize(filters)
+        base_pup = PetBase.new(species: 'dog', age: 1, fully_vaccinated: false)
+        base_dog = PetBase.new(species: 'dog', age: 5, fully_vaccinated: true)
+        base_cat = PetBase.new(species: 'cat', age: 12, fully_vaccinated: nil)
+        base_list = [base_pup, base_dog, base_cat]
+
+        results, errors = Mobile::ListFilter.matches(base_list, params)
+        expect(results).to eq([base_pup, base_dog])
+        expect(errors).to be_nil
+      end
+
       it 'logs an error and returns original list when list is not an array' do
         params = paramiterize({})
 
@@ -105,7 +134,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
 
       it 'logs an error and returns original list when filters are not an ActionController::Params object' do
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
-        expect(Raven).to receive(:extra_context).with({ list_models: ['Pet'] })
+        expect(Raven).to receive(:extra_context).with({ list_models: ['PetResource'] })
         result, errors = Mobile::ListFilter.matches(list, {})
         expect(result).to eq(list)
         expect(errors).to eq({ filter_error: 'filters must be an ActionController::Parameters' })
@@ -117,7 +146,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
 
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
         expect(Raven).to receive(:extra_context).with(
-          { filters: params.to_unsafe_hash, list_models: %w[Pet String] }
+          { filters: params.to_unsafe_hash, list_models: %w[PetResource String] }
         )
         result, errors = Mobile::ListFilter.matches(mixed_list, params)
         expect(result).to eq(mixed_list)
@@ -132,14 +161,14 @@ describe Mobile::ListFilter, aggregate_failures: true do
         expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['Hash'] })
         result, errors = Mobile::ListFilter.matches(invalid_list, params)
         expect(result).to eq(invalid_list)
-        expect(errors).to eq({ filter_error: 'list items must be Common::Base models' })
+        expect(errors).to eq({ filter_error: 'list items must be Common::Resource or Common::Base models' })
       end
 
       it 'logs an error and returns original list when the model does contain the requested filter attribute' do
         params = paramiterize({ genus: { eq: 'dog' } })
 
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
-        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['Pet'] })
+        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['PetResource'] })
         result, errors = Mobile::ListFilter.matches(list, params)
         expect(result).to eq(list)
         expect(errors).to eq({ filter_error: 'invalid attribute' })
@@ -149,7 +178,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
         params = ActionController::Parameters.new({ genus: 'dog' })
 
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
-        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['Pet'] })
+        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['PetResource'] })
         result, errors = Mobile::ListFilter.matches(list, params)
         expect(result).to eq(list)
         expect(errors).to eq({ filter_error: 'invalid filter structure' })
@@ -159,7 +188,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
         params = paramiterize({ genus: { eq: 'dog', not_eq: 'cat' } })
 
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
-        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['Pet'] })
+        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['PetResource'] })
         result, errors = Mobile::ListFilter.matches(list, params)
         expect(result).to eq(list)
         expect(errors).to eq({ filter_error: 'invalid filter structure' })
@@ -169,7 +198,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
         params = paramiterize({ species: { fuzzyEq: 'dog' } })
 
         expect(Raven).to receive(:capture_exception).once.with(Mobile::ListFilter::FilterError, { level: 'error' })
-        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['Pet'] })
+        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['PetResource'] })
         result, errors = Mobile::ListFilter.matches(list, params)
         expect(result).to eq(list)
         expect(errors).to eq({ filter_error: 'invalid operation' })
@@ -180,7 +209,7 @@ describe Mobile::ListFilter, aggregate_failures: true do
         allow_any_instance_of(Mobile::ListFilter).to receive(:matches).and_raise(StandardError)
 
         expect(Raven).to receive(:capture_exception).once.with(StandardError, { level: 'error' })
-        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['Pet'] })
+        expect(Raven).to receive(:extra_context).with({ filters: params.to_unsafe_hash, list_models: ['PetResource'] })
         result, errors = Mobile::ListFilter.matches(list, params)
         expect(result).to eq(list)
         expect(errors).to eq({ filter_error: 'unknown filter error' })

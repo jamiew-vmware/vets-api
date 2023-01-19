@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'common/models/resource'
-
 module Mobile
   class ListFilter
     include SentryLogging
@@ -68,7 +66,7 @@ module Mobile
     def validate!
       raise FilterError, 'list must be an array' unless valid_list?
       raise FilterError, 'list contains multiple data types' unless list_contains_single_type?
-      raise FilterError, 'list items must be Common::Base models' unless list_composed_of_models?
+      raise FilterError, 'list items must be Common::Resource or Common::Base models' unless list_composed_of_models?
       raise FilterError, 'filters must be an ActionController::Parameters' unless filter_is_parameters?
       raise FilterError, 'invalid filter structure' unless valid_filter_structure?
       raise FilterError, 'invalid attribute' unless valid_filter_attributes?
@@ -116,17 +114,15 @@ module Mobile
     end
 
     def common_base?
-      filterable_model.ancestors.include?(Common::Base)
+      filterable_model.ancestors.map(&:to_s).include?('Common::Base')
     end
 
     def common_resource?
-      filterable_model.ancestors.include?(Common::Resource)
+      filterable_model.ancestors.map(&:to_s).include?('Common::Resource')
     end
 
     def model_attributes
-      return filterable_model.attribute_set.map(&:name) if common_base?
-
-      filterable_model.attribute_names
+      common_resource? ? filterable_model.attribute_names : filterable_model.attribute_set.map(&:name)
     end
 
     # to_unsafe_hash is only unsafe in the context of mass assignment as part of the strong params pattern
