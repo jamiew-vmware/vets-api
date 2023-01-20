@@ -275,7 +275,8 @@ module SM
     # @return [Common::Collection[Message]]
     #
     def get_message_history(id)
-      path = "message/#{id}/history"
+      # path = "message/#{id}/history"
+      path = "message/#{id}/messagesforthread"
       json = perform(:get, path, nil, token_headers).body
       Common::Collection.new(Message, json)
     end
