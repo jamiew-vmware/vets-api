@@ -9,9 +9,11 @@ module Mobile
 
       def index
         resource = client.get_history_rxs
-        resource = params[:filter].present? ? resource.find_by(filter_params) : resource
+        results, errors = ListFilter.matches(resource.data, params[:filter])
+        # this would normally not be necessary but we're using the collection sorting
+        resource.data = results
         resource = resource.sort(params[:sort])
-        page_resource, page_meta_data = paginate(resource.attributes)
+        page_resource, page_meta_data = paginate(resource.data, errors)
 
         render json: Mobile::V0::PrescriptionsSerializer.new(page_resource, page_meta_data)
       end
@@ -41,9 +43,9 @@ module Mobile
         )
       end
 
-      def paginate(records)
+      def paginate(records, errors)
         url = request.base_url + request.path
-        Mobile::PaginationHelper.paginate(list: records, validated_params: pagination_params, url: url)
+        Mobile::PaginationHelper.paginate(list: records, validated_params: pagination_params, url: url, errors: errors)
       end
 
       def filter_params

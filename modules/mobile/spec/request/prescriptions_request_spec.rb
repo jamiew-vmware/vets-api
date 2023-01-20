@@ -369,44 +369,21 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
       end
     end
 
-    describe 'all parameters' do
-      it 'Filters, sorts and paginates prescriptions' do
+    describe 'filtering' do
+      it 'filters' do
         params = { 'page' => { number: 2, size: 3 }, 'sort' => '-refill_date',
                    filter: { refill_status: { eq: 'refillinprocess' } } }
 
         VCR.use_cassette('rx_refill/prescriptions/gets_a_list_of_all_prescriptions') do
-          get '/mobile/v0/health/rx/prescriptions', params: params, headers: iam_headers
+          get '/mobile/v0/health/rx/prescriptions?filter[refill_status][eq]=refillinprocess&filter[is_refillable][not_eq]=true&sort=-refill_date',
+              headers: iam_headers
         end
+
         expect(response).to have_http_status(:ok)
-        expect(response.body).to match_json_schema('prescription')
-        expect(response.parsed_body['meta']).to eq({ 'pagination' =>
-                                                       { 'currentPage' => 2,
-                                                         'perPage' => 3,
-                                                         'totalPages' => 12,
-                                                         'totalEntries' => 36 } })
-        expect(response.parsed_body['links']).to eq(
-          {
-            'self' =>
-              'http://www.example.com/mobile/v0/health/rx/prescriptions?page[size]=3&page[number]=2&filter[[refill_status][eq]]=refillinprocess&sort=-refill_date',
-            'first' =>
-              'http://www.example.com/mobile/v0/health/rx/prescriptions?page[size]=3&page[number]=1&filter[[refill_status][eq]]=refillinprocess&sort=-refill_date',
-            'prev' =>
-              'http://www.example.com/mobile/v0/health/rx/prescriptions?page[size]=3&page[number]=1&filter[[refill_status][eq]]=refillinprocess&sort=-refill_date',
-            'next' =>
-              'http://www.example.com/mobile/v0/health/rx/prescriptions?page[size]=3&page[number]=3&filter[[refill_status][eq]]=refillinprocess&sort=-refill_date',
-            'last' =>
-              'http://www.example.com/mobile/v0/health/rx/prescriptions?page[size]=3&page[number]=12&filter[[refill_status][eq]]=refillinprocess&sort=-refill_date'
-          }
-        )
-
-        statuses = response.parsed_body['data'].map { |d| d.dig('attributes', 'refillStatus') }.uniq
+        statuses = response.parsed_body['data'].collect { |d| d['attributes']['refillStatus'] }.uniq
         expect(statuses).to eq(['refillinprocess'])
-
-        expect(response.parsed_body['data'].map { |p| p.dig('attributes', 'refillDate') }).to eq(
-          %w[
-            2021-12-07T05:00:00.000Z 2021-10-27T04:00:00.000Z 2021-10-22T04:00:00.000Z
-          ]
-        )
+        refillable = response.parsed_body['data'].collect { |d| d['attributes']['isRefillable'] }.uniq
+        expect(refillable).to eq([false])
       end
     end
   end

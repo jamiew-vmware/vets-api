@@ -25,8 +25,10 @@ module Mobile
         )
 
         appointments = fetch_appointments(validated_params)
+        appointments, errors = ListFilter.matches(appointments, params[:filter])
+
         appointments = filter_by_date_range(appointments, validated_params)
-        page_appointments, page_meta_data = paginate(appointments, validated_params)
+        page_appointments, page_meta_data = paginate(appointments, validated_params, errors)
 
         render json: Mobile::V0::AppointmentSerializer.new(page_appointments, page_meta_data)
       end
@@ -103,9 +105,10 @@ module Mobile
         end
       end
 
-      def paginate(appointments, validated_params)
+      def paginate(appointments, validated_params, errors)
         url = request.base_url + request.path
-        Mobile::PaginationHelper.paginate(list: appointments, validated_params: validated_params, url: url)
+        Mobile::PaginationHelper.paginate(list: appointments, validated_params: validated_params, url: url,
+                                          errors: errors)
       end
 
       def include_pending?(params)

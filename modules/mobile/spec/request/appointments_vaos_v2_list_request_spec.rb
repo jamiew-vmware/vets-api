@@ -63,6 +63,34 @@ RSpec.describe 'vaos v2 appointments', type: :request do
     let(:end_date) { Time.zone.parse('2023-01-01T00:00:00Z').iso8601 }
     let(:params) { { startDate: start_date, endDate: end_date, include: ['pending'] } }
 
+    describe 'filtering' do
+      it 'finds matches' do
+        mock_clinic
+        VCR.use_cassette('appointments/VAOS_v2/get_facility_200',
+                         match_requests_on: %i[method uri]) do
+          VCR.use_cassette('appointments/VAOS_v2/get_appointment_200',
+                           match_requests_on: %i[method uri]) do
+            get '/mobile/v0/appointments?filter[status][eq]=CANCELLED', headers: iam_headers, params: params
+          end
+        end
+        expect(response.status).to eq(200)
+        expect(response.parsed_body['data'].collect { |item| item['id'] }).to eq(['121133'])
+      end
+
+      it 'excludes non-matches' do
+        mock_clinic
+        VCR.use_cassette('appointments/VAOS_v2/get_facility_200',
+                         match_requests_on: %i[method uri]) do
+          VCR.use_cassette('appointments/VAOS_v2/get_appointment_200',
+                           match_requests_on: %i[method uri]) do
+            get '/mobile/v0/appointments?filter[status][eq]=WHATEVS', headers: iam_headers, params: params
+          end
+        end
+        expect(response.status).to eq(200)
+        expect(response.parsed_body['data'].collect { |item| item['id'] }).to eq([])
+      end
+    end
+
     context 'backfill facility service returns data' do
       before { mock_clinic }
 
