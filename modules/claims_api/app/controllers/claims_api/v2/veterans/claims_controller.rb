@@ -163,13 +163,14 @@ module ClaimsApi
             claim_phase_dates: build_claim_phase_attributes(data, 'index'),
             claim_type_code: data[:bnft_claim_type_cd],
             claim_type: data[:claim_status_type],
+            close_date: data[:claim_complete_dt].present? ? format_bgs_date(data[:claim_complete_dt]) : nil,
             contention_list: data[:contentions]&.split(','),
             decision_letter_sent: map_yes_no_to_boolean('decision_notification_sent',
                                                         data[:decision_notification_sent]),
             development_letter_sent: map_yes_no_to_boolean('development_letter_sent', data[:development_letter_sent]),
             documents_needed: map_yes_no_to_boolean('attention_needed', data[:attention_needed]),
             end_product_code: data[:end_prdct_type_cd],
-            evidence_waiver_submitted_5103: map_yes_no_to_boolean('filed5103_waiver_ind', data[:filed5103_waiver_ind]),
+            evidence_waiver_submitted_5103: waiver_boolean(data[:filed5103_waiver_ind]),
             jurisdiction: data[:regional_office_jrsdctn],
             lighthouse_id: lighthouse_id,
             max_est_claim_date: data[:max_est_claim_complete_dt],
@@ -304,6 +305,10 @@ module ClaimsApi
             Rails.logger.error "Expected key '#{key}' to be Yes/No. Got '#{s}'."
             nil
           end
+        end
+
+        def waiver_boolean(filed5103_waiver_ind)
+          filed5103_waiver_ind.present? ? filed5103_waiver_ind.downcase == 'y' : false
         end
 
         def map_bgs_tracked_items(bgs_claim) # rubocop:disable Metrics/MethodLength

@@ -73,6 +73,30 @@ FactoryBot.define do
     end
   end
 
+  factory :auto_established_claim_with_auth_headers, class: 'ClaimsApi::AutoEstablishedClaim' do
+    id { SecureRandom.uuid }
+    status { 'pending' }
+    source { 'oddball' }
+    evss_id { nil }
+    auth_headers { { va_eauth_pnid: '123456789', va_eauth_pid: '123456789' } }
+    form_data do
+      json = JSON.parse(File
+             .read(::Rails.root.join(*'/modules/claims_api/spec/fixtures/form_526_json_api.json'.split('/')).to_s))
+      json['data']['attributes']
+    end
+    flashes { form_data.dig('veteran', 'flashes') }
+    special_issues do
+      if form_data['disabilities'].present? && form_data['disabilities'].first['specialIssues'].present?
+        mapper = ClaimsApi::SpecialIssueMappers::Bgs.new
+        [{ code: form_data['disabilities'].first['diagnosticCode'],
+           name: form_data['disabilities'].first['name'],
+           special_issues: form_data['disabilities'].first['specialIssues'].map { |si| mapper.code_from_name!(si) } }]
+      else
+        []
+      end
+    end
+  end
+
   factory :bgs_response, class: OpenStruct do
     bnft_claim_dto { (association :benefit_claim_details_dto).to_h }
   end
@@ -116,6 +140,19 @@ FactoryBot.define do
   factory :bgs_response_with_lc_status, class: OpenStruct do
     benefit_claim_details_dto { (association :bgs_claim_details_dto_with_lc_status).to_h }
   end
+  factory :bgs_response_with_under_review_lc_status, class: OpenStruct do
+    benefit_claim_details_dto { (association :bgs_claim_details_dto_with_under_review_lc_status).to_h }
+  end
+  factory :bgs_claim_details_dto_with_under_review_lc_status, class: OpenStruct do
+    benefit_claim_id { '111111111' }
+    phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
+    phase_type { 'Under Review' }
+    ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
+    ptcpnt_vet_id { Faker::Number.number(digits: 17) }
+    phase_type_change_ind { '76' }
+    claim_status_type { 'Compensation' }
+    bnft_claim_lc_status { [(association :bnft_claim_lc_status_two).to_h] }
+  end
   factory :bgs_claim_details_dto_with_one_lc_status, class: OpenStruct do
     benefit_claim_id { '111111111' }
     phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
@@ -133,6 +170,7 @@ FactoryBot.define do
     ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
     ptcpnt_vet_id { '13367440' } #Faker::Number.number(digits: 9) }
     phase_type_change_ind { '76' }
+    claim_complete_dt { Faker::Time.backward(days: 3, period: :morning) }
     claim_status_type { 'Compensation' }
     bnft_claim_lc_status {
       [(association :bnft_claim_lc_status_one).to_h, (association :bnft_claim_lc_status_two).to_h,
