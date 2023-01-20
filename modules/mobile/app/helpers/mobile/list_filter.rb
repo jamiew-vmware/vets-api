@@ -74,7 +74,7 @@ module Mobile
     end
 
     def valid_list?
-      @list.is_a? Array
+      @list.is_a?(Array)
     end
 
     def list_contains_single_type?
@@ -98,11 +98,11 @@ module Mobile
     end
 
     def valid_filter_attributes?
-      filter_attributes.all? { |key| key.to_sym.in? model_attributes }
+      filter_attributes.all? { |key| key.to_sym.in?(model_attributes) }
     end
 
     def valid_filter_operations?
-      operations.all? { |operation| operation.in? PERMITTED_OPERATIONS }
+      operations.all? { |operation| operation.in?(PERMITTED_OPERATIONS) }
     end
 
     def filterable_model
