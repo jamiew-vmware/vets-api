@@ -23,6 +23,7 @@ module ClaimsApi
         end
 
         def show
+          debugger
           lighthouse_claim = find_lighthouse_claim!(claim_id: params[:id])
           benefit_claim_id = lighthouse_claim.present? ? lighthouse_claim.evss_id : params[:id]
           bgs_claim = find_bgs_claim!(claim_id: benefit_claim_id)
@@ -30,9 +31,9 @@ module ClaimsApi
           if lighthouse_claim.blank? && bgs_claim.blank?
             raise ::Common::Exceptions::ResourceNotFound.new(detail: 'Claim not found')
           end
-          debugger
-          validate_id_with_icn(bgs_claim, lighthouse_claim)
 
+          validate_id_with_icn(bgs_claim, lighthouse_claim)
+          
           output = generate_show_output(bgs_claim: bgs_claim, lighthouse_claim: lighthouse_claim)
           blueprint_options = { base_url: request.base_url, veteran_id: params[:veteranId] }
 
@@ -50,13 +51,20 @@ module ClaimsApi
           EVSS::DocumentsService.new(auth_headers)
         end
 
+        def validate_id_with_icn(bgs_claim, lighthouse_claim)
+          debugger
+          claim_prtcpnt_id = if bgs_claim&.dig(:benefit_claim_details_dto).present?
+            bgs_claim&.dig(:benefit_claim_details_dto, :ptcpnt_vet_id)
+                             else
+                              lighthouse_claim&.dig('ptcpnt_vet_id')
+                             end
 
-      def validate_id_with_icn(bgs_claim, lighthouse_claim)
-        claim_prtcpnt_id = bgs_claim[:benefit_claim_details_dto].present? ? bgs_claim[:benefit_claim_details_dto][:ptcpnt_vet_id] : lighthouse_claim[:ptcpnt_vet_id]
-        if claim_prtcpnt_id != target_veteran.participant_id
-          raise ::Common::Exceptions::Forbidden.new(detail: 'The ICN does not match the participant id of the claim/s being requested')
+          if claim_prtcpnt_id != target_veteran.participant_id
+            raise ::Common::Exceptions::Forbidden.new(
+              detail: 'The ICN does not match the participant id for this claim'
+            )
+          end
         end
-      end
 
         def generate_show_output(bgs_claim:, lighthouse_claim:) # rubocop:disable Metrics/MethodLength
           if lighthouse_claim.present? && bgs_claim.present?
@@ -127,7 +135,9 @@ module ClaimsApi
         end
 
         def find_lighthouse_claim!(claim_id:)
-          lighthouse_claim = ClaimsApi::AutoEstablishedClaim.get_by_id_and_icn(claim_id, target_veteran.mpi.icn)
+          debugger
+          icn = target_veteran&.dig('mpi', 'icn') || target_veteran&.dig(:mpi, :icn)
+          lighthouse_claim = ClaimsApi::AutoEstablishedClaim.get_by_id_and_icn(claim_id, icn)
 
           if looking_for_lighthouse_claim?(claim_id: claim_id) && lighthouse_claim.blank?
             raise ::Common::Exceptions::ResourceNotFound.new(detail: 'Claim not found')

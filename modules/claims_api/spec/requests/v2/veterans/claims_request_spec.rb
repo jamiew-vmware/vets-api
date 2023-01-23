@@ -4,12 +4,11 @@ require 'rails_helper'
 require 'token_validation/v2/client'
 
 RSpec.describe 'Claims', type: :request do
-  let(:veteran_id) { '1000123456V123456' } #'1013062086V794840' }
-  let(:claim_id) { '600208426' } #'600131328' }
+  let(:veteran_id) { '1013062086V794840' }
+  let(:claim_id) { '600131328' }
   let(:all_claims_path) { "/services/claims/v2/veterans/#{veteran_id}/claims" }
   let(:claim_by_id_path) { "/services/claims/v2/veterans/#{veteran_id}/claims/#{claim_id}" }
   let(:scopes) { %w[claim.read] }
-  let(:mvi_response) { build(:mvi_profile) }
 
   describe 'Claims' do
     describe 'index' do
@@ -25,11 +24,8 @@ RSpec.describe 'Claims', type: :request do
                 )
               expect(ClaimsApi::AutoEstablishedClaim)
                 .to receive(:where).and_return([])
-              expect_any_instance_of(ClaimsApi::V2::ApplicationController)
-                .to receive(:target_veteran).and_return(mvi_response)
 
               get all_claims_path, headers: auth_header
-              debugger
               expect(response.status).to eq(200)
             end
           end
@@ -342,7 +338,21 @@ RSpec.describe 'Claims', type: :request do
 
     describe 'show' do
       let(:bgs_claim_response) { build(:bgs_response_with_one_lc_status).to_h }
-
+      let(:target_veteran) do
+        OpenStruct.new(
+          icn: "1013062086V794840", 
+          first_name: "abraham", 
+          last_name: "lincoln", 
+          loa: {current: 3, highest: 3}, 
+          ssn: "796111863", 
+          edipi: "8040545646", 
+          participant_id: "6799256540",
+          mpi: OpenStruct.new(
+            icn: "1013062086V794840", 
+            profile: OpenStruct.new(ssn: "796111863")
+          )
+        )
+      end
       describe ' BGS attributes' do
         it 'are listed' do
           lh_claim = create(:auto_established_claim, status: 'PENDING', veteran_icn: veteran_id,
@@ -350,12 +360,15 @@ RSpec.describe 'Claims', type: :request do
           with_okta_user(scopes) do |auth_header|
             VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
               VCR.use_cassette('evss/documents/get_claim_documents') do
+                expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                  .to receive(:user_is_target_veteran?).and_return(false)
+                expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                  .to receive(:user_represents_veteran?).and_return(false)
                 expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                   .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                 expect(ClaimsApi::AutoEstablishedClaim)
                   .to receive(:get_by_id_and_icn).and_return(lh_claim)
-                # expect_any_instance_of(ClaimsApi::V2::ApplicationController).to receive(:target_veteran).and_return(mvi_response)
-
+                  debugger
                 get claim_by_id_path, headers: auth_header
 
                 json_response = JSON.parse(response.body)
@@ -401,6 +414,10 @@ RSpec.describe 'Claims', type: :request do
         context 'when a Lighthouse claim does not exist' do
           it 'returns a 404' do
             with_okta_user(scopes) do |auth_header|
+              expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                .to receive(:user_is_target_veteran?).and_return(false)
+              expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                .to receive(:user_represents_veteran?).and_return(false)
               expect(ClaimsApi::AutoEstablishedClaim).to receive(:get_by_id_and_icn).and_return(nil)
 
               get claim_by_id_path, headers: auth_header
@@ -570,6 +587,7 @@ RSpec.describe 'Claims', type: :request do
                     get claim_by_id_path, headers: auth_header
 
                     json_response = JSON.parse(response.body)
+                    debugger
                     expect(response.status).to eq(200)
                     expect(json_response).to be_an_instance_of(Hash)
                     expect(json_response['claimId']).to eq('111111111')
@@ -588,6 +606,10 @@ RSpec.describe 'Claims', type: :request do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_is_target_veteran?).and_return(false)
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_represents_veteran?).and_return(false)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
@@ -636,6 +658,10 @@ RSpec.describe 'Claims', type: :request do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_is_target_veteran?).and_return(false)
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_represents_veteran?).and_return(false)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
@@ -670,6 +696,10 @@ RSpec.describe 'Claims', type: :request do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_is_target_veteran?).and_return(false)
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_represents_veteran?).and_return(false)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
@@ -694,6 +724,10 @@ RSpec.describe 'Claims', type: :request do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_is_target_veteran?).and_return(false)
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_represents_veteran?).and_return(false)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
                   expect(ClaimsApi::AutoEstablishedClaim)
@@ -716,11 +750,15 @@ RSpec.describe 'Claims', type: :request do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  allow_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:target_veteran).and_return(target_veteran)
+                    allow_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_is_target_veteran?).and_return(true)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:get_by_id_and_icn).and_return(nil)
-debugger
+
                   get claim_by_id_path, headers: auth_header
 
                   json_response = JSON.parse(response.body)
@@ -741,6 +779,10 @@ debugger
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_is_target_veteran?).and_return(false)
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_represents_veteran?).and_return(false)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                   expect(ClaimsApi::AutoEstablishedClaim)
@@ -769,6 +811,10 @@ debugger
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_is_target_veteran?).and_return(false)
+                  expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                    .to receive(:user_represents_veteran?).and_return(false)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
                   expect(ClaimsApi::AutoEstablishedClaim)
@@ -835,6 +881,10 @@ debugger
           it "returns a claim with the 'errors' attribute populated" do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('evss/claims/claims') do
+                expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                  .to receive(:user_is_target_veteran?).and_return(false)
+                expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                  .to receive(:user_represents_veteran?).and_return(false)
                 get claim_by_id_path, headers: auth_header
 
                 json_response = JSON.parse(response.body)
@@ -923,6 +973,10 @@ debugger
           context 'when valid' do
             it 'returns a 200' do
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
+                expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                  .to receive(:user_is_target_veteran?).and_return(false)
+                expect_any_instance_of(ClaimsApi::V2::ApplicationController)
+                  .to receive(:user_represents_veteran?).and_return(false)
                 allow(JWT).to receive(:decode).and_return(nil)
                 allow(Token).to receive(:new).and_return(
                   OpenStruct.new(
@@ -937,6 +991,7 @@ debugger
                   .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(nil)
 
                 get claim_by_id_path, headers: { 'Authorization' => 'Bearer HelloWorld' }
+                
                 expect(response.status).to eq(200)
               end
             end
