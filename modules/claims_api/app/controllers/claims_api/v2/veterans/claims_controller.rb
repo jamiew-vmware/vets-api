@@ -23,7 +23,6 @@ module ClaimsApi
         end
 
         def show
-          debugger
           lighthouse_claim = find_lighthouse_claim!(claim_id: params[:id])
           benefit_claim_id = lighthouse_claim.present? ? lighthouse_claim.evss_id : params[:id]
           bgs_claim = find_bgs_claim!(claim_id: benefit_claim_id)
@@ -31,7 +30,7 @@ module ClaimsApi
           if lighthouse_claim.blank? && bgs_claim.blank?
             raise ::Common::Exceptions::ResourceNotFound.new(detail: 'Claim not found')
           end
-debugger
+
           validate_id_with_icn(bgs_claim, lighthouse_claim, params[:veteranId])
 
           output = generate_show_output(bgs_claim: bgs_claim, lighthouse_claim: lighthouse_claim)
@@ -52,14 +51,12 @@ debugger
         end
 
         def validate_id_with_icn(bgs_claim, lighthouse_claim, icn)
-          debugger
           claim_prtcpnt_id = if bgs_claim&.dig(:benefit_claim_details_dto).present?
                                bgs_claim&.dig(:benefit_claim_details_dto, :ptcpnt_vet_id)
                              end
-                             debugger
           veteran_icn = if lighthouse_claim.present? && lighthouse_claim['veteran_icn'].present?
-                              lighthouse_claim['veteran_icn']
-                             end
+                          lighthouse_claim['veteran_icn']
+                        end
 
           if claim_prtcpnt_id != target_veteran.participant_id && veteran_icn != icn
             raise ::Common::Exceptions::Forbidden.new(

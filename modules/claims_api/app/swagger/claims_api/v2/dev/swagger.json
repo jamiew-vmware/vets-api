@@ -724,34 +724,7 @@
                   ],
                   "tempJurisdiction": null,
                   "trackedItems": [
-                    {
-                      "closedDate": null,
-                      "description": null,
-                      "displayedName": "Request 1",
-                      "dvlpmtTc": "CLMNTRQST",
-                      "openedDate": null,
-                      "overdue": true,
-                      "requestedDate": "2022-02-04",
-                      "suspenseDate": "2022-03-06",
-                      "trackedItemId": 325525,
-                      "trackedItemStatus": "NEEDED",
-                      "uploaded": false,
-                      "uploadsAllowed": false
-                    },
-                    {
-                      "closedDate": null,
-                      "description": null,
-                      "displayedName": "Request 2",
-                      "dvlpmtTc": "CLMNTRQST",
-                      "openedDate": null,
-                      "overdue": true,
-                      "requestedDate": "2022-02-04",
-                      "suspenseDate": "2022-03-06",
-                      "trackedItemId": 325524,
-                      "trackedItemStatus": "NEEDED",
-                      "uploaded": false,
-                      "uploadsAllowed": false
-                    }
+
                   ]
                 },
                 "schema": {
