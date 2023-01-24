@@ -8,6 +8,7 @@ FactoryBot.define do
     status { 'pending' }
     source { 'oddball' }
     evss_id { nil }
+    # ptcpnt_vet_id { '6799256540' }
     auth_headers { { test: ('a'..'z').to_a.shuffle.join } }
     form_data do
       json = JSON.parse(File
@@ -147,8 +148,8 @@ FactoryBot.define do
     benefit_claim_id { '111111111' }
     phase_chngd_dt { Faker::Time.backward(days: 5, period: :morning) }
     phase_type { 'Under Review' }
-    ptcpnt_clmant_id { Faker::Number.number(digits: 17) }
-    ptcpnt_vet_id { Faker::Number.number(digits: 17) }
+    ptcpnt_clmant_id { '6799256540' }
+    ptcpnt_vet_id { '6799256540' }
     phase_type_change_ind { '76' }
     claim_status_type { 'Compensation' }
     bnft_claim_lc_status { [(association :bnft_claim_lc_status_two).to_h] }

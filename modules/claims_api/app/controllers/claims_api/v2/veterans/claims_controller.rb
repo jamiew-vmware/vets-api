@@ -31,9 +31,9 @@ module ClaimsApi
           if lighthouse_claim.blank? && bgs_claim.blank?
             raise ::Common::Exceptions::ResourceNotFound.new(detail: 'Claim not found')
           end
+debugger
+          validate_id_with_icn(bgs_claim, lighthouse_claim, params[:veteranId])
 
-          validate_id_with_icn(bgs_claim, lighthouse_claim)
-          
           output = generate_show_output(bgs_claim: bgs_claim, lighthouse_claim: lighthouse_claim)
           blueprint_options = { base_url: request.base_url, veteran_id: params[:veteranId] }
 
@@ -51,15 +51,17 @@ module ClaimsApi
           EVSS::DocumentsService.new(auth_headers)
         end
 
-        def validate_id_with_icn(bgs_claim, lighthouse_claim)
+        def validate_id_with_icn(bgs_claim, lighthouse_claim, icn)
           debugger
           claim_prtcpnt_id = if bgs_claim&.dig(:benefit_claim_details_dto).present?
-            bgs_claim&.dig(:benefit_claim_details_dto, :ptcpnt_vet_id)
-                             else
-                              lighthouse_claim&.dig('ptcpnt_vet_id')
+                               bgs_claim&.dig(:benefit_claim_details_dto, :ptcpnt_vet_id)
+                             end
+                             debugger
+          veteran_icn = if lighthouse_claim.present? && lighthouse_claim['veteran_icn'].present?
+                              lighthouse_claim['veteran_icn']
                              end
 
-          if claim_prtcpnt_id != target_veteran.participant_id
+          if claim_prtcpnt_id != target_veteran.participant_id && veteran_icn != icn
             raise ::Common::Exceptions::Forbidden.new(
               detail: 'The ICN does not match the participant id for this claim'
             )
@@ -135,9 +137,7 @@ module ClaimsApi
         end
 
         def find_lighthouse_claim!(claim_id:)
-          debugger
-          icn = target_veteran&.dig('mpi', 'icn') || target_veteran&.dig(:mpi, :icn)
-          lighthouse_claim = ClaimsApi::AutoEstablishedClaim.get_by_id_and_icn(claim_id, icn)
+          lighthouse_claim = ClaimsApi::AutoEstablishedClaim.get_by_id_and_icn(claim_id, target_veteran.mpi.icn)
 
           if looking_for_lighthouse_claim?(claim_id: claim_id) && lighthouse_claim.blank?
             raise ::Common::Exceptions::ResourceNotFound.new(detail: 'Claim not found')
