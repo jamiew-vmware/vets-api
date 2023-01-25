@@ -50,7 +50,7 @@ module ClaimsApi
           EVSS::DocumentsService.new(auth_headers)
         end
 
-        def validate_id_with_icn(bgs_claim, lighthouse_claim, icn)
+        def validate_id_with_icn(bgs_claim, lighthouse_claim, request_icn)
           claim_prtcpnt_id = if bgs_claim&.dig(:benefit_claim_details_dto).present?
                                bgs_claim&.dig(:benefit_claim_details_dto, :ptcpnt_vet_id)
                              end
@@ -58,9 +58,9 @@ module ClaimsApi
                           lighthouse_claim['veteran_icn']
                         end
 
-          if claim_prtcpnt_id != target_veteran.participant_id && veteran_icn != icn
-            raise ::Common::Exceptions::Forbidden.new(
-              detail: 'The ICN does not match the participant id for this claim'
+          if claim_prtcpnt_id != target_veteran.participant_id && veteran_icn != request_icn
+            raise ::Common::Exceptions::ResourceNotFound.new(
+              detail: 'Invalid claim ID for the veteran identified.'
             )
           end
         end
