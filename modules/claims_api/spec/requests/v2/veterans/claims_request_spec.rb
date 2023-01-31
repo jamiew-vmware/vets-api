@@ -338,10 +338,8 @@ RSpec.describe 'Claims', type: :request do
 
     describe 'show' do
       let(:bgs_claim_response) { build(:bgs_response_with_one_lc_status).to_h }
-      let(:target_veteran) { build(:mpi_profile_response).to_h }
-
       before do
-        target_veteran['participant_id'] = bgs_claim_response[:benefit_claim_details_dto][:ptcpnt_vet_id]
+        allow_any_instance_of(ClaimsApi::V2::Veterans::ClaimsController).to receive(:validate_id_with_icn).and_return(nil)
       end
 
       describe ' BGS attributes' do
@@ -351,8 +349,6 @@ RSpec.describe 'Claims', type: :request do
           with_okta_user(scopes) do |auth_header|
             VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
               VCR.use_cassette('evss/documents/get_claim_documents') do
-                allow_any_instance_of(ClaimsApi::V2::ApplicationController)
-                  .to receive(:target_veteran).and_return(OpenStruct.new(target_veteran))
                 expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                   .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
                 expect(ClaimsApi::AutoEstablishedClaim)

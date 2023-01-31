@@ -189,6 +189,7 @@ describe 'Claims',
             with_okta_user(scopes) do
               VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                 VCR.use_cassette('evss/documents/get_claim_documents') do
+                  allow_any_instance_of(ClaimsApi::V2::Veterans::ClaimsController).to receive(:validate_id_with_icn).and_return(nil)
                   expect(ClaimsApi::AutoEstablishedClaim).to receive(:get_by_id_and_icn).and_return(nil)
                   expect_any_instance_of(BGS::EbenefitsBenefitClaimsStatus)
                     .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_response)
