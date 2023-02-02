@@ -4,6 +4,20 @@ require 'sidekiq/form526_backup_submission_process/processor'
 
 module Sidekiq
   module Form526BackupSubmissionProcess
+<<<<<<< HEAD
+=======
+    class Form526BackgroundLoader
+      extend ActiveSupport::Concern
+      include Sidekiq::Worker
+      sidekiq_options retry: 0
+
+      def perform(id)
+        Processor.new(id, get_upload_location_on_instantiation: false,
+                          ignore_expiration: true).upload_pdf_submission_to_s3
+      end
+    end
+
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
     class Submit
       extend ActiveSupport::Concern
       include SentryLogging

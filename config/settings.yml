@@ -70,7 +70,7 @@ binaries:
   # you can specify a full path in settings.local.yml if necessary
   pdfinfo: pdfinfo
   pdftk: pdftk
-  clamdscan: /usr/bin/clamdscan
+  clamdscan: /etc/clamav/clamd.conf
 
 db_encryption_key: f01ff8ebd1a2b053ad697ae1f0d86adb
 
@@ -281,6 +281,7 @@ modules_appeals_api:
       # List of flags to indicate parts of documentation that are still WIP and not ready for production.
       # See the rswag:appeals_api:dev rake task, spec_helper, and DocHelpers#wip_doc_enabled? for usage info to opt-in.
       # NOTE: Do not remove this key even if it's empty.
+<<<<<<< HEAD
   higher_level_review_updater_enabled: true
   legacy_appeals_enabled: true
   supplemental_claims_enabled: true
@@ -315,6 +316,9 @@ modules_appeals_api:
       class: AppealsApi::NoticeOfDisagreementUploadStatusBatch
       description: "Update NoticeOfDisagreement statuses with their Central Mail status"
       every: "60m"
+=======
+  legacy_appeals_enabled: true
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
   reports:
     daily_decision_review:
       enabled: false
@@ -855,6 +859,7 @@ flipper:
     - brian.seek@civicactions.com # Brian Seek (Civic Actions), FE Engineer Health Care Experience/Check-In
     - clark@governmentcio.com # Designer on GCIO
     - cameron@oddball.io
+    - casey.williams@adhocteam.us # Backend Engineer, Benefits & Appeals
     - chika.adibemma@adhocteam.us
     - corey.parker@gcio.com # Corey Parker (GCIO), Product Manager Health Care Experience/Check-In
     - cory.trimm@va.gov
@@ -871,7 +876,11 @@ flipper:
     - eric.voshall@adhocteam.us
     - erik@adhocteam.us
     - ethan.teague@civicactions.com
+<<<<<<< HEAD
     - eugene.lynch@coforma.io # Eugene Lynch (Coforma), Benefits Team 1, FE and BE Engineer
+=======
+    - eugene.lynch+va@coforma.io # Eugene Lynch (Coforma), Benefits Team 1, FE and BE Engineer
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
     - filip.fafara@gmail.com # Thoughtworks, ex VANotify, supports DHP, CDSP, Virtual Agent
     - fahmed@governmentcio.com
     - ggupta@kindsys.us # Gaurav Gupta (Kindsys), BE Engineer Health Care Experience/Check-In
@@ -903,6 +912,7 @@ flipper:
     - kmircovich@governmentcio.com
     - kris.pethtel@adhocteam.us
     - kris.pethtel@gmail.com # email tied to production id.me account
+    - kristen.brown@adhocteam.us # Kristen Brown (Ad Hoc), Engineer, Benefits & Appeals
     - ksuriyamoorthy@kindsys.us # Kanchana Suriyamoorthy (Kindsys), BE Engineer Health Care Experience/Check-In
     - lauren.alexanderson@va.gov
     - leah.delacosta@adhocteam.us
@@ -1093,6 +1103,13 @@ lighthouse:
     url: https://sandbox-api.va.gov
     path: services/benefits-reference-data
     version: v1
+  direct_deposit:
+    host: https://sandbox-api.va.gov
+    access_token:
+      aud_claim_url: https://deptva-eval.okta.com/oauth2/1234567890/v1/token
+      client_id: ~
+      rsa_key: ~
+    use_mocks: false
   veterans_health:
     url: https://sandbox-api.va.gov
     fast_tracker:
@@ -1461,8 +1478,13 @@ form526_backup:
   aws:
     bucket: ~
     region: ~
+<<<<<<< HEAD
     access_key_id: ~ 
     secret_access_key: ~ 
+=======
+    access_key_id: ~
+    secret_access_key: ~
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
 
 form1095_b:
   s3:
@@ -1478,3 +1500,7 @@ coverband:
   github_oauth_key: ~
   github_oauth_secret: ~
   github_api_key: ~
+
+
+dogstatsd:
+  enabled: false

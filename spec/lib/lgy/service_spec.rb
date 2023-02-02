@@ -136,6 +136,7 @@ describe LGY::Service do
     end
 
     context 'unexpected statuses' do
+<<<<<<< HEAD
       before { VCR.insert_cassette 'lgy/application_not_found' }
 
       after { VCR.eject_cassette 'lgy/application_not_found' }
@@ -143,12 +144,22 @@ describe LGY::Service do
       it 'returns pending and reference number' do
         VCR.use_cassette 'lgy/determination_unable_to_determine' do
           VCR.use_cassette 'lgy/application_200_status_submitted' do
+=======
+      it 'logs error to Sentry' do
+        VCR.use_cassette 'lgy/determination_pending' do
+          VCR.use_cassette 'lgy/application_200_status_unexpected' do
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
             expect_any_instance_of(LGY::Service).to receive(:log_message_to_sentry).with(
               'Unexpected COE statuses!',
               :error,
               {
+<<<<<<< HEAD
                 determination_status: 'UNABLE_TO_DETERMINE_AUTOMATICALLY',
                 application_status: 'SUBMITTED',
+=======
+                determination_status: 'PENDING',
+                application_status: 'UNEXPECTED',
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
                 get_application_status: 200
               },
               { team: 'vfs-ebenefits' }

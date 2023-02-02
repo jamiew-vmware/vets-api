@@ -34,11 +34,19 @@ RSpec.describe Login::UserAcceptableVerifiedCredentialUpdater do
         let(:icn) { 'some-icn' }
         let!(:user_verification) { create(:logingov_user_verification, user_account: user_account) }
         let(:expected_verified_credential_at) { '2023-1-1' }
+<<<<<<< HEAD
         let(:expected_log_message) { 'User AVC Updated' }
         let(:expected_log_context) do
           { account_id: user_account.id,
             idme_credential: user_verification&.idme_uuid,
             logingov_credential: user_verification&.logingov_uuid }
+=======
+        let(:expected_log_message) { '[UserAcceptableVerifiedCredentialUpdater] - User AVC Updated' }
+        let(:expected_log_context) do
+          { user_account_id: user_account.id,
+            idme_uuid: user_verification&.idme_uuid,
+            logingov_uuid: user_verification&.logingov_uuid }
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
         end
 
         before { Timecop.freeze(expected_verified_credential_at) }

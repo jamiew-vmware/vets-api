@@ -16,6 +16,10 @@ module VAOS
 
         appointments[:data].each do |appt|
           find_and_merge_provider_name(appt) if appt[:kind] == 'cc' && appt[:status] == 'proposed'
+<<<<<<< HEAD
+=======
+          log_type_of_care_and_provider(appt)
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
         end
 
         # clear provider cache after processing appointments
@@ -190,6 +194,27 @@ module VAOS
         @@provider_cache[key] = value
       end
 
+<<<<<<< HEAD
+=======
+      def logged_toc_providers
+        @logged_toc_providers ||= Set.new
+      end
+
+      def log_type_of_care_and_provider(appt)
+        logged_key = "#{appt[:kind]}-#{appt[:status]}-#{appt[:service_type]}-#{appt[:practitioners]}"
+        if logged_toc_providers.exclude?(logged_key)
+          Rails.logger.info(
+            'VAOS Type of care and provider',
+            kind: appt[:kind],
+            status: appt[:status],
+            type_of_care: appt[:service_type],
+            provider: appt[:practitioners]
+          )
+          logged_toc_providers.add(logged_key)
+        end
+      end
+
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
       # Makes a call to the VAOS service to create a new appointment.
       def get_new_appointment
         if create_params[:kind] == 'clinic' && create_params[:status] == 'booked' # a direct scheduled appointment

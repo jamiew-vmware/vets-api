@@ -97,6 +97,7 @@ class SavedClaim::CoeClaim < SavedClaim
         'propertyOwned' => loan_info['propertyOwned'] || false,
         # In UI: "A one-time restoration of entitlement"
         # In LGY: "One Time Resto"
+<<<<<<< HEAD
         'oneTimeRestorationRequested' => parsed_form['intent'] == 'ONETIMERESTORATION',
         # In UI: "An Interest Rate Reduction Refinance Loan (IRRRL) to refinance the balance of a current VA home loan"
         # In LGY: "IRRRL Ind"
@@ -107,6 +108,18 @@ class SavedClaim::CoeClaim < SavedClaim
         # In UI: "An entitlement inquiry only"
         # In LGY: "Entitlement Inquiry Only"
         'noRestorationEntitlementIndicator' => parsed_form['intent'] == 'INQUIRY',
+=======
+        'oneTimeRestorationRequested' => loan_info['intent'] == 'ONETIMERESTORATION',
+        # In UI: "An Interest Rate Reduction Refinance Loan (IRRRL) to refinance the balance of a current VA home loan"
+        # In LGY: "IRRRL Ind"
+        'irrrlRequested' => loan_info['intent'] == 'IRRRL',
+        # In UI: "A regular cash-out refinance of a current VA home loan"
+        # In LGY: "Cash Out Refi"
+        'cashoutRefinaceRequested' => loan_info['intent'] == 'REFI',
+        # In UI: "An entitlement inquiry only"
+        # In LGY: "Entitlement Inquiry Only"
+        'noRestorationEntitlementIndicator' => loan_info['intent'] == 'INQUIRY',
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
         # LGY has requested `homeSellIndicator` always be null
         'homeSellIndicator' => nil,
         'propertyAddress1' => loan_info['propertyAddress']['propertyAddress1'],
@@ -117,7 +130,6 @@ class SavedClaim::CoeClaim < SavedClaim
         'propertyCounty' => '',
         'propertyZip' => property_zip,
         'propertyZipSuffix' => property_zip_suffix || ''
-        # 'willRefinance' => loan_info['propertyAddress']['willRefinance'] || false
       }
     end
   end

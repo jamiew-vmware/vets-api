@@ -50,7 +50,12 @@ class SavedClaim::EducationBenefits < SavedClaim
         'first_name' => parsed_form.dig('relativeFullName', 'first')&.upcase.presence,
         'benefit' => benefit,
         'date_submitted' => Time.zone.today.strftime('%B %d, %Y'),
+<<<<<<< HEAD
         'confirmation_number' => education_benefits_claim.confirmation_number
+=======
+        'confirmation_number' => education_benefits_claim.confirmation_number,
+        'regional_office_details' => education_benefits_claim.regional_office
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
       }
     )
   end

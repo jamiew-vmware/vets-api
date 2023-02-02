@@ -1,9 +1,13 @@
 version: '3.4'
 services:
-  vets-api:
+  web:
     tmpfs:
       - /tmp
 volumes:
   test_bundle:
     external: true
+<<<<<<< HEAD
     name: test_bundle_v2_7_6-cache-v3
+=======
+    name: test_bundle_v-edo_2
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254

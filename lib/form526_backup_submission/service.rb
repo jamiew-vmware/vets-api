@@ -80,8 +80,13 @@ module Form526BackupSubmission
 
     def upload_doc(upload_url:, file:, metadata:, attachments: [])
       file_with_full_path = get_file_path_from_objs(file)
+<<<<<<< HEAD
       params, json_tmpfile = get_upload_docs(file_with_full_path: file_with_full_path, metadata: metadata,
                                              attachments: attachments)
+=======
+      params, _json_tmpfile = get_upload_docs(file_with_full_path: file_with_full_path, metadata: metadata,
+                                              attachments: attachments)
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
       response = perform :put, upload_url, params, { 'Content-Type' => 'multipart/form-data' }
 
       raise response.body unless response.success?
@@ -89,8 +94,11 @@ module Form526BackupSubmission
       upload_deletion_logic(file_with_full_path: file_with_full_path, attachments: attachments)
 
       response
+<<<<<<< HEAD
     ensure
       Common::FileHelpers.delete_file_if_exists(json_tmpfile)
+=======
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
     end
   end
 end

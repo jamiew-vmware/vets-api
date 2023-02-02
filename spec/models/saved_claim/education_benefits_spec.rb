@@ -39,7 +39,12 @@ RSpec.describe SavedClaim::EducationBenefits do
             'first_name' => 'MARK',
             'benefit' => 'The Fry Scholarship (Chapter 33)',
             'date_submitted' => Time.zone.today.strftime('%B %d, %Y'),
+<<<<<<< HEAD
             'confirmation_number' => confirmation_number
+=======
+            'confirmation_number' => confirmation_number,
+            'regional_office_details' => "VA Regional Office\nP.O. Box 4616\nBuffalo, NY 14240-4616"
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
           }
         )
       end
@@ -59,7 +64,12 @@ RSpec.describe SavedClaim::EducationBenefits do
             'first_name' => 'MARK',
             'benefit' => 'Survivors’ and Dependents’ Educational Assistance (DEA, Chapter 35)',
             'date_submitted' => Time.zone.today.strftime('%B %d, %Y'),
+<<<<<<< HEAD
             'confirmation_number' => confirmation_number
+=======
+            'confirmation_number' => confirmation_number,
+            'regional_office_details' => "VA Regional Office\nP.O. Box 4616\nBuffalo, NY 14240-4616"
+>>>>>>> 8b72f274d0be2c97bc327e040284cbea924d7254
           }
         )
       end
