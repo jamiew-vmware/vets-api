@@ -16,11 +16,14 @@ WORKDIR /app
 RUN echo "deb http://ftp.debian.org/debian testing main contrib non-free" >> /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y -t testing poppler-utils
-RUN apt-get install -y build-essential libpq-dev git imagemagick curl wget pdftk file \
+RUN apt-get install -y build-essential libpq-dev git clamdscan imagemagick curl wget pdftk file \
   && apt-get clean \
   && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Relax ImageMagick PDF security. See https://stackoverflow.com/a/59193253.
+
+RUN mkdir -p /srv/vets-api/{clamav} && chown -R vets-api:vets-api /srv/vets-api
+
 RUN sed -i '/rights="none" pattern="PDF"/d' /etc/ImageMagick-6/policy.xml
 
 
@@ -42,6 +45,11 @@ ENV LANG=C.UTF-8 \
 
 RUN gem install bundler:${BUNDLER_VERSION} --no-document
 
+COPY --chown=vets-api:vets-api config/freshclam.conf docker-entrypoint.sh ./
+USER vets-api
+# XXX: this is tacky
+RUN freshclam --config-file freshclam.conf
+
 RUN wget -q https://vets-api-build-artifacts.s3-us-gov-west-1.amazonaws.com/bundle_cache.tar.bz2 -O - \
   | tar -xjf - -C /usr/local/bundle/
 COPY modules ./modules
@@ -56,5 +64,8 @@ COPY --chown=nonroot:nonroot . .
 EXPOSE 3000
 
 USER nonroot
+
+ENV RAILS_ENV=production
+COPY --from=builder --chown=vets-api:vets-api /srv/vets-api/clamav/database ../clamav/database
 
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
