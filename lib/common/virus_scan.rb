@@ -13,12 +13,11 @@ module Common
       # args = ['-c', Rails.root.join('config', 'clamd.conf').to_s, file_path]
       # ClamScan::Client.scan(custom_args: args)
 
-      clamav = TCPSocket.open("127.0.0.1", 3310)
-      stripped_filename = file_path.gsub(/^tmp\//, "")
-      request = "SCAN /vets-api/#{stripped_filename}" #call the shared volume on clamav container
+      clamav = TCPSocket.open('127.0.0.1', 3310)
+      stripped_filename = file_path.gsub(%r{^tmp/}, '')
+      request = "SCAN /vets-api/#{stripped_filename}" # call the shared volume on clamav container
       clamav.puts(request)
-      response = clamav.gets
-      response
+      return clamav.gets
       clamav.close
     end
   end
