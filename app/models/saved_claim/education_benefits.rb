@@ -34,6 +34,7 @@ class SavedClaim::EducationBenefits < SavedClaim
 
   def send_5490_confirmation_email
     email = parsed_form_data['email']
+
     return if email.blank?
 
     benefit = case parsed_form_data['benefit']
