@@ -20,5 +20,9 @@ module Common
       return clamav.gets
       clamav.close
     end
+
+    def safe?
+      #Todo
+    end
   end
 end
