@@ -39,10 +39,10 @@ jobs:
     env:
       BUNDLE_ENTERPRISE__CONTRIBSYS__COM: ${{ secrets.BUNDLE_ENTERPRISE__CONTRIBSYS__COM }}
       CI: true
-      NODE_EXTRA_CA_CERTS: '/etc/ssl/certs/VA-Internal-S2-RCA1-v1.cer.pem' # Needed for self-hosted runners (cache, upload-artifact)
       RAILS_ENV: test
       TERM: xterm-256color
       DOCKER_IMAGE: ${{ github.sha }}-${{ github.run_id }}${{ github.run_number }}
+      NODE_EXTRA_CA_CERTS: '/etc/ssl/certs/VA-Internal-S2-RCA1-v1.cer.pem' # Needed for self-hosted runners (cache, upload-artifact)
     runs-on: asg
     steps:
       - uses: actions/checkout@v2
@@ -54,37 +54,26 @@ jobs:
 
       - name: Setup Environment
         run: |
-          echo "VETS_API_USER_ID=$(id -u)" >> $GITHUB_ENV
-
-      - name: Setup Docker
-        run: |
-          docker volume create --name=test_bundle_v2_7_6-cache-v3
-          cp /etc/ssl/certs/VA-Internal-S2-RCA1-v1.cer.pem config/ca-trust/
+          echo "USER_ID=$(id -u)" >> $GITHUB_ENV
 
       - name: Build Docker Image
         uses: docker/build-push-action@v4
         with:
           build-args: |
-            sidekiq_license=${{ env.BUNDLE_ENTERPRISE__CONTRIBSYS__COM }}
-            userid=${{ env.VETS_API_USER_ID }}
+            BUNDLE_ENTERPRISE__CONTRIBSYS__COM=${{ env.BUNDLE_ENTERPRISE__CONTRIBSYS__COM }}
+            USER_ID=${{ env.USER_ID }}
           context: .
-          target: development
           push: false
           load: true
           tags: vets-api:${{ env.DOCKER_IMAGE }}
           no-cache: true
 
-      - name: Setup Database
+      - name: Setup Database and Run Specs
         run: |
-             docker-compose -f docker-compose.test.yml -f  docker-compose.gha.yml -p ${{ env.DOCKER_IMAGE}} \
-             run --rm --service-ports --no-TTY vets-api bash \
-             -c "RAILS_ENV=test DISABLE_BOOTSNAP=true parallel_test -n 14 -e 'bundle exec rake db:reset'"
-
-      - name: Run Specs
-        run: |
-             docker-compose -f docker-compose.test.yml -f docker-compose.gha.yml -p ${{ env.DOCKER_IMAGE}} \
-             run --rm --service-ports --no-TTY vets-api bash \
-             -c "DISABLE_BOOTSNAP=true bundle exec parallel_rspec spec/ modules/ -n 14 -o '--color --tty'"
+             docker-compose -p ${{ env.DOCKER_IMAGE}} run --rm --service-ports --no-TTY web bash \
+             -c "RAILS_ENV=test DISABLE_BOOTSNAP=true; \
+             bundle exec parallel_test -n 14 -e 'bundle exec rails db:reset' \
+             && CI=true bundle exec parallel_rspec spec/ modules/ -n 14 -o '--color --tty'"
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v2
@@ -101,15 +90,13 @@ jobs:
           path: log/*.xml
           if-no-files-found: ignore
 
-      # rm -rf .git is a temporary fix for actions/checkout@v2 action
-      # see: https://github.com/actions/checkout/issues/582
       - name: Cleanup
         if: always()
         run: |
           docker rmi -f vets-api:${{ env.DOCKER_IMAGE }} 2> /dev/null || true
           docker rm -f ${{ env.DOCKER_IMAGE }}-postgres-1 2> /dev/null || true
-          docker network prune -f
-          rm -rf .git
+          docker rm -f ${{ env.DOCKER_IMAGE }}-clamav-1  2> /dev/null || true
+          docker rm -f ${{ env.DOCKER_IMAGE }}-redis-1 2> /dev/null || true
 
   publish_results:
     name: Publish Results
@@ -147,6 +134,7 @@ jobs:
           comment_mode: off
           files: Test Results/*.xml
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          check_run_annotations_branch: master, k8s
 
       - name: Fix up coverage report to work with coverage-check-action
         run: sed -i 's/"line"/"covered_percent"/g' 'Coverage Report/.last_run.json'
