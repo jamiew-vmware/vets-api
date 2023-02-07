@@ -2,7 +2,7 @@ name: Build & Push to ECR
 on:
   push:
     branches:
-      - k8s
+      - k8s-push
   workflow_dispatch:
   workflow_run:
     workflows: ["Code Checks"]
