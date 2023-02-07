@@ -47,3 +47,8 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
           cache-from: type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY
           cache-to: type=inline
+  deploy_after_push:
+      - name: Push to deploy-k8s branch
+      uses: ad-m/github-push-action@master
+      with:
+        branch: deploy-k8s
