@@ -48,21 +48,6 @@ jobs:
           cache-from: type=registry,ref=$ECR_REGISTRY/$ECR_REPOSITORY
           cache-to: type=inline
 
-      - name: Push to deploy-k8s branch
-        uses: ad-m/github-push-action@master
-        with:
-          branch: deploy-k8s
-  deploy-k8s:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
-          aws-region: "us-gov-west-1"
 
       - name: Get bot token from Parameter Store
         uses: marvinpinto/action-inject-ssm-secrets@latest
