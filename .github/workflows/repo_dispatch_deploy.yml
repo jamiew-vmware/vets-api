@@ -1,5 +1,7 @@
 name: Release and Update Manifests after Mockdata
 
+#Note: repository_dispatch can only be run from the master branch.
+
 on:
   repository_dispatch:
     types: [vets-api-mockdata-update]
