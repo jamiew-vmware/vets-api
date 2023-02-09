@@ -1,0 +1,307 @@
+# frozen_string_literal: true
+
+module AppealsApi
+  module PdfConstruction
+    module HigherLevelReview::V3
+      # rubocop:disable Naming/VariableNumber
+      class FormFields
+        def middle_initial
+          'form1[0].#subform[2].Veteran_Middle_Initial1[0]'
+        end
+
+        def ssn_first_three
+          'form1[0].#subform[2].ClaimantsSocialSecurityNumber_FirstThreeNumbers[0]'
+        end
+
+        def ssn_second_two
+          'form1[0].#subform[2].ClaimantsSocialSecurityNumber_SecondTwoNumbers[0]'
+        end
+
+        def ssn_last_four
+          'form1[0].#subform[2].ClaimantsSocialSecurityNumber_LastFourNumbers[0]'
+        end
+
+        def veteran_birth_month
+          'form1[0].#subform[2].DOBmonth[0]'
+        end
+
+        def veteran_birth_day
+          'form1[0].#subform[2].DOBday[0]'
+        end
+
+        def veteran_birth_year
+          'form1[0].#subform[2].DOByear[0]'
+        end
+
+        def file_number
+          'form1[0].#subform[2].VAFileNumber[0]'
+        end
+
+        def service_number
+          'F[0].#subform[2].VeteransServiceNumber[0]'
+        end
+
+        def insurance_policy_number
+          'form1[0].#subform[2].ClaimantsLastName[1]'
+        end
+
+        def mailing_address_state
+          'form1[0].#subform[2].CurrentMailingAddress_StateOrProvince[0]'
+        end
+
+        def mailing_address_country
+          'form1[0].#subform[2].CurrentMailingAddress_Country[0]'
+        end
+
+        def mailing_address_zip_first_5
+          'form1[0].#subform[2].CurrentMailingAddress_ZIPOrPostalCode_FirstFiveNumbers[0]'
+        end
+
+        def mailing_address_zip_last_4
+          'form1[0].#subform[2].CurrentMailingAddress_ZIPOrPostalCode_LastFourNumbers[0]'
+        end
+
+        def veteran_homeless
+          'form1[0].#subform[2].ClaimantType[0]'
+        end
+
+        def veteran_phone_area_code
+          'form1[0].#subform[2].Daytime_Phone_Number_Area_Code[0]'
+        end
+
+        def veteran_phone_prefix
+          'form1[0].#subform[2].Daytime_Phone_Middle_Three_Numbers[0]'
+        end
+
+        def veteran_phone_line_number
+          'form1[0].#subform[2].Daytime_Phone_Last_Four_Numbers[0]'
+        end
+
+        def veteran_phone_international_number
+          'form1[0].#subform[2].International_Telephone_Number_If_Applicable[0]'
+        end
+
+        def claimant_middle_initial
+          'form1[0].#subform[2].Veteran_Middle_Initial1[1]'
+        end
+
+        def claimant_first_three_ssn
+          'form1[0].#subform[2].ClaimantsSocialSecurityNumber_FirstThreeNumbers[1]'
+        end
+
+        def claimant_second_two_ssn
+          'form1[0].#subform[2].ClaimantsSocialSecurityNumber_SecondTwoNumbers[1]'
+        end
+
+        def claimant_last_four_ssn
+          'form1[0].#subform[2].ClaimantsSocialSecurityNumber_LastFourNumbers[1]'
+        end
+
+        def claimant_birth_month
+          'form1[0].#subform[2].DOBmonth[1]'
+        end
+
+        def claimant_birth_day
+          'form1[0].#subform[2].DOBday[1]'
+        end
+
+        def claimant_birth_year
+          'form1[0].#subform[2].DOByear[1]'
+        end
+
+        def claimant_mailing_address_state
+          'form1[0].#subform[2].CurrentMailingAddress_StateOrProvince[1]'
+        end
+
+        def claimant_mailing_address_country
+          'form1[0].#subform[2].CurrentMailingAddress_Country[1]'
+        end
+
+        def claimant_mailing_address_zip_first_5
+          'form1[0].#subform[2].CurrentMailingAddress_ZIPOrPostalCode_FirstFiveNumbers[1]'
+        end
+
+        def claimant_mailing_address_zip_last_4
+          'form1[0].#subform[2].CurrentMailingAddress_ZIPOrPostalCode_LastFourNumbers[1]'
+        end
+
+        def claimant_phone_area_code
+          'form1[0].#subform[2].Daytime_Phone_Number_Area_Code[1]'
+        end
+
+        def claimant_phone_prefix
+          'form1[0].#subform[2].Daytime_Phone_Middle_Three_Numbers[1]'
+        end
+
+        def claimant_phone_line_number
+          'form1[0].#subform[2].Daytime_Phone_Last_Four_Numbers[1]'
+        end
+
+        def claimant_phone_international_number
+          'form1[0].#subform[2].International_Telephone_Number_If_Applicable[1]'
+        end
+
+        def benefit_type(index)
+          "form1[0].#subform[2].BenefitType[#{index}]"
+        end
+
+        def informal_conference
+          'form1[0].#subform[3].HIGHERLEVELREVIEWCHECKBOX[0]'
+        end
+
+        def conference_8_to_12
+          'form1[0].#subform[3].TIME8TO10AM[0]'
+        end
+
+        def conference_12_to_1630
+          'form1[0].#subform[3].TIME1230TO2PM[0]'
+        end
+
+        def conference_rep_8_to_12
+          'form1[0].#subform[3].TIME10TO1230PM[0]'
+        end
+
+        def conference_rep_12_to_1630
+          'form1[0].#subform[3].TIME2TO430PM[0]'
+        end
+
+        def rep_phone_area_code
+          'form1[0].#subform[3].Daytime_Phone_Number_Area_Code[2]'
+        end
+
+        def rep_phone_prefix
+          'form1[0].#subform[3].Daytime_Phone_Middle_Three_Numbers[2]'
+        end
+
+        def rep_phone_line_number
+          'form1[0].#subform[3].Daytime_Phone_Last_Four_Numbers[2]'
+        end
+
+        def rep_email
+          'form1[0].#subform[3].CurrentMailingAddress_NumberAndStreet[4]'
+        end
+
+        def date_signed_month
+          'form1[0].#subform[4].DOBmonth[15]'
+        end
+
+        def date_signed_day
+          'form1[0].#subform[4].DOBday[15]'
+        end
+
+        def date_signed_year
+          'form1[0].#subform[4].DOByear[15]'
+        end
+
+        def issue_decision_date_fields(index)
+          subform = index <= 6 ? 3 : 4
+          offset = index + 2
+
+          { month: "form1[0].#subform[#{subform}].DOBmonth[#{offset}]",
+            day: "form1[0].#subform[#{subform}].DOBday[#{offset}]",
+            year: "form1[0].#subform[#{subform}].DOByear[#{offset}]" }
+        end
+
+        # rubocop:disable Metrics/MethodLength
+        def boxes
+          table_left_pg1 = -5
+          table_left_pg2 = -3
+          table_top_pg1 = 352
+          table_top_pg2 = 671
+          left_col_width = 374
+          right_col_width = 170
+          row_height = 46.8
+
+          {
+            veteran_first_name: { at: [3, 559.5], width: 195 },
+            veteran_last_name: { at: [229, 559.5], width: 294 },
+            veteran_file_number: { at: [199, 527.2], width: 146 },
+            veteran_number_and_street: { at: [27, 461.2], width: 515, height: 14 },
+            veteran_city: { at: [199, 440.8], width: 308 },
+            veteran_zip_code: { at: [297, 417.2], width: 82 },
+            veteran_email: { at: [7, 334.6], width: 514, height: 14 },
+            veteran_phone_extension: { at: [225, 378], width: 50, height: 10 },
+            veteran_international_number: { at: [381, 366.5], width: 114 },
+
+            claimant_first_name: { at: [8, 289], width: 193 },
+            claimant_last_name: { at: [235, 289], width: 293 },
+            claimant_number_and_street: { at: [28, 218.7], width: 512, height: 14 },
+            claimant_city: { at: [199.2, 199.4], width: 308 },
+            claimant_zip_code: { at: [297, 177.1], width: 82 },
+            claimant_email: { at: [8, 113.9], width: 513.5, height: 14 },
+            claimant_phone_extension: { at: [225, 157], width: 50, height: 10 },
+            claimant_international_number: { at: [382, 144], width: 115 },
+
+            rep_first_name: { at: [11, 575], width: 195 },
+            rep_last_name: { at: [225, 575], width: 293 },
+            rep_international_number: { at: [275, 545], width: 195 },
+            rep_domestic_ext: { at: [225, 545], width: 50 },
+            rep_email: { at: [11, 514.5], width: 513 },
+            issues_pg1: [].tap do |n|
+              Structure::NUMBER_OF_ISSUES_FIRST_PAGE.times do |i|
+                n << {
+                  at: [table_left_pg1, table_top_pg1 - (row_height * i) + (i * 1.5)],
+                  width: left_col_width,
+                  height: 23,
+                  valign: :top
+                }
+              end
+            end,
+            issues_pg2: [].tap do |n|
+              Structure::NUMBER_OF_ISSUES_SECOND_PAGE.times do |i|
+                n << {
+                  at: [table_left_pg2, table_top_pg2 - (row_height * i)],
+                  width: left_col_width + 2,
+                  height: 23,
+                  valign: :top
+                }
+              end
+            end,
+            soc_date_pg1: [].tap do |n|
+              Structure::NUMBER_OF_ISSUES_FIRST_PAGE.times do |i|
+                n << {
+                  at: [table_left_pg1 + left_col_width + 4, table_top_pg1 - (row_height * i) + (i * 1.5)],
+                  width: right_col_width,
+                  height: 15
+                }
+              end
+            end,
+            soc_date_pg2: [].tap do |n|
+              Structure::NUMBER_OF_ISSUES_SECOND_PAGE.times do |i|
+                n << {
+                  at: [table_left_pg2 + left_col_width + 4, table_top_pg2 - (row_height * i)],
+                  width: right_col_width,
+                  height: 15
+                }
+              end
+            end,
+            disagreement_area_pg1: [].tap do |n|
+              Structure::NUMBER_OF_ISSUES_FIRST_PAGE.times do |i|
+                n << {
+                  at: [table_left_pg1, table_top_pg1 - (row_height * i) - 22 + (i * 1.5)],
+                  width: left_col_width,
+                  height: 15
+                }
+              end
+            end,
+            disagreement_area_pg2: [].tap do |n|
+              Structure::NUMBER_OF_ISSUES_SECOND_PAGE.times do |i|
+                n << {
+                  at: [table_left_pg2, table_top_pg2 - (row_height * i) - 22],
+                  width: left_col_width + 2,
+                  height: 15
+                }
+              end
+            end,
+            signature: { at: [table_left_pg2, 329], width: 371, height: 18 },
+            # The rest aren't currently used, but kept for if/when we need them
+            rep_signature_first_name: { at: [12, 229], width: 195 },
+            rep_signature_last_name: { at: [226, 229], width: 293 },
+            rep_signature: { at: [-4, 201], width: 369, height: 18 }
+          }
+        end
+        # rubocop:enable Metrics/MethodLength, Naming/VariableNumber
+      end
+    end
+  end
+end

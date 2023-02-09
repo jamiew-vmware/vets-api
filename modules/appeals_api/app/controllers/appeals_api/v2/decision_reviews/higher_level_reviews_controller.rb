@@ -35,7 +35,8 @@ class AppealsApi::V2::DecisionReviews::HigherLevelReviewsController < AppealsApi
 
   def create
     @higher_level_review.save
-    AppealsApi::PdfSubmitJob.perform_async(@higher_level_review.id, 'AppealsApi::HigherLevelReview', 'V2')
+    pdf_version = Flipper.enabled?(:decision_review_use_hlr_pdf_v3) ? 'V3' : 'V2'
+    AppealsApi::PdfSubmitJob.perform_async(@higher_level_review.id, 'AppealsApi::HigherLevelReview', pdf_version)
     if @higher_level_review.veteran_icn.blank?
       AppealsApi::AddIcnUpdater.perform_async(@higher_level_review.id, 'AppealsApi::HigherLevelReview')
     end

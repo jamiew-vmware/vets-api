@@ -208,7 +208,12 @@ module AppealsApi
     end
 
     def soc_opt_in
-      data_attributes&.dig('socOptIn')
+      if Flipper.enabled?(:decision_review_use_hlr_pdf_v3)
+        # This option was removed from V3 of the HLR PDF in favor of opting in by default
+        true
+      else
+        data_attributes&.dig('socOptIn')
+      end
     end
 
     def contestable_issues

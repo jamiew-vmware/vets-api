@@ -6,9 +6,9 @@ require_relative '../shared_hlr_pdf_construction_examples'
 module AppealsApi
   module PdfConstruction
     module HigherLevelReview
-      module V2
-        describe FormData do
-          include_examples 'shared HLR v2 and v3 form data examples'
+      module V3
+        describe FormFields do
+          include_examples 'shared HLR v2 and v3 form fields examples'
         end
       end
     end
