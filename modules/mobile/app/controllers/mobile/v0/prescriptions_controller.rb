@@ -9,10 +9,12 @@ module Mobile
 
       def index
         resource = client.get_history_rxs
-        resource = params[:filter].present? ? resource.find_by(filter_params) : resource
+        results, errors = ListFilter.matches(resource.data, params[:filter])
+        # this would normally not be necessary but we're using the collection sorting
+        resource.data = results
         resource = resource.sort(params[:sort])
-        page_resource, page_meta_data = paginate(resource.attributes)
 
+        page_resource, page_meta_data = paginate(resource.data, errors)
         render json: Mobile::V0::PrescriptionsSerializer.new(page_resource, page_meta_data)
       end
 
@@ -36,23 +38,23 @@ module Mobile
         @pagination_params ||= Mobile::V0::Contracts::Prescriptions.new.call(
           page_number: params.dig(:page, :number),
           page_size: params.dig(:page, :size),
-          filter: params[:filter].present? ? filter_params.to_h : nil,
+          filter: nil, # should remove from contract?
           sort: params[:sort]
         )
       end
 
-      def paginate(records)
-        Mobile::PaginationHelper.paginate(list: records, validated_params: pagination_params)
+      def paginate(records, errors)
+        Mobile::PaginationHelper.paginate(list: records, validated_params: pagination_params, errors: errors)
       end
 
-      def filter_params
-        @filter_params ||= begin
-          valid_filter_params = params.require(:filter).permit(Prescription.filterable_attributes)
-          raise Common::Exceptions::FilterNotAllowed, params[:filter] if valid_filter_params.empty?
+      # def filter_params
+      #   @filter_params ||= begin
+      #     valid_filter_params = params.require(:filter).permit(Prescription.filterable_attributes)
+      #     raise Common::Exceptions::FilterNotAllowed, params[:filter] if valid_filter_params.empty?
 
-          valid_filter_params
-        end
-      end
+      #     valid_filter_params
+      #   end
+      # end
 
       def ids
         ids = params.require(:ids)
