@@ -289,7 +289,7 @@ module SM
     def get_messages_for_thread(id)
       path = "message/#{id}/messagesforthread"
       json = perform(:get, path, nil, token_headers).body
-      MessageThreadDetails.new(json)
+      Common::Collection.new(MessageThreadDetails, json)
     end
 
     ##
