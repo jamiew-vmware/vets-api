@@ -38,7 +38,7 @@ module SM
             errors: @errors,
             metadata: @meta_attributes
           }
-
+          
           @parsed_json
         end
 
