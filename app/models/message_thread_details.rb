@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class MessageThreadDetails < Message
+  attribute :message_id, Integer
   attribute :thread_id, Integer
   attribute :folder_id, Integer
   attribute :message_body, String
