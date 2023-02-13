@@ -32,7 +32,6 @@ module SM
                   normalize_message(parsed_messages) ||
                   parsed_categories ||
                   parsed_signature
-
           @parsed_json = {
             data: data,
             errors: @errors,
