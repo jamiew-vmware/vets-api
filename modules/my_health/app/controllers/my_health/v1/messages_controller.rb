@@ -58,23 +58,13 @@ module MyHealth
       end
 
       def thread
-        p "hitting thread"
         message_id = params[:id].try(:to_i)
-        p "after message_id assignment in thread method"
         # resource = client.get_message_history(message_id)
         resource = client.get_messages_for_thread(message_id)
-        # p "$$$$$$$$$$$$$$$$$$$$$$$$$$  resource"
-        # p "$$$$$$$$$$$$$$$$$$$$$$$$$$  resource"
-        # p "$$$$$$$$$$$$$$$$$$$$$$$$$$  resource"
-        # p "$$$$$$$$$$$$$$$$$$$$$$$$$$  resource"
-        p "************** past resource assigntmnet"
-        p resource
         raise Common::Exceptions::RecordNotFound, message_id if resource.blank?
         render json: resource,
-              #  serializer: MessageDetailsSerializer,
                serializer: CollectionSerializer,
-              #  each_serializer: MessagesSerializer,
-              each_serializer: MessageDetailsSerializer,
+               each_serializer: MessageDetailsSerializer,
                meta: resource.metadata
       end
 

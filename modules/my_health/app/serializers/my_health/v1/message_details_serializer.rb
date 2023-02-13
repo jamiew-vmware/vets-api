@@ -6,7 +6,7 @@ module MyHealth
       def id
         object.message_id
       end
-      
+
       def body 
         object.message_body
       end
@@ -20,7 +20,6 @@ module MyHealth
       attribute :has_attachments
 
       link(:self) { MyHealth::UrlHelper.new.v1_message_url(object.message_id) }
-
     end
   end
 end
