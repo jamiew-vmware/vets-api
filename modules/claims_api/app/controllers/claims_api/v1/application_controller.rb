@@ -26,6 +26,7 @@ module ClaimsApi
       protected
 
       def validate_veteran_identifiers(require_birls: false) # rubocop:disable Metrics/MethodLength
+        debugger
         return if !require_birls && target_veteran.participant_id.present?
         return if require_birls && target_veteran.participant_id.present? && target_veteran.birls_id.present?
 
