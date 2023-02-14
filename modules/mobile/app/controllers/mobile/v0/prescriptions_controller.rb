@@ -9,12 +9,13 @@ module Mobile
 
       def index
         resource = client.get_history_rxs
-        results, errors = ListFilter.matches(resource.data, params[:filter])
+        results, error = ListFilter.matches(resource.data, params[:filter])
+
         # this would normally not be necessary but we're using the collection sorting
         resource.data = results
         resource = resource.sort(params[:sort])
 
-        page_resource, page_meta_data = paginate(resource.data, errors)
+        page_resource, page_meta_data = paginate(resource.data, error.message)
         render json: Mobile::V0::PrescriptionsSerializer.new(page_resource, page_meta_data)
       end
 
@@ -35,26 +36,15 @@ module Mobile
       end
 
       def pagination_params
-        @pagination_params ||= Mobile::V0::Contracts::Prescriptions.new.call(
+        @pagination_params ||= {
           page_number: params.dig(:page, :number),
-          page_size: params.dig(:page, :size),
-          filter: nil, # should remove from contract?
-          sort: params[:sort]
-        )
+          page_size: params.dig(:page, :size)
+        }
       end
 
       def paginate(records, errors)
         Mobile::PaginationHelper.paginate(list: records, validated_params: pagination_params, errors: errors)
       end
-
-      # def filter_params
-      #   @filter_params ||= begin
-      #     valid_filter_params = params.require(:filter).permit(Prescription.filterable_attributes)
-      #     raise Common::Exceptions::FilterNotAllowed, params[:filter] if valid_filter_params.empty?
-
-      #     valid_filter_params
-      #   end
-      # end
 
       def ids
         ids = params.require(:ids)

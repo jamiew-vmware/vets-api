@@ -271,13 +271,14 @@ RSpec.describe 'health/rx/prescriptions', type: :request do
       end
 
       context 'invalid filter option' do
-        params = { filter: { quantity: { eq: '8' } } }
+        params = { filter: { fudge: { eq: '8' } } }
 
-        it 'cannot filter by unexpected field' do
+        it 'cannot filter by attributes that do not exist on the model' do
           VCR.use_cassette('rx_refill/prescriptions/gets_a_list_of_all_prescriptions') do
             get '/mobile/v0/health/rx/prescriptions', params: params, headers: iam_headers
           end
           expect(response).to have_http_status(:bad_request)
+
           expect(response.parsed_body).to eq({ 'errors' =>
                                                  [{ 'title' => 'Filter not allowed',
                                                     'detail' =>
