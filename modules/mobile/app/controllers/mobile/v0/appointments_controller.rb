@@ -25,10 +25,10 @@ module Mobile
         )
 
         appointments = fetch_appointments(validated_params)
-        appointments, errors = ListFilter.matches(appointments, params[:filter])
+        appointments, error = ListFilter.matches(appointments, params[:filter])
 
         appointments = filter_by_date_range(appointments, validated_params)
-        page_appointments, page_meta_data = paginate(appointments, validated_params, errors)
+        page_appointments, page_meta_data = paginate(appointments, validated_params, [error])
 
         render json: Mobile::V0::AppointmentSerializer.new(page_appointments, page_meta_data)
       end
