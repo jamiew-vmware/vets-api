@@ -14,8 +14,8 @@ module Mobile
         # this would normally not be necessary but we're using the collection sorting
         resource.data = results
         resource = resource.sort(params[:sort])
+        page_resource, page_meta_data = paginate(resource.data, [error&.message])
 
-        page_resource, page_meta_data = paginate(resource.data, error.message)
         render json: Mobile::V0::PrescriptionsSerializer.new(page_resource, page_meta_data)
       end
 
@@ -36,10 +36,10 @@ module Mobile
       end
 
       def pagination_params
-        @pagination_params ||= {
+        @pagination_params ||= Mobile::V0::Contracts::Prescriptions.new.call(
           page_number: params.dig(:page, :number),
           page_size: params.dig(:page, :size)
-        }
+        )
       end
 
       def paginate(records, errors)

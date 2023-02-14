@@ -24,9 +24,10 @@ module Mobile
     def paginate
       pages = list.each_slice(page_size).to_a
 
+      # does this change need to happen on master? seems like it's probably incorrect to begin with
       page_meta_data = {
-        errors: errors,
         meta: {
+          errors: errors,
           pagination: {
             current_page: page_number,
             per_page: page_size,
