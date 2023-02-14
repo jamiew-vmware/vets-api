@@ -19,8 +19,8 @@ RSpec.describe Lighthouse::LettersGenerator::Client do
     user1_fake_types = %w[A B C]
     user2_fake_types = %w[D E F]
 
-    client1 = object_spy(Lighthouse::LettersGenerator::Client.new('DOLLYPARTON'))
-    allow(client1).to receive(:get).and_return(user1_fake_types)
+    client1 = Lighthouse::LettersGenerator::Client.new('DOLLYPARTON')
+    # allow(client1).to receive(:get).and_return(user1_fake_types)
     #client2 = Lighthouse::LettersGenerator::Client.new('THEHONORS')
 
     # expect(client1).to receive(:get).and_return(user1_fake_types)
