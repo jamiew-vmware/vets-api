@@ -285,5 +285,45 @@ RSpec.describe 'vaos v2 appointments', type: :request do
         end
       end
     end
+
+    describe 'filtering' do
+      before do
+        mock_facility
+        mock_clinic
+      end
+
+      let(:start_date) { Time.zone.parse('1991-01-01T00:00:00Z').iso8601 }
+      let(:end_date) { Time.zone.parse('2023-01-01T00:00:00Z').iso8601 }
+
+      it 'returns only matching records' do
+        VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben', match_requests_on: %i[method uri]) do
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            params = { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date, filter: { type_of_care: { eq: 'Optometry'}} }
+
+            get '/mobile/v0/appointments', headers: iam_headers, params: params
+          end
+        end
+
+        statuses = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'typeOfCare') }.uniq
+        expect(statuses).to eq(['Optometry'])
+        expect(response.parsed_body['data'].count).to eq(41)
+        expect(response.parsed_body['meta']['errors']).to eq([])
+      end
+
+      it 'returns all records plus an error message' do
+        params = { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date, filter: { typeOfCare: { eq: 'Optometry'}} }
+
+        VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben', match_requests_on: %i[method uri]) do
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            get '/mobile/v0/appointments', headers: iam_headers, params: params
+          end
+        end
+
+        statuses = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'typeOfCare') }.uniq
+        expect(statuses).not_to eq(['Optometry'])
+        expect(response.parsed_body['data'].count).to eq(100)
+        expect(response.parsed_body['meta']['errors']).to eq(['invalid attribute'])
+      end
+    end
   end
 end
