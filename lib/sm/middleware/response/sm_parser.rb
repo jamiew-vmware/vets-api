@@ -25,7 +25,7 @@ module SM
           @meta_attributes = split_meta_fields!
           @errors = @parsed_json.delete(:errors) || {}
 
-          data =  parsed_threads  ||
+          data =  parsed_threads_object ||
                   preferences     ||
                   parsed_triage   ||
                   parsed_folders  ||
@@ -41,12 +41,8 @@ module SM
           @parsed_json
         end
 
-        def parsed_threads
+        def parsed_threads_object
           @parsed_json.is_a?(Array) && @parsed_json.each { |t| return false unless t.key?(:thread_id) }
-        end
-
-        def preferences
-          %i[notify_me 0].any? { |k| @parsed_json.key?(k) } ? @parsed_json : nil
         end
 
         def parsed_folders
