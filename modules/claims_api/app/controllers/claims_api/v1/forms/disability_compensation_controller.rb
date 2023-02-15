@@ -36,7 +36,7 @@ module ClaimsApi
           sanitize_account_type if form_attributes.dig('directDeposit', 'accountType')
           validate_json_schema
           validate_form_526_submission_values!
-          debugger
+          
           validate_veteran_identifiers(require_birls: true)
           validate_initial_claim
           ClaimsApi::Logger.log('526', detail: '526 - Controller Actions Completed')
