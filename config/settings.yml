@@ -271,7 +271,28 @@ dhp:
 # Settings for modules/appeals_api
 modules_appeals_api:
   token_validation:
-    api_key: ''
+    appeals_status:
+      api_key: ''
+    contestable_issues:
+      api_key: ''
+    higher_level_reviews:
+      api_key: ''
+    legacy_appeals:
+      api_key: ''
+    notice_of_disagreements:
+      api_key: ''
+    supplemental_claims:
+      api_key: ''
+  # The token generation values below are only used for development rake tasks.
+  token_generation:
+    # URI to the well-known configuration endpoint for appeals auth:
+    config_uri: ''
+    ccg:
+      # Get a client ID by submitting your public jwk here - make sure to check the box for the API under
+      # "Client Credentials Grant APIs": https://developer.va.gov/onboarding/request-sandbox-access
+      client_id: ''
+      # Absolute path to the private key file matching the jwk:
+      private_key_path: ''
   slack:
     api_token: ''
     appeals_channel_id: ''
@@ -760,6 +781,7 @@ maintenance:
     carma: P6XLE0T
     appeals: P9S4RFU
     arcgis: P45YBFA
+    coe: PXXXXXX
     dslogon: P9DJJAV
     emis: P0HNT0I
     es: PH7OPR4
@@ -1457,4 +1479,4 @@ coverband:
 
 
 dogstatsd:
-  enabled: false
+  enabled: true

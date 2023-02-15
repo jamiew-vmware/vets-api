@@ -33,11 +33,11 @@ module V0
 
     def documents
       documents = lgy_service.get_coe_documents.body
-      # We _only_ want to display notification letters, and _not_ vet-uploaded
-      # supporting documents. We make this distinction at the time of upload,
-      # by prefixing the description with an '[ATTACHMENT]' tag. We are checking
-      # for that tag here.
-      notification_letters = documents.reject { |doc| doc['description']&.include?('[ATTACHMENT]') }
+      # Vet-uploaded docs have documentType `Veteran Correspondence`. We are not
+      # currently displaying these on the COE status page, so they are omitted.
+      # In the near future, we will display them, and can remove this `reject`
+      # block.
+      notification_letters = documents.reject { |doc| doc['document_type']&.include?('Veteran Correspondence') }
       # Documents should be sorted from most to least recent
       sorted_notification_letters = notification_letters.sort_by { |doc| doc['create_date'] }.reverse
       render json: { data: { attributes: sorted_notification_letters } }, status: :ok
@@ -51,7 +51,7 @@ module V0
         file_extension = attachment['file_type']
 
         if %w[jpg jpeg png pdf].include? file_extension.downcase
-          document_data = document_data(attachment)
+          document_data = build_document_data(attachment)
 
           response = lgy_service.post_document(payload: document_data)
           unless response.status == 201
@@ -86,17 +86,14 @@ module V0
       'api.lgy_coe'
     end
 
-    def document_data(attachment)
+    def build_document_data(attachment)
       file_data = attachment['file']
       index = file_data.index(';base64,') || 0
       file_data = file_data[index + 8..] if index.positive?
 
       {
         'documentType' => attachment['file_type'],
-        # We add an "[ATTACHMENT]" prefix to help us distinguish between
-        # vet-uploaded supporting documents and notification letters, on the
-        # COE status page.
-        'description' => ['[ATTACHMENT]', attachment['document_type']].compact.join(' '),
+        'description' => attachment['document_type'],
         'contentsBase64' => file_data,
         'fileName' => attachment['file_name']
       }

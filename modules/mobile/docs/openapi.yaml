@@ -131,81 +131,14 @@ paths:
       security:
         - Bearer: []
       summary: /v0/appeal/{id}
-  /v0/appointment_requests/{appointment_request_id}/messages:
-    get:
-      description: Accepts an appointment request id and returns a list of that appointment request's messages.
-      operationId: getAppointmentRequestMessages
-      parameters:
-        - description: The appointment request ID
-          in: path
-          name: appointmentRequestId
-          schema:
-            type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/AppointmentRequestMessages.yml
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/Errors.yml
-          description: Authentication is possible but has failed or not yet been provided.
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/Errors.yml
-          description: The requested resource could not be found.
-        '408':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/Errors.yml
-          description: The response from this API timed out.
-        '422':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/Errors.yml
-          description: Failure in processing entity
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/Errors.yml
-          description: An internal API error occured.
-        '503':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/Errors.yml
-          description: An upstream service is unavailable, or its circuit breaker
-            may have been tripped.
-        '504':
-          content:
-            application/json:
-              schema:
-                $ref: ./schemas/Errors.yml
-          description: A response from an upstream service timed out.
-      security:
-        - Bearer: []
-      summary: v0/appointment_requests/{appointment_request_id}/messages
   /v0/appointments:
     get:
       description: Given a date range returns a list of upcoming VA, Community Care,
         and Express Care appointments. If start and end date ranges are not passed
         in then it defaults to - 1 year and + 1 year from the beginning of today's
         UTC date. The endpoint is paginated and call with no pagination params defaults
-        to page 1 with a page size of 10. Details on links for the other pages in
-        the set are included in the "links" object. The current page is the "self"
-        link. "prev" and "next" are the previous and next links (these will be null
-        if you are on the first or last page respectively). Finally "first" and "last"
-        are the links for the first and last page. Requesting a page out of bounds
-        will return an empty list, however if will still include "links" details for
-        the pages that are in bounds.
+        to page 1 with a page size of 10. Requesting a page out of bounds
+        will return an empty list.
       operationId: getAppointments
       parameters:
         - description: The start date for the range of appointments in ISO 8601 UTC
@@ -1344,7 +1277,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: ./schemas/ClaimsAndAppealsOverview.yml
+                oneOf:
+                  - $ref: ./schemas/ClaimsAndAppealsOverviewClaimsError.yml
+                  - $ref: ./schemas/ClaimsAndAppealsOverviewAppealsError.yml
           description: One of the two upstream services failed
         '401':
           content:
@@ -1903,13 +1838,13 @@ paths:
   /v0/health/rx/prescriptions/refill:
     put:
       description: Requests refill for prescriptions.
-      parameters:
-        - description: array of prescription ids to request refill
-          example: ["7417954", "6970769", "8398465"]
-          in: query
-          name: ids[]
-          schema:
-            type: array
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/RefillPayload.yml
+        description: array of prescription ids to request refill
+        required: true
       responses:
         '200':
           content:
@@ -1925,7 +1860,7 @@ paths:
           description: Not Found
       security:
         - Bearer: [ ]
-      summary: /v0/health/rx/prescriptions/{id}/refill
+      summary: /v0/health/rx/prescriptions/refill
   /v0/health/rx/prescriptions/{id}/tracking:
     get:
       description: Requests list of tracking data for a prescription id

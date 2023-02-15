@@ -424,7 +424,7 @@
                         "endProductCode": "404",
                         "evidenceWaiverSubmitted5103": false,
                         "lighthouseId": null,
-                        "status": "PENDING"
+                        "status": "COMPLETE"
                       }
                     }
                   ]
@@ -542,7 +542,8 @@
                                   "EVIDENCE_GATHERING_REVIEW_DECISION",
                                   "PREPARATION_FOR_NOTIFICATION",
                                   "COMPLETE",
-                                  "ERRORED"
+                                  "ERRORED",
+                                  "CANCELLED"
                                 ]
                               }
                             }
@@ -735,13 +736,13 @@
                       "closeDate": "2017-10-18",
                       "contentionList": [
                         "abnormal heart (New)",
-                        " abscess kidney (New)",
-                        " encephalitis lethargica residuals (New)",
-                        " dracunculiasis (New)",
-                        " gingivitis (New)",
-                        " abnormal weight loss (New)",
-                        " groin condition (New)",
-                        " metritis (New)"
+                        "abscess kidney (New)",
+                        "encephalitis lethargica residuals (New)",
+                        "dracunculiasis (New)",
+                        "gingivitis (New)",
+                        "abnormal weight loss (New)",
+                        "groin condition (New)",
+                        "metritis (New)"
                       ],
                       "decisionLetterSent": false,
                       "developmentLetterSent": false,
@@ -1038,7 +1039,8 @@
                                 "EVIDENCE_GATHERING_REVIEW_DECISION",
                                 "PREPARATION_FOR_NOTIFICATION",
                                 "COMPLETE",
-                                "ERRORED"
+                                "ERRORED",
+                                "CANCELLED"
                               ]
                             },
                             "submitterApplicationCode": {
@@ -1076,8 +1078,8 @@
                                   "uploadDate": {
                                     "format": "date",
                                     "type": "string",
-                                    "nullable": true,
-                                    "description": "Date and time document was uploaded"
+                                    "description": "Date and time document was uploaded",
+                                    "nullable": true
                                   }
                                 }
                               }
@@ -1847,8 +1849,8 @@
                   "id": "1",
                   "type": "intent_to_file",
                   "attributes": {
-                    "creationDate": "2023-01-30",
-                    "expirationDate": "2024-01-30",
+                    "creationDate": "2023-02-09",
+                    "expirationDate": "2024-02-09",
                     "type": "compensation",
                     "status": "active"
                   }
@@ -2078,7 +2080,7 @@
                   "type": {
                     "type": "string",
                     "example": "compensation",
-                    "description": "Type of Intent To File being submitted.",
+                    "description": "Type of Intent To File being submitted. For type \"survivor\", the request must include claimantSsn or participantClaimantId and be made by a valid Veteran Representative. If the Representative is not a Veteran or a VA employee, this method is currently not available to them, and they should use the Benefits Intake API as an alternative.",
                     "enum": [
                       "compensation",
                       "pension",
@@ -2087,11 +2089,13 @@
                   },
                   "participantClaimantId": {
                     "type": "string",
-                    "example": "123456789"
+                    "example": "123456789",
+                    "description": "Participant ID of the Claimant."
                   },
-                  "participantVetId": {
+                  "claimantSsn": {
                     "type": "string",
-                    "example": "123456789"
+                    "example": "001122334",
+                    "description": "SSN of the Claimant."
                   }
                 },
                 "example": {
@@ -2366,7 +2370,7 @@
                   "type": {
                     "type": "string",
                     "example": "compensation",
-                    "description": "Type of Intent To File being submitted.",
+                    "description": "Type of Intent To File being submitted. For type \"survivor\", the request must include claimantSsn or participantClaimantId and be made by a valid Veteran Representative. If the Representative is not a Veteran or a VA employee, this method is currently not available to them, and they should use the Benefits Intake API as an alternative.",
                     "enum": [
                       "compensation",
                       "pension",
@@ -2375,11 +2379,13 @@
                   },
                   "participantClaimantId": {
                     "type": "string",
-                    "example": "123456789"
+                    "example": "123456789",
+                    "description": "Participant ID of the Claimant."
                   },
-                  "participantVetId": {
+                  "claimantSsn": {
                     "type": "string",
-                    "example": "123456789"
+                    "example": "001122334",
+                    "description": "SSN of the Claimant."
                   }
                 },
                 "example": {

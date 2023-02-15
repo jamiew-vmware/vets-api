@@ -424,7 +424,7 @@
                         "endProductCode": "404",
                         "evidenceWaiverSubmitted5103": false,
                         "lighthouseId": null,
-                        "status": "PENDING"
+                        "status": "COMPLETE"
                       }
                     }
                   ]
@@ -542,7 +542,8 @@
                                   "EVIDENCE_GATHERING_REVIEW_DECISION",
                                   "PREPARATION_FOR_NOTIFICATION",
                                   "COMPLETE",
-                                  "ERRORED"
+                                  "ERRORED",
+                                  "CANCELLED"
                                 ]
                               }
                             }
@@ -735,13 +736,13 @@
                       "closeDate": "2017-10-18",
                       "contentionList": [
                         "abnormal heart (New)",
-                        " abscess kidney (New)",
-                        " encephalitis lethargica residuals (New)",
-                        " dracunculiasis (New)",
-                        " gingivitis (New)",
-                        " abnormal weight loss (New)",
-                        " groin condition (New)",
-                        " metritis (New)"
+                        "abscess kidney (New)",
+                        "encephalitis lethargica residuals (New)",
+                        "dracunculiasis (New)",
+                        "gingivitis (New)",
+                        "abnormal weight loss (New)",
+                        "groin condition (New)",
+                        "metritis (New)"
                       ],
                       "decisionLetterSent": false,
                       "developmentLetterSent": false,
@@ -1038,7 +1039,8 @@
                                 "EVIDENCE_GATHERING_REVIEW_DECISION",
                                 "PREPARATION_FOR_NOTIFICATION",
                                 "COMPLETE",
-                                "ERRORED"
+                                "ERRORED",
+                                "CANCELLED"
                               ]
                             },
                             "submitterApplicationCode": {
@@ -1076,8 +1078,8 @@
                                   "uploadDate": {
                                     "format": "date",
                                     "type": "string",
-                                    "nullable": true,
-                                    "description": "Date and time document was uploaded"
+                                    "description": "Date and time document was uploaded",
+                                    "nullable": true
                                   }
                                 }
                               }

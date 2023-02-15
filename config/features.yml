@@ -12,10 +12,6 @@
 # Sorted using http://yaml-sorter.herokuapp.com/
 
 features:
-  burial_claim_confirmation_email:
-    actor_type: user
-    description: Enables burial claim form email submission confirmation
-    enable_in_development: true
   caregiver_sigi_enabled:
     actor_type: user
     description: Whether Self-Identifying Gender Identity is enabled for caregiver.
@@ -106,6 +102,10 @@ features:
     actor_type: user
     description: Enables telephone appointments for check-in
     enable_in_development: false
+  check_in_experience_pre_check_in_action_link_top_placement:
+    actor_type: cookie_id
+    description: Changes pre-check-in action link placement to the top of the page
+    enable_in_development: true
   check_in_experience_travel_reimbursement:
     actor_type: user
     description: Enables travel reimbursement workflow for day-of check-in application.
@@ -358,10 +358,6 @@ features:
     actor_type: user
     description: Form 10182 Notice of Disagreement - Request a board appeal
     enable_in_development: true
-  form527ez_confirmation_email:
-    actor_type: user
-    description: Enables pension benefits form (527ez) email submission confirmation (VaNotify)
-    enable_in_development: true
   form5490_confirmation_email:
     actor_type: user
     description: Enables form 5490 email submission confirmation (VaNotify)
@@ -445,18 +441,6 @@ features:
   mobile_api:
     actor_type: user
     description: API endpoints consumed by the VA Mobile App (iOS/Android)
-  mobile_appointment_requests:
-    actor_type: user
-    description: enables a user to include pending appointment requests in the mobile/v0/appointments endpoint
-    enable_in_development: true
-  mobile_appointment_use_VAOS_MFS:
-    actor_type: user
-    description: Finds facilities using VAOS's Mobile Facility Service.
-    enable_in_development: false
-  mobile_appointment_use_VAOS_v2:
-    actor_type: user
-    description: Enables a user to use VAOS v2 endpoints rather then v0
-    enable_in_development: false
   mobile_precache_appointments:
     actor_type: user
     description: enables us to easily turn off pre-caching appointments if our requests are overwhelming the upstream service
@@ -469,10 +453,6 @@ features:
   omni_channel_link:
     actor_type: user
     description: This determines the visibility of the OmniChannel link in the claim status tool
-    enable_in_development: true
-  preneeds_burial_form_confirmation_email:
-    actor_type: user
-    description: Enables preneeds burial form email submission confirmation
     enable_in_development: true
   pdf_warning_banner:
     description: "When enabled, will allow display of PDF cert warnings in find-a-form"

@@ -21,10 +21,10 @@ module ClaimsApi
         #
         # @return [JSON] Record in pending state
         def submit_form_2122 # rubocop:disable Metrics/MethodLength
+          ClaimsApi::Logger.log('poa', detail: '2122 - Request started')
           validate_json_schema
 
           poa_code = form_attributes.dig('serviceOrganization', 'poaCode')
-          ClaimsApi::Logger.log('poa', poa_id: poa_code, detail: 'Request started')
           validate_poa_code!(poa_code)
           ClaimsApi::Logger.log('poa', poa_id: poa_code, detail: 'POA code validated')
           validate_poa_code_for_current_user!(poa_code) if header_request? && !token.client_credentials_token?
@@ -67,6 +67,7 @@ module ClaimsApi
             ClaimsApi::PoaFormBuilderJob.perform_async(power_of_attorney.id)
           end
 
+          ClaimsApi::Logger.log('poa', detail: '2122 - Request Completed')
           render json: power_of_attorney, serializer: ClaimsApi::PowerOfAttorneySerializer
         end
 
@@ -136,12 +137,14 @@ module ClaimsApi
         #
         # @return [JSON] Success if valid, error messages if invalid.
         def validate
+          ClaimsApi::Logger.log('poa', detail: '2122/validate - Request Started')
           add_deprecation_headers_to_response(response: response, link: ClaimsApi::EndpointDeprecation::V1_DEV_DOCS)
           validate_json_schema
 
           poa_code = form_attributes.dig('serviceOrganization', 'poaCode')
           validate_poa_code!(poa_code)
           validate_poa_code_for_current_user!(poa_code) if header_request? && !token.client_credentials_token?
+          ClaimsApi::Logger.log('poa', detail: '2122/validate - Request Completed')
 
           render json: validation_success
         end
@@ -236,7 +239,7 @@ module ClaimsApi
 
           begin
             ClaimsApi::Logger.log('poa', detail: 'Starting bgs-ext service build')
-            response = bgs_service.people.find_by_ssn(ssn) # rubocop:disable Rails/DynamicFindBy
+            response = local_bgs_service.people.find_by_ssn(ssn) # rubocop:disable Rails/DynamicFindBy
             ClaimsApi::Logger.log('poa', detail: 'bgs-ext ssn located')
             unless response && response[:file_nbr].present?
               error_message = "Unable to locate Veteran's File Number in Master Person Index (MPI)." \
