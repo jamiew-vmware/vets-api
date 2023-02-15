@@ -8,9 +8,9 @@ RSpec.describe 'Messages Integration', type: :request do
   include SM::ClientHelpers
   include SchemaMatchers
 
-  let(:user_id) { '10616687' }
+  let(:user_id) { '10055239' }
   let(:inbox_id) { 0 }
-  let(:message_id) { 573_059 }
+  let(:message_id) { 2636122 }
   let(:va_patient) { true }
   let(:current_user) { build(:user, :mhv, va_patient: va_patient, mhv_account_type: mhv_account_type) }
   let(:inflection_header) { { 'X-Key-Inflection' => 'camel' } }
@@ -219,26 +219,26 @@ RSpec.describe 'Messages Integration', type: :request do
     end
 
     describe '#thread' do
-      let(:thread_id) { 573_059 }
+      let(:thread_id) { 2636122 }
 
       it 'responds to GET #thread' do
-        VCR.use_cassette('sm_client/messages/gets_a_message_thread') do
+        VCR.use_cassette('sm_client/messages/gets_a_message_thread_detailed') do
           get "/my_health/v1/messaging/messages/#{thread_id}/thread"
         end
 
         expect(response).to be_successful
         expect(response.body).to be_a(String)
-        expect(response).to match_response_schema('messages_thread')
+        expect(response).to match_response_schema('messages_thread_detailed')
       end
 
       it 'responds to GET #thread when camel-inflected' do
-        VCR.use_cassette('sm_client/messages/gets_a_message_thread') do
+        VCR.use_cassette('sm_client/messages/gets_a_message_thread_detailed') do
           get "/my_health/v1/messaging/messages/#{thread_id}/thread", headers: inflection_header
         end
 
         expect(response).to be_successful
         expect(response.body).to be_a(String)
-        expect(response).to match_camelized_response_schema('messages_thread')
+        expect(response).to match_camelized_response_schema('messages_thread_detailed')
       end
     end
 

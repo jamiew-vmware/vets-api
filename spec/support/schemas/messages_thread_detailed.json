@@ -11,7 +11,7 @@
         "required": ["id", "type", "attributes", "links"],
         "properties": {
           "id": { "type": "string" },
-          "type": { "enum": ["messages"] },
+          "type": { "enum": ["message_thread_details"] },
           "attributes": {
             "type": "object",
             "required": [
