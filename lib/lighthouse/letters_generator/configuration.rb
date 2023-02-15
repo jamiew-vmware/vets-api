@@ -4,9 +4,8 @@ require 'common/client/middleware/response/raise_error'
 module Lighthouse
   module LettersGenerator
     class Configuration < Common::Client::Configuration::REST
-
       def base_path
-        ''
+        'http://localhost:3000'
       end
 
       def service_name
@@ -14,33 +13,25 @@ module Lighthouse
       end
 
       def connection
-        # Connection.new()
+        @conn ||= Faraday.new(base_path, headers: base_request_headers, request: request_options) do |faraday|
+          faraday.use      :breakers
+          faraday.use      Faraday::Response::RaiseError
+  
+          faraday.request :multipart
+          faraday.request :json
+  
+          # faraday.response :betamocks if mock_enabled?
+          faraday.response :json
+          faraday.adapter Faraday.default_adapter
+        end
+      end
+
+      ##
+      # @return [Boolean] Should the service use mock data in lower environments.
+      #
+      def mock_enabled?
+        false
       end
     end
-
-    # class Connection
-    #   def builder
-    #     Builder.new()
-    #   end
-
-    #   def get(path, icn)
-    #     {}
-    #   end
-
-    #   def send(method, path, params)
-    #     Response.new()
-    #   end
-    # end
-
-    # class Builder
-    #   def handlers
-    #     []
-    #   end
-    # end
-
-    # class Response
-    #   def env
-    #   end
-    # end
   end
 end
