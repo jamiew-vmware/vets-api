@@ -50,7 +50,7 @@ module ClaimsApi
     def edipi_mpi
       mpi_profile&.edipi
     end
-
+    
     def participant_id_mpi
       mpi_profile&.participant_id
     end

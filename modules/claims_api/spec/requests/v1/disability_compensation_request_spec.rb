@@ -1119,25 +1119,20 @@ RSpec.describe 'Disability Claims ', type: :request do
     context 'when Veteran has birls_id' do
       context 'when Veteran is missing a participant_id' do
         before do
-          stub_mpi(build(:mvi_profile, participant_id: nil, ssn: nil))
+          stub_mpi(build(:mvi_profile, participant_id: nil))
         end
 
         it 'returns an unprocessible entity status' do
           with_okta_user(scopes) do |auth_header|
             VCR.use_cassette('evss/reference_data/countries') do
-              post path, params: data, headers: headers.merge(auth_header)
+              params = JSON.parse(data)
+              post path, params: params.to_json, headers: headers.merge(auth_header)
               expect(response.status).to eq(422)
             end
           end
         end
       end
     end
-    # no pid
-    # mpi add proxy person? if no pid
-    # where do we get pid
-    # if we don't have it, do we continue?
-    # we tried 5 sec wait, is that related?
-
 
     # real world example happened in API-15575
     describe "'claim_date' difference between Lighthouse (UTC) and EVSS (Central Time)" do
