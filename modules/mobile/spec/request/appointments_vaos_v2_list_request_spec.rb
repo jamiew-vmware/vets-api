@@ -295,7 +295,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
       let(:start_date) { Time.zone.parse('1991-01-01T00:00:00Z').iso8601 }
       let(:end_date) { Time.zone.parse('2023-01-01T00:00:00Z').iso8601 }
 
-      it 'returns only matching records' do
+      it 'returns only matching records using the eq operator' do
         VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben', match_requests_on: %i[method uri]) do
           VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
             params = { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date, filter: { type_of_care: { eq: 'Optometry'}} }
@@ -304,9 +304,44 @@ RSpec.describe 'vaos v2 appointments', type: :request do
           end
         end
 
-        statuses = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'typeOfCare') }.uniq
-        expect(statuses).to eq(['Optometry'])
+        type_of_care = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'typeOfCare') }.uniq
+        expect(type_of_care).to eq(['Optometry'])
         expect(response.parsed_body['data'].count).to eq(41)
+        expect(response.parsed_body['meta']['errors']).to eq([])
+      end
+
+      it 'returns only matching records using the not_eq operator' do
+        VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben', match_requests_on: %i[method uri]) do
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            params = { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date, filter: { type_of_care: { not_eq: 'Optometry'}} }
+
+            get '/mobile/v0/appointments', headers: iam_headers, params: params
+          end
+        end
+
+        type_of_care = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'typeOfCare') }.uniq
+        expect(type_of_care).to eq(
+          ["Audiology and speech (including hearing aid support)", nil, "COVID-19 vaccine", "MOVE! weight management program", "Primary Care"]
+        )
+        expect(response.parsed_body['data'].count).to eq(100)
+        expect(response.parsed_body['meta']['errors']).to eq([])
+      end
+
+      it 'works with multiple filters' do
+        VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben', match_requests_on: %i[method uri]) do
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            params = { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date,
+                       filter: { healthcare_provider: { eq: 'Meera Cho' }, appointment_type: { eq: 'VA_VIDEO_CONNECT_HOME' }} }
+
+            get '/mobile/v0/appointments', headers: iam_headers, params: params
+          end
+        end
+
+        provider = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'healthcareProvider') }.uniq
+        appt_types = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'appointmentType') }.uniq
+        expect(provider).to eq(['Meera Cho'])
+        expect(appt_types).to eq(['VA_VIDEO_CONNECT_HOME'])
+        expect(response.parsed_body['data'].count).to eq(56)
         expect(response.parsed_body['meta']['errors']).to eq([])
       end
 
@@ -323,6 +358,23 @@ RSpec.describe 'vaos v2 appointments', type: :request do
         expect(statuses).not_to eq(['Optometry'])
         expect(response.parsed_body['data'].count).to eq(100)
         expect(response.parsed_body['meta']['errors']).to eq(['invalid attribute'])
+      end
+
+      it 'complex data types?' do
+        VCR.use_cassette('appointments/VAOS_v2/get_all_appointment_200_ruben', match_requests_on: %i[method uri]) do
+          VCR.use_cassette('providers/get_provider_200', match_requests_on: %i[method uri], tag: :force_utf8) do
+            params = { page: { number: 1, size: 100 }, startDate: start_date, endDate: end_date,
+                       filter: { location: { eq: 'Pittsburgh' }} }
+
+            get '/mobile/v0/appointments', headers: iam_headers, params: params
+          end
+        end
+
+        provider = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'healthcareProvider') }.uniq
+        appt_types = response.parsed_body['data'].map {|appt| appt.dig('attributes', 'appointmentType') }.uniq
+
+        # expect(response.parsed_body['data'].count).to eq(100)
+        expect(response.parsed_body['meta']['errors']).to eq([])
       end
     end
   end
