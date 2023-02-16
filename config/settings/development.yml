@@ -27,3 +27,6 @@ web_origin_regex: \Ahttps?:\/\/.*\z
 modules_appeals_api:
   documentation:
     notice_of_disagreements_v1: true
+
+cache_dir: ../vets-api-mockdata # via rails; e.g. bundle exec rails s or bundle exec rails c
+# cache_dir: /cache # via docker; e.g. make up or make console

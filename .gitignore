@@ -81,3 +81,6 @@ Brewfile.lock.json
 
 # Ignore Test User Dashboard csv
 test_users.csv
+
+# Ignore faraday disabling of ssl verification, used for local development
+config/initializer/faraday_ssl_noverify.rb
