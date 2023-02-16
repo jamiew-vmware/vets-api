@@ -32,7 +32,6 @@ module SM
                   normalize_message(parsed_messages) ||
                   parsed_categories ||
                   parsed_signature
-          
           @parsed_json = {
             data: data,
             errors: @errors,
@@ -76,7 +75,7 @@ module SM
 
         def normalize_message(object)
           return object if object.blank?
-          
+
           if object.is_a?(Array)
             object.map { |a| fix_attachments(a) }
           else

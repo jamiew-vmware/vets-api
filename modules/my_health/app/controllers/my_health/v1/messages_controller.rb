@@ -6,7 +6,7 @@ module MyHealth
       include Filterable
 
       def index
-        resource = client.get_folder_messages(@current_user.uuid, params[:folder_id].to_s, use_cache?)
+        resource = client.get_folder_messages(1, params[:folder_id].to_s, use_cache?)
         raise Common::Exceptions::RecordNotFound, params[:folder_id] if resource.blank?
 
         resource = params[:filter].present? ? resource.find_by(filter_params) : resource
@@ -62,7 +62,7 @@ module MyHealth
         # resource = client.get_message_history(message_id)
         resource = client.get_messages_for_thread(message_id)
         raise Common::Exceptions::RecordNotFound, message_id if resource.blank?
-        
+
         render json: resource,
                serializer: CollectionSerializer,
                each_serializer: MessageDetailsSerializer,
