@@ -5,8 +5,12 @@ require 'lighthouse/letters_generator/client'
 RSpec.describe Lighthouse::LettersGenerator::Client do
   
   before do
-    @faradayResponse = instance_double('Faraday::Response')
-    allow(@faradayResponse).to receive(:env).and_return('dev')
+    fakeResponseBody = File.read('spec/lib/lighthouse/letters_generator/fakeResponse.json')
+    env = Faraday::Env.new
+    env.status = 200
+    # We have to do this here, because we're stubbing the response
+    env.body = JSON.parse(fakeResponseBody)
+    @faradayResponse = Faraday::Response.new(env)
   end
 
   it 'returns a list of eligible letter types' do
@@ -19,5 +23,9 @@ RSpec.describe Lighthouse::LettersGenerator::Client do
 
     # Act
     actualDollyTypes = client.get_eligible_letter_types('DOLLYPARTON')
+    puts actualDollyTypes
+    # Assert
+    expect(actualDollyTypes[0]).to have_key("letterType")
+    expect(actualDollyTypes[0]).to have_key("letterName")
   end
 end

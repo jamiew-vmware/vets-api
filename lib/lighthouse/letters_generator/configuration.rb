@@ -19,8 +19,8 @@ module Lighthouse
   
           faraday.request :multipart
           faraday.request :json
-  
-          # faraday.response :betamocks if mock_enabled?
+          
+          faraday.response :betamocks if mock_enabled?
           faraday.response :json
           faraday.adapter Faraday.default_adapter
         end

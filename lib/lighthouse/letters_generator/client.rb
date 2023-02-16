@@ -6,9 +6,8 @@ module Lighthouse
       configuration Lighthouse::LettersGenerator::Configuration
 
       def get_eligible_letter_types(icn)
-        get("/eligible-letters", {icn: icn}, {}, {})
-        letter_types = %w[A B C]
-        letter_types
+        response = get("/eligible-letters", {icn: icn}, {}, {})
+        response.body["letters"]
       end
     end
   end
