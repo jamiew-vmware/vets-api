@@ -7,13 +7,13 @@ module MyHealth
         object.message_id
       end
 
-      def body 
+      def body
         object.message_body
       end
 
       attribute :message_id
       attribute :thread_id
-      attribute :folder_id 
+      attribute :folder_id
       attribute :message_body
       attribute :draft_date
       attribute :to_date
