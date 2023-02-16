@@ -2,9 +2,21 @@
 
 module Mobile
   class ListFilter
-    include SentryLogging
+    class MobileFilterError < Common::Exceptions::BaseError
+      def initialize(filters, records, message)
+        @filters = filters
+        @records = records
+        @message = message
+        super
+      end
 
-    class FilterError < StandardError
+      def errors
+        Array(SerializableError.new(i18n_data.merge(detail: {
+          filters: @filters,
+          records: @records,
+          message: @message
+        })))
+      end
     end
 
     PERMITTED_OPERATIONS = %w[eq not_eq].freeze
@@ -27,21 +39,22 @@ module Mobile
     end
 
     def result
-      return [@list, nil] if @filter_params.nil?
+      return @list if @filter_params.nil?
 
       validate!
-      [matches, nil]
+      matches
+    rescue MobileFilterError => e
+      raise e
     rescue => e
-      log_exception_to_sentry(e, extra_context_for_errors)
-      [@list, e]
+      raise MobileFilterError(@filters, @records, e.message)
     end
 
-    def extra_context_for_errors
-      extra_context = {}
-      extra_context[:filters] = filters if filter_is_parameters?
-      extra_context[:list_models] = filterable_models.map(&:to_s) if valid_list?
-      extra_context
-    end
+    # def extra_context_for_errors
+    #   extra_context = {}
+    #   extra_context[:filters] = filters if filter_is_parameters?
+    #   extra_context[:list_models] = filterable_models.map(&:to_s) if valid_list?
+    #   extra_context
+    # end
 
     private
 
@@ -65,13 +78,13 @@ module Mobile
     end
 
     def validate!
-      raise FilterError, 'list must be an array' unless valid_list?
-      raise FilterError, 'list contains multiple data types' unless list_contains_single_type?
-      raise FilterError, 'list items must be Common::Resource or Common::Base models' unless list_composed_of_models?
-      raise FilterError, 'filters must be an ActionController::Parameters' unless filter_is_parameters?
-      raise FilterError, 'invalid filter structure' unless valid_filter_structure?
-      raise FilterError, 'invalid attribute' unless valid_filter_attributes?
-      raise FilterError, 'invalid operation' unless valid_filter_operations?
+      raise MobileFilterError @filters, @records, 'list must be an array' unless valid_list?
+      raise MobileFilterError @filters, @records, 'list contains multiple data types' unless list_contains_single_type?
+      raise MobileFilterError @filters, @records, 'list items must be Common::Resource or Common::Base models' unless list_composed_of_models?
+      raise MobileFilterError @filters, @records, 'filters must be an ActionController::Parameters' unless filter_is_parameters?
+      raise MobileFilterError @filters, @records, 'invalid filter structure' unless valid_filter_structure?
+      raise MobileFilterError @filters, @records, 'invalid attribute' unless valid_filter_attributes?
+      raise MobileFilterError @filters, @records, 'invalid operation' unless valid_filter_operations?
     end
 
     def valid_list?

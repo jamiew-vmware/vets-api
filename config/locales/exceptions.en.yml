@@ -209,6 +209,12 @@ en:
         detail: "No query params are allowed for this route"
         code: 400
         status: 400
+      mobile_filter_error:
+        <<: *defaults
+        title: Mobile Filter Error
+        detail: "Filtering process encountered errors"
+        code: 422
+        status: 422
       detailed_schema_errors:
         <<: *validation_errors # Fallbacks for missing translations
         data_type:
