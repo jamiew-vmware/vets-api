@@ -134,7 +134,7 @@ ActiveRecord::Schema.define(version: 2023_02_14_001703) do
     t.text "encrypted_kms_key"
     t.date "verified_decryptable_at"
     t.string "veteran_icn"
-    t.jsonb "metadata", default: {}
+    t.jsonb "metadata"
     t.index ["veteran_icn"], name: "index_appeals_api_higher_level_reviews_on_veteran_icn"
   end
 
@@ -153,7 +153,7 @@ ActiveRecord::Schema.define(version: 2023_02_14_001703) do
     t.text "encrypted_kms_key"
     t.date "verified_decryptable_at"
     t.string "veteran_icn"
-    t.jsonb "metadata", default: {}
+    t.jsonb "metadata"
     t.index ["veteran_icn"], name: "index_appeals_api_notice_of_disagreements_on_veteran_icn"
   end
 
@@ -185,7 +185,7 @@ ActiveRecord::Schema.define(version: 2023_02_14_001703) do
     t.boolean "evidence_submission_indicated"
     t.date "verified_decryptable_at"
     t.string "veteran_icn"
-    t.jsonb "metadata", default: {}
+    t.jsonb "metadata"
     t.index ["veteran_icn"], name: "index_appeals_api_supplemental_claims_on_veteran_icn"
   end
 
