@@ -1,0 +1,63 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: "<MHV_HOST>/mhv-sm-api/patient/v1/message/2636122/messagesforthread"
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept:
+      - application/json
+      Content-Type:
+      - application/json
+      User-Agent:
+      - Vets.gov Agent
+      Token: "<SESSION_TOKEN>"
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Fri, 17 Feb 2023 04:45:09 GMT
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '412'
+      X-Amzn-Requestid:
+      - 376a1504-39af-4275-ac79-caa99ae42253
+      X-Xss-Protection:
+      - 1; mode=block
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Frame-Options:
+      - DENY
+      X-Amzn-Remapped-Connection:
+      - close
+      X-Amz-Apigw-Id:
+      - Ad3tWFQsvHMFgKg=
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      X-Content-Type-Options:
+      - nosniff
+      Expires:
+      - '0'
+      X-Amzn-Trace-Id:
+      - Root=1-63ef0655-5993b040785f04495c794eff;Sampled=0
+      Pragma:
+      - no-cache
+      X-Amzn-Remapped-Date:
+      - Fri, 17 Feb 2023 04:45:09 GMT
+    body:
+      encoding: ASCII-8BIT
+      string: '[{"messageId":2636122,"threadId":2631841,"senderId":257555,"senderName":"ISLAM,
+        MOHAMMAD RAFIQ","recipientId":523757,"recipientName":"FREEMAN, MELVIN  V","sentDate":"2023-01-31T17:14:58.000+00:00","draftDate":null,"triageGroupName":"EXTRA_LONG_CHARACTER_TRIAGE_GROUP_369258@#%_DAYT29","hasAttachments":false,"subject":"test
+        attachment OM","category":"0","folderId":0,"messageBody":"qqqqq\r\n\r\n\r\n\r\nMOHAMMAD
+        R ISLAM\r\nPH: 1239852693 || WMCYA || TYUOI ||","proxySenderName":null},{"messageId":2631842,"threadId":2631841,"senderId":523757,"senderName":"FREEMAN,
+        MELVIN V","recipientId":1930436,"recipientName":"EXTRA_LONG_CHARACTER_TRIAGE_GROUP_369258@#%_DAYT29","sentDate":"2023-01-30T14:15:28.000+00:00","draftDate":null,"triageGroupName":"EXTRA_LONG_CHARACTER_TRIAGE_GROUP_369258@#%_DAYT29","hasAttachments":true,"subject":"test
+        attachment OM","category":"0","folderId":-1,"messageBody":"test","proxySenderName":null}]'
+  recorded_at: Fri, 17 Feb 2023 04:45:09 GMT
+recorded_with: VCR 6.1.0

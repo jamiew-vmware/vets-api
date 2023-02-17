@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": ["data"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "minItems": 0,
+      "uniqueItems": true,
+      "items": {
+        "required": ["id", "type", "attributes", "links"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "enum": ["message_thread_details"] },
+          "attributes": {
+            "type": "object",
+            "required": [
+              "message_id"
+            ],
+            "properties": {
+              "message_id": { "type": "integer" }
+            }
+          },
+          "links": {
+            "type": "object",
+            "required": ["self"],
+            "properties": {
+              "self": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
