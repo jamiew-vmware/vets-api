@@ -44,17 +44,12 @@ RSpec.describe Lighthouse::LettersGenerator::Client do
       # Arrange
       expectedBadParams = [:get, '/eligible-letters', {icn: 'BADREQUEST'}]
       client = Lighthouse::LettersGenerator::Client.new
+      
+      expect_any_instance_of(Faraday::Connection).to receive(:send).with(*expectedBadParams).and_raise(Faraday::BadRequestError)
 
-      # Expect
-      expect_any_instance_of(Faraday::Connection).to receive(:send).with(*expectedBadParams).and_return(@faradayResponse)
-
-      # Act
-      actualResponse = client.get_eligible_letter_types('BADREQUEST')
-
-      # Assert
-      # TO-DO: update assertions once we figure out why Faraday doesn't seem to be raising the error
-      expect(actualResponse[0]).to have_key("letterType")
-      expect(actualResponse[0]).to have_key("letterName")
+      expect do
+        client.get_eligible_letter_types('BADREQUEST')
+      end.to raise_error
     end
   end
 end

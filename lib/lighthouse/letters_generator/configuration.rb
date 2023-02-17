@@ -20,7 +20,6 @@ module Lighthouse
           faraday.request :multipart
           faraday.request :json
           
-          faraday.response :raise_error
           faraday.response :betamocks if mock_enabled?
           faraday.response :json
           faraday.adapter Faraday.default_adapter
@@ -31,7 +30,7 @@ module Lighthouse
       # @return [Boolean] Should the service use mock data in lower environments.
       #
       def mock_enabled?
-        false
+        true
       end
     end
   end
