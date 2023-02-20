@@ -16,7 +16,8 @@ module SignIn
         VA_WEB_CLIENT = 'vaweb',
         MOBILE_CLIENT = 'mobile',
         VA_MOBILE_CLIENT = 'vamobile',
-        MOBILE_TEST_CLIENT = 'mobile_test'
+        MOBILE_TEST_CLIENT = 'mobile_test',
+        VA_MOCK_CLIENT = 'vamock'
       ].freeze
       GRANT_TYPE = 'authorization_code'
       INFO_COOKIE_NAME = 'vagov_info_token'

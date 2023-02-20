@@ -122,5 +122,20 @@ RSpec.describe SignIn::ClientConfig, type: :model do
 
       it_behaves_like 'client config methods'
     end
+
+    context 'mocked auth' do
+      let(:client_id) { SignIn::Constants::Auth::VA_MOCK_CLIENT }
+      let(:expected_values) do
+        { cookie_auth: true,
+          api_auth: false,
+          anti_csrf: true,
+          redirect_uri: 'http://localhost:3001/auth/login/callback',
+          access_token_duration: 30.minutes,
+          access_token_audience: 'vamock',
+          refresh_token_duration: 45.days }
+      end
+
+      it_behaves_like 'client config methods'
+    end
   end
 end

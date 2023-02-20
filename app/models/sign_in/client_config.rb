@@ -51,6 +51,8 @@ module SignIn
           mobile_config
         when SignIn::Constants::Auth::MOBILE_TEST_CLIENT
           mobile_test_config
+        when SignIn::Constants::Auth::VA_MOCK_CLIENT
+          vamock_config
         end
     end
 
@@ -86,6 +88,18 @@ module SignIn
         redirect_uri: Settings.sign_in.client_redirect_uris.mobile_test,
         access_token_duration: Constants::AccessToken::VALIDITY_LENGTH_LONG_MINUTES.minutes,
         access_token_audience: 'vamobile',
+        refresh_token_duration: Constants::RefreshToken::VALIDITY_LENGTH_LONG_DAYS.days
+      }
+    end
+
+    def vamock_config
+      {
+        cookie_auth: true,
+        api_auth: false,
+        anti_csrf: true,
+        redirect_uri: Settings.sign_in.client_redirect_uris.web,
+        access_token_duration: Constants::AccessToken::VALIDITY_LENGTH_LONG_MINUTES.minutes,
+        access_token_audience: 'vamock',
         refresh_token_duration: Constants::RefreshToken::VALIDITY_LENGTH_LONG_DAYS.days
       }
     end
