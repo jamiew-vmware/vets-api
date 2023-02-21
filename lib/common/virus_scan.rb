@@ -13,7 +13,10 @@ module Common
 
       client = ClamAV::PatchClient.new
       result = client.execute(ClamAV::Commands::PatchScanCommand.new(file_path))
-      return client, result.first #returns an array, but we will only ever send 1 file
+
+      virus_name = result.first.virus_name || "" #returns an array, but we will only ever send 1 file
+
+      return client.safe?(file_path), virus_name
     end
   end
 end
