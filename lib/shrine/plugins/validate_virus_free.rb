@@ -9,8 +9,8 @@ class Shrine
       module AttacherMethods
         def validate_virus_free(message: nil)
           Datadog::Tracing.trace('Scan Upload for Viruses') do
-            cached_path = get.download.path
-            result = Common::VirusScan.scan(cached_path)
+            temp_file_path = Common::FileHelpers.generate_temp_file(get.download)
+            result = Common::VirusScan.scan(temp_file_path)
             result || add_error_msg(message)
           end
         end
