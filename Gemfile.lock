@@ -579,6 +579,8 @@ GEM
     multi_json (1.15.0)
     multi_xml (0.6.0)
     multipart-post (2.3.0)
+    mustermann (1.1.2)
+      ruby2_keywords (~> 0.0.1)
     nap (1.1.0)
     nenv (0.3.0)
     net-sftp (4.0.0)
@@ -814,6 +816,7 @@ GEM
       rexml
     ruby-vips (2.1.4)
       ffi (~> 1.12)
+    ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
     rufus-scheduler (3.8.2)
       fugit (~> 1.1, >= 1.1.6)
@@ -869,6 +872,11 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
+    sinatra (2.1.0)
+      mustermann (~> 1.0)
+      rack (~> 2.2)
+      rack-protection (= 2.1.0)
+      tilt (~> 2.0)
     slack-notify (0.6.0)
       faraday (>= 0.9)
       json (>= 1.8)
@@ -1115,6 +1123,7 @@ DEPENDENCIES
   sidekiq-scheduler
   sidekiq_alive
   simplecov
+  sinatra
   slack-notify
   staccato
   statsd-instrument

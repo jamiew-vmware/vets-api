@@ -435,6 +435,9 @@ Rails.application.routes.draw do
 
   mount Coverband::Reporters::Web.new, at: '/coverband', constraints: GithubAuthentication::CoverbandReportersWeb.new
 
+  mount MockAuth::Web, at: '/mock_auth' if Rails.env.development?
+  post '/v0/mock_auth/authenticate', to: 'v0/mock_auth#authenticate' if Rails.env.development?
+
   # This globs all unmatched routes and routes them as routing errors
   match '*path', to: 'application#routing_error', via: %i[get post put patch delete]
 end
