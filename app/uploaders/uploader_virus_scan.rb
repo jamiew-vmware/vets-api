@@ -21,7 +21,7 @@ module UploaderVirusScan
     File.delete(temp_file_path)
 
     # Common::VirusScan result will return true or false
-    unless result
+    unless result # unless safe
       file.delete
       raise VirusFoundError, 'Virus Found'
     end
