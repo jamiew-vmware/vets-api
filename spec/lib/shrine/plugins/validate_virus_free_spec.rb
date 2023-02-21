@@ -29,9 +29,6 @@ describe Shrine::Plugins::ValidateVirusFree do
     end
 
     context 'with errors' do
-      before do
-      end
-
       context 'while in development' do
         it 'logs an error message if clamd is not running' do
           result = instance.validate_virus_free
@@ -51,7 +48,6 @@ describe Shrine::Plugins::ValidateVirusFree do
         let(:message) { 'oh noes!' }
 
         it 'adds an error with a custom error message if clam scan returns not safe' do
-
           result = instance.validate_virus_free(message: message)
           expect(result).to be(false)
           expect(instance.errors).to eq(['oh noes!'])
@@ -59,14 +55,13 @@ describe Shrine::Plugins::ValidateVirusFree do
       end
     end
 
-
     context 'it returns safe' do
       before do
         allow(Common::VirusScan).to receive(:scan).and_return(true)
       end
 
       it 'does not add an error if clam scan returns safe' do
-       allow_any_instance_of(ClamAV::PatchClient).to receive(:safe?).and_return(true)
+        allow_any_instance_of(ClamAV::PatchClient).to receive(:safe?).and_return(true)
 
         expect(instance).not_to receive(:add_error_msg)
         result = instance.validate_virus_free

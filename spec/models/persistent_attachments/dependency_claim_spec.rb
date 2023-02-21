@@ -6,12 +6,12 @@ RSpec.describe PersistentAttachments::DependencyClaim, uploader_helpers: true do
   let(:file) { Rails.root.join('spec', 'fixtures', 'files', 'marriage-certificate.pdf') }
   let(:instance) { described_class.new(form_id: '686C-674') }
 
-  it 'sets a guid on initialize' do
-    expect(instance.guid).to be_a(String)
-  end
-
   before do
     allow(Common::VirusScan).to receive(:scan).and_return(true)
+  end
+
+  it 'sets a guid on initialize' do
+    expect(instance.guid).to be_a(String)
   end
 
   it 'allows adding a file' do

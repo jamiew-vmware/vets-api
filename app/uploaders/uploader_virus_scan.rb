@@ -23,7 +23,7 @@ module UploaderVirusScan
     # Common::VirusScan result will return true or false
     unless result
       file.delete
-      raise VirusFoundError, "Virus Found"
+      raise VirusFoundError, 'Virus Found'
     end
   end
 end
