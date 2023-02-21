@@ -10,8 +10,8 @@ class Shrine
         def validate_virus_free(message: nil)
           Datadog::Tracing.trace('Scan Upload for Viruses') do
             cached_path = get.download.path
-            result = Common::VirusScan.scan(cached_path)
-            result || add_error_msg(message)
+            safe, virus_name = Common::VirusScan.scan(cached_path)
+            safe || add_error_msg(message + virus_name)
           end
         end
 
