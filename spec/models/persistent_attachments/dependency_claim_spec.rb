@@ -11,7 +11,7 @@ RSpec.describe PersistentAttachments::DependencyClaim, uploader_helpers: true do
   end
 
   it 'allows adding a file' do
-    allow(ClamAV::PatchClient.new).to receive(:safe?)
+    allow(ClamAV::PatchClient).to receive(:safe?)
       .and_return(true)
     instance.file = file.open
     expect(instance.valid?).to be(true)

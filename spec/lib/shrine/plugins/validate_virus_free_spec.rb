@@ -32,7 +32,7 @@ describe Shrine::Plugins::ValidateVirusFree do
         it 'logs an error message if clamd is not running' do
           expect(Rails.env).to receive(:development?).and_return(true)
           expect(Shrine.logger).to receive(:error).with(/PLEASE START CLAMD/)
-          allow(ClamAV::PatchClient.new).to receive(:safe?)
+          allow(ClamAV::PatchClient).to receive(:safe?)
             .and_return(false)
 
           result = instance.validate_virus_free
@@ -42,7 +42,7 @@ describe Shrine::Plugins::ValidateVirusFree do
 
       context 'with the default error message' do
         it 'adds an error if clam scan returns not safe' do
-          allow(ClamAV::PatchClient.new).to receive(:safe?)
+          allow(ClamAV::PatchClient).to receive(:safe?)
             .and_return(false)
 
           result = instance.validate_virus_free
@@ -54,7 +54,7 @@ describe Shrine::Plugins::ValidateVirusFree do
         let(:message) { 'oh noes!' }
 
         it 'adds an error with a custom error message if clam scan returns not safe' do
-          allow(ClamAV::PatchClient.new).to receive(:safe?)
+          allow(ClamAV::PatchClient).to receive(:safe?)
             .and_return(false)
 
           result = instance.validate_virus_free(message: message)
@@ -65,7 +65,7 @@ describe Shrine::Plugins::ValidateVirusFree do
     end
 
     it 'does not add an error if clam scan returns safe' do
-      allow(ClamAV::PatchClient.new).to receive(:safe?)
+      allow(ClamAV::PatchClient).to receive(:safe?)
         .and_return(true)
 
       expect(instance).not_to receive(:add_error_msg)
@@ -74,7 +74,7 @@ describe Shrine::Plugins::ValidateVirusFree do
     end
 
     it 'changes group permissions of the uploaded file' do
-      allow(ClamAV::PatchClient.new).to receive(:safe?)
+      allow(ClamAV::PatchClient).to receive(:safe?)
         .and_return(true)
 
       expect(File).to receive(:chmod).with(0o640, 'foo/bar.jpg').and_return(1)
