@@ -25,9 +25,9 @@ describe UploaderVirusScan, uploader_helpers: true do
 
     context 'with a virus' do
       let(:result) { false }
-      allow(Common::VirusScan).to receive(:scan).and_return(false)
 
       it 'raises an error' do
+        allow(Common::VirusScan).to receive(:scan).and_return(false)
         expect(Rails.env).to receive(:production?).and_return(true)
         expect(file).to receive(:delete)
 
