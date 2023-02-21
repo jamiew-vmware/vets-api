@@ -11,7 +11,7 @@ class Shrine
           Datadog::Tracing.trace('Scan Upload for Viruses') do
             cached_path = get.download.path
             safe, virus_name = Common::VirusScan.scan(cached_path)
-            safe || add_error_msg(message + virus_name)
+            safe || add_error_msg(virus_name + message.to_s)
           end
         end
 
