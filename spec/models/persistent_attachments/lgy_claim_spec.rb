@@ -6,6 +6,10 @@ RSpec.describe PersistentAttachments::LgyClaim, uploader_helpers: true do
   let(:file) { Rails.root.join('spec', 'fixtures', 'files', 'marriage-certificate.pdf') }
   let(:instance) { described_class.new(form_id: '28-1880') }
 
+  before do
+    allow(Common::VirusScan).to receive(:scan).and_return(true)
+  end
+
   it 'sets a guid on initialize' do
     expect(instance.guid).to be_a(String)
   end

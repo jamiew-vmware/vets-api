@@ -6,6 +6,10 @@ RSpec.describe PersistentAttachments::PensionBurial, uploader_helpers: true do
   let(:file) { Rails.root.join('spec', 'fixtures', 'files', 'doctors-note.pdf') }
   let(:instance) { described_class.new(form_id: 'T-123') }
 
+  before do
+    allow(Common::VirusScan).to receive(:scan).and_return(true)
+  end
+
   it 'sets a guid on initialize' do
     expect(instance.guid).to be_a(String)
   end

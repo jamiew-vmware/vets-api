@@ -10,6 +10,10 @@ RSpec.describe PersistentAttachments::DependencyClaim, uploader_helpers: true do
     expect(instance.guid).to be_a(String)
   end
 
+  before do
+    allow(Common::VirusScan).to receive(:scan).and_return(true)
+  end
+
   it 'allows adding a file' do
     allow_any_instance_of(ClamAV::PatchClient).to receive(:safe?).and_return(true)
     instance.file = file.open
