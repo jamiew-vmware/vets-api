@@ -122,6 +122,10 @@ Lint/AmbiguousBlockAssociation:
   Exclude:
     - "spec/**/*"
 
+Lint/MissingSuper:
+  Exclude:
+    - "lib/clamav/commands/patch_scan_command.rb"
+
 # This file does not need to be snake case
 Naming/FileName:
   Exclude:
