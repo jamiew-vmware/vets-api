@@ -6,8 +6,12 @@ RSpec.describe 'Claim Document Attachment', type: :request do
     fixture_file_upload('doctors-note.pdf')
   end
 
+  before do
+    allow(Common::VirusScan).to receive(:scan).and_return(true)
+    allow_any_instance_of(Common::VirusScan).to receive(:scan).and_return(true)
+  end
+
   it 'uploads a file' do
-    allow_any_instance_of(ClamAV::PatchClient).to receive(:safe?).and_return(true)
     params = { file: file, form_id: '21P-527EZ' }
     expect do
       post '/v0/claim_documents', params: params
