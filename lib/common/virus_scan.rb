@@ -11,7 +11,9 @@ module Common
       # `clamd` runs within service group, needs group read
       File.chmod(0o640, file_path)
 
-      ClamAV::PatchClient.new.safe?(file_path) # patch to call our class
+      client = ClamAV::PatchClient.new
+      result = client.execute(ClamAV::Commands::PatchScanCommand.new(file_path))
+      return client, result.first #returns an array, but we will only ever send 1 file
     end
   end
 end

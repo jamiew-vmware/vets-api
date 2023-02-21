@@ -17,13 +17,13 @@ module UploaderVirusScan
     return unless Rails.env.production?
 
     temp_file_path = Common::FileHelpers.generate_temp_file(file.read)
-    result = Common::VirusScan.scan(temp_file_path)
+    client, result = Common::VirusScan.scan(temp_file_path)
     File.delete(temp_file_path)
 
     # Common::VirusScan result will return true or false
-    unless result
+    unless client.safe?(temp_file_patch)
       file.delete
-      raise VirusFoundError, result.body
+      raise VirusFoundError, (result.virus_name || "")
     end
   end
 end
