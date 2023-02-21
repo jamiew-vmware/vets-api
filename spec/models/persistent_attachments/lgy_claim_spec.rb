@@ -11,8 +11,8 @@ RSpec.describe PersistentAttachments::LgyClaim, uploader_helpers: true do
   end
 
   it 'allows adding a file' do
-    allow(ClamScan::Client).to receive(:scan)
-      .and_return(instance_double('ClamScan::Response', safe?: true))
+    allow(ClamAV::PatchClient).to receive(:safe?)
+      .and_return(true)
     instance.file = file.open
     expect(instance.valid?).to be(true)
     expect(instance.file.shrine_class).to be(ClaimDocumentation::Uploader)
