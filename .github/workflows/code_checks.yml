@@ -126,7 +126,7 @@ jobs:
         with:
           bundler-cache: true
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
 
       - uses: duderman/rubocop-annotate-action@v0.1.0
         with:
@@ -140,7 +140,7 @@ jobs:
         if: hashFiles('Linting and Security/brakeman.json') != ''
 
       - name: Publish Test Results to GitHub
-        uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:v1
+        uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:v2
         if: always()
         with:
           check_name: Test Results
