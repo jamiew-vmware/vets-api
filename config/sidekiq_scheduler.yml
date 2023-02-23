@@ -256,6 +256,11 @@ UserAcceptableVerifiedCredentialCounts:
   class: Identity::UserAcceptableVerifiedCredentialCountsJob
   description: "Log UserAcceptableVerifiedCredential counts for Datadog consumption."
 
+UserAcceptableVerifiedCredentialInitStatsd:
+  in: "1s"
+  class: Identity::UserAcceptableVerifiedCredentialStatsdJob
+  description: "Initialize StatsD values for user_avc_updater"
+
 VAForms::FetchLatest:
   cron: "0 2 * * * America/New_York"
   class: VAForms::FormReloader
