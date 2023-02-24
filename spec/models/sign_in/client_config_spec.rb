@@ -130,9 +130,9 @@ RSpec.describe SignIn::ClientConfig, type: :model do
           api_auth: false,
           anti_csrf: true,
           redirect_uri: 'http://localhost:3001/auth/login/callback',
-          access_token_duration: 30.minutes,
+          access_token_duration: 5.minutes,
           access_token_audience: 'vamock',
-          refresh_token_duration: 45.days }
+          refresh_token_duration: 30.minutes }
       end
 
       it_behaves_like 'client config methods'
