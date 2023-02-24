@@ -98,9 +98,9 @@ module SignIn
         api_auth: false,
         anti_csrf: true,
         redirect_uri: Settings.sign_in.client_redirect_uris.web,
-        access_token_duration: Constants::AccessToken::VALIDITY_LENGTH_LONG_MINUTES.minutes,
+        access_token_duration: Constants::AccessToken::VALIDITY_LENGTH_SHORT_MINUTES.minutes,
         access_token_audience: 'vamock',
-        refresh_token_duration: Constants::RefreshToken::VALIDITY_LENGTH_LONG_DAYS.days
+        refresh_token_duration: Constants::RefreshToken::VALIDITY_LENGTH_SHORT_MINUTES.minutes
       }
     end
   end
