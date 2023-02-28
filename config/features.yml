@@ -342,6 +342,10 @@ features:
     actor_type: user
     description: Form 10182 Notice of Disagreement - Request a board appeal
     enable_in_development: true
+  form1990_confirmation_email:
+    actor_type: user
+    description: Enables form 1990 email submission confirmation (VaNotify)
+    enable_in_development: true
   form5490_confirmation_email:
     actor_type: user
     description: Enables form 5490 email submission confirmation (VaNotify)
@@ -807,3 +811,6 @@ features:
   bgs_via_faraday:
     actor_type: user
     description: If enabled uses the faraday connection to BGS as opposed to bgs-ext
+  bgs_via_faraday_file_number:
+    actor_type: user
+    description: If enabled uses the faraday connection to BGS to locate file_number
