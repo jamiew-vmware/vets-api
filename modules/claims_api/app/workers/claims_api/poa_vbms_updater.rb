@@ -47,9 +47,6 @@ module ClaimsApi
     end
 
     def allow_address_change?(poa_form)
-      if poa_form.form_data['consentAddressChange'] == 'y'
-        ClaimsApi::Logger.log('poa', poa_id: power_of_attorney_id, detail: 'consentAddressChange set to true')
-      end
       poa_form.form_data['consentAddressChange']
     end
   end
