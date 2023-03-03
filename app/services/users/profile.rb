@@ -92,6 +92,11 @@ module Users
           communication_preferences: (Vet360Policy.new(user).access? &&
                                       CommunicationPreferencesPolicy.new(user).access?),
           connected_apps: true,
+          # we might want to create a duplicate policy called ITF, instead of relying 
+          # on EVSS, even though they have the same requirements. Just for clarity. 
+          # Might require a conversation with lighthouse to learn the requirements 
+          # for ITF. At the very least ITF needs: SSN and DOB.
+          itf: EVSSPolicy.new(user).access_form526?,
           medical_copays: MedicalCopaysPolicy.new(user).access?,
           military_history: Vet360Policy.new(user).military_access?,
           payment_history: BGSPolicy.new(user).access?(log_stats: false),

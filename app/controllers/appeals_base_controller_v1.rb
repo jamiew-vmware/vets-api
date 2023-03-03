@@ -6,7 +6,13 @@ require 'decision_review_v1/service'
 class AppealsBaseControllerV1 < ApplicationController
   include ActionController::Serialization
   include FailedRequestLoggable
-  before_action { authorize :appeals, :access? }
+  # See EVSSPolicy#access_form526 and IntentToFilesController. The ITF controller, 
+  # for whatever reason, has much more restriction than the supp claims controller 
+  # (which just looks at LOA3 and ssn, See AppealsPolicy). We can either make ITF 
+  # less restrictive or make the supp claims controller more restrictive. We're 
+  # leaning towards the latter for now.
+  
+  before_action { authorize :evss, :access_form526? } 
 
   private
 
