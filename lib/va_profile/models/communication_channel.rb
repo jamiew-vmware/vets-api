@@ -50,7 +50,7 @@ module VAProfile
       private
 
       def communication_permission_valid
-        if communication_permission.present? && communication_permission.invalid?
+        if communication_permission.present? && !communication_permission.valid?
           errors.add(:communication_permission, communication_permission.errors.full_messages.join(','))
         end
       end

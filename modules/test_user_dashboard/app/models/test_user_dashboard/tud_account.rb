@@ -52,7 +52,7 @@ module TestUserDashboard
     private
 
     def valid_id_types
-      errors.add(:id_types, 'id_type is invalid') if id_types.detect { |type| ID_PROVIDERS.exclude?(type) }
+      errors.add(:id_types, 'id_type is invalid') if id_types.detect { |type| !ID_PROVIDERS.include?(type) }
     end
   end
 end
