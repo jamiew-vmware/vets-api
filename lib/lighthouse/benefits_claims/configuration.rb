@@ -13,8 +13,8 @@ module BenefitsClaims
     self.read_timeout = Settings.lighthouse.benefits_claims.timeout || 20
 
     API_SCOPES = %w[system/claim.read system/claim.write].freeze
-    CLAIMS_PATH = 'services/claims/v2/veterans'
-    TOKEN_PATH = 'oauth2/claims/system/v1/token'
+    CLAIMS_PATH = 'services/claims/v2/veterans'.freeze
+    TOKEN_PATH = 'oauth2/claims/system/v1/token'.freeze
 
     ##
     # @return [Config::Options] Settings for benefits_claims API.
@@ -38,20 +38,6 @@ module BenefitsClaims
     end
 
     ##
-    # @return [Faraday::Response] response from GET request
-    #
-    def get(path, params = {})
-      connection.get(path, params, { Authorization: "Bearer #{access_token}" })
-    end
-
-    ##
-    # @return [Faraday::Response] response from POST request
-    #
-    def post(path, body = {})
-      connection.post(path, body, { Authorization: "Bearer #{access_token}" })
-    end
-
-    ##
     # Creates a Faraday connection with parsing json and breakers functionality.
     #
     # @return [Faraday::Connection] a Faraday connection instance.
@@ -63,6 +49,7 @@ module BenefitsClaims
 
         faraday.request :multipart
         faraday.request :json
+        faraday.request :authorization, 'Bearer', access_token
 
         faraday.response :betamocks if use_mocks?
         faraday.response :json

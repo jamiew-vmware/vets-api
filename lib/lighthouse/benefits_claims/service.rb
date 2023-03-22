@@ -11,17 +11,18 @@ module BenefitsClaims
 
     def initialize(icn)
       @icn = icn
+      @conn = config.connection
       raise ArgumentError, 'no ICN passed in for LH API request.' if icn.blank?
     end
 
     def get_claims
-      config.get("#{@icn}/claims").body
+      @conn.get("#{@icn}/claims").body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end
 
     def get_claim(id)
-      config.get("#{@icn}/claims/#{id}").body
+      @conn.get("#{@icn}/claims/#{id}").body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end
