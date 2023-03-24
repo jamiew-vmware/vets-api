@@ -10,8 +10,10 @@ module BenefitsClaims
     STATSD_KEY_PREFIX = 'api.benefits_claims'
 
     def initialize(icn)
-      @icn = icn
+      @icn = '1012830905V768518'
       raise ArgumentError, 'no ICN passed in for LH API request.' if icn.blank?
+
+      super()
     end
 
     def get_claims
