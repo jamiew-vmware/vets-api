@@ -15,13 +15,13 @@ module BenefitsClaims
     end
 
     def get_claims
-      config.get("#{@icn}/claims").body
+      config.connection.get("#{@icn}/claims").body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end
 
     def get_claim(id)
-      config.get("#{@icn}/claims/#{id}").body
+      config.connection.get("#{@icn}/claims/#{id}").body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end

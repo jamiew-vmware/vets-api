@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'lighthouse/benefits_claims/service_mobile'
-require 'lighthouse/benefits_claims/configuration_mobile'
-
 require 'lighthouse/benefits_claims/service'
 
 module V0
@@ -24,7 +21,7 @@ module V0
     private
 
     def service
-      @service ||= BenefitsClaims::MobileService.new(@current_user.icn)
+      @service ||= BenefitsClaims::Service.new(@current_user.icn)
     end
   end
 end
