@@ -69,14 +69,21 @@ module ClaimsApi
       body.to_s
     end
 
-    def parsed_response(res, action, key)
+    def parsed_response(res, action, key = nil)
       parsed = Hash.from_xml(res.body)
-      parsed.dig('Envelope', 'Body', "#{action}Response", key)
-            &.deep_transform_keys(&:underscore)
-            &.deep_symbolize_keys || {}
+
+      if key.nil?
+        parsed.dig('Envelope', 'Body', "#{action}Response")
+              &.deep_transform_keys(&:underscore)
+              &.deep_symbolize_keys || {}
+      else
+        parsed.dig('Envelope', 'Body', "#{action}Response", key)
+              &.deep_transform_keys(&:underscore)
+              &.deep_symbolize_keys || {}
+      end
     end
 
-    def make_request(endpoint:, action:, body:, key:) # rubocop:disable Metrics/MethodLength
+    def make_request(endpoint:, action:, body:, key: nil) # rubocop:disable Metrics/MethodLength
       connection = log_duration event: 'establish_ssl_connection' do
         Faraday::Connection.new(ssl: { verify_mode: @ssl_verify_mode })
       end
@@ -96,6 +103,7 @@ module ClaimsApi
                           'Soapaction' => "\"#{action}\""
                         })
       end
+
       log_duration event: 'parsed_response', key: key do
         parsed_response(response, action, key)
       end
@@ -140,7 +148,76 @@ module ClaimsApi
                    key: 'PoaHistory')
     end
 
+    def find_benefit_claims_status_by_ptcpnt_id(id)
+      body = Nokogiri::XML::DocumentFragment.parse <<~EOXML
+        <ptcpntId />
+      EOXML
+
+      { ptcpntId: id }.each do |k, v|
+        body.xpath("./*[local-name()='#{k}']")[0].content = v
+      end
+
+      make_request(endpoint: 'EBenefitsBnftClaimStatusWebServiceBean/EBenefitsBnftClaimStatusWebService',
+                   action: 'findBenefitClaimsStatusByPtcpntId', body: body)
+    end
+
+    def find_benefit_claim_details_by_benefit_claim_id(id)
+      body = Nokogiri::XML::DocumentFragment.parse <<~EOXML
+        <bnftClaimId />
+      EOXML
+
+      { bnftClaimId: id }.each do |k, v|
+        body.xpath("./*[local-name()='#{k}']")[0].content = v
+      end
+
+      make_request(endpoint: 'EBenefitsBnftClaimStatusWebServiceBean/EBenefitsBnftClaimStatusWebService',
+                   action: 'findBenefitClaimDetailsByBnftClaimId', body: body)
+    end
+
+    def insert_intent_to_file(options)
+      request_body = construct_itf_body(options)
+      body = Nokogiri::XML::DocumentFragment.parse <<~EOXML
+        <intentToFileDTO>
+        </intentToFileDTO>
+      EOXML
+
+      request_body.each do |k, z|
+        node = Nokogiri::XML::Node.new k.to_s, body
+        node.content = z.to_s
+        opt = body.at('intentToFileDTO')
+        node.parent = opt
+      end
+      make_request(endpoint: 'IntentToFileWebServiceBean/IntentToFileWebService', action: 'insertIntentToFile',
+                   body: body, key: 'IntentToFileDTO')
+    end
+
+    def find_tracked_items(id)
+      body = Nokogiri::XML::DocumentFragment.parse <<~EOXML
+        <claimId />
+      EOXML
+
+      { claimId: id }.each do |k, v|
+        body.xpath("./*[local-name()='#{k}']")[0].content = v
+      end
+
+      make_request(endpoint: 'TrackedItemService/TrackedItemService', action: 'findTrackedItems', body: body,
+                   key: 'BenefitClaim')
+    end
+
     private
+
+    def construct_itf_body(options)
+      request_body = {
+        itfTypeCd: options[:intent_to_file_type_code],
+        ptcpntVetId: options[:participant_vet_id],
+        rcvdDt: options[:received_date],
+        signtrInd: options[:signature_indicated],
+        submtrApplcnTypeCd: options[:submitter_application_icn_type_code]
+      }
+      request_body[:ptcpntClmantId] = options[:participant_claimant_id] if options.key?(:participant_claimant_id)
+      request_body[:clmantSsn] = options[:claimant_ssn] if options.key?(:claimant_ssn)
+      request_body
+    end
 
     def log_duration(event: 'default', **extra_params)
       # Who are we to question sidekiq's use of CLOCK_MONOTONIC to avoid negative durations?

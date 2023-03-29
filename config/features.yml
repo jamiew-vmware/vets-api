@@ -12,6 +12,12 @@
 # Sorted using http://yaml-sorter.herokuapp.com/
 
 features:
+  binding_flow_modal_dsl:
+    actor_type: user
+    description: Enables grandfathering modal to begin binding from dslogon to login.gov
+  binding_flow_modal_mhv:
+    actor_type: user
+    description: Enables grandfathering modal to begin binding from mhv to login.gov
   caregiver_sigi_enabled:
     actor_type: user
     description: Whether Self-Identifying Gender Identity is enabled for caregiver.
@@ -114,10 +120,6 @@ features:
     actor_type: user
     description: Enables browser monitoring for check-in applications.
     enable_in_development: false
-  check_in_experience_updated_appt_presentation:
-    actor_type: cookie_id
-    description: Enables updated appointment details presentation.
-    enable_in_development: true
   claim_letters_access:
     actor_type: user
     description: Enables users to access the claim letters page
@@ -365,6 +367,9 @@ features:
     actor_type: user
     description: Enables form 5490 email submission confirmation (VaNotify)
     enable_in_development: true
+  form264555:
+    actor_type: user
+    description: If enabled shows the digital form experience for form 26-4555
   fsr_confirmation_email:
     actor_type: user
     description: Enables notifications to be sent via email upon FSR submission
@@ -752,6 +757,9 @@ features:
   va_view_dependents_access:
     actor_type: user
     description: Allows us to gate the View/ Modify dependents content in a progressive rollout
+  vba_documents_skip_dimension_check:
+    actor_type: user
+    description: Allows Benefits Intake to accept any size of PDF, skipping the check for page dimensions
   yellow_ribbon_mvp_enhancement:
     actor_type: user
     description: Enhances Yellow Ribbon MVP.

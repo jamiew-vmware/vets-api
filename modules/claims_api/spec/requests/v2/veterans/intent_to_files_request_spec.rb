@@ -2,9 +2,13 @@
 
 require 'rails_helper'
 require 'token_validation/v2/client'
+require 'bgs_service/local_bgs'
 
 RSpec.describe 'IntentToFiles', type: :request do
   let(:veteran_id) { '1013062086V794840' }
+  let(:iws) do
+    ClaimsApi::LocalBGS
+  end
 
   describe 'IntentToFiles' do
     describe 'type' do
@@ -167,7 +171,7 @@ RSpec.describe 'IntentToFiles', type: :request do
 
               parsed_response = JSON.parse(response.body)
               expect(response.status).to eq(200)
-              expect(parsed_response['id']).to eq('2')
+              expect(parsed_response['data']['id']).to eq('2')
             end
           end
         end
@@ -314,7 +318,7 @@ RSpec.describe 'IntentToFiles', type: :request do
 
     describe 'submit' do
       before do
-        allow_any_instance_of(BGS::IntentToFileWebService).to receive(:insert_intent_to_file).and_return(
+        allow_any_instance_of(iws).to receive(:insert_intent_to_file).and_return(
           stub_response
         )
       end
@@ -501,7 +505,7 @@ RSpec.describe 'IntentToFiles', type: :request do
 
     describe 'validate' do
       before do
-        allow_any_instance_of(BGS::IntentToFileWebService).to receive(:insert_intent_to_file).and_return(
+        allow_any_instance_of(iws).to receive(:insert_intent_to_file).and_return(
           stub_response
         )
       end

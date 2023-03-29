@@ -143,33 +143,21 @@ module ClaimsApi
         def find_bgs_claim!(claim_id:)
           return if claim_id.blank?
 
-          bgs_service.ebenefits_benefit_claims_status.find_benefit_claim_details_by_benefit_claim_id(
-            benefit_claim_id: claim_id
+          local_bgs_service.find_benefit_claim_details_by_benefit_claim_id(
+            claim_id
           )
-        rescue Savon::SOAPFault => e
-          # the ebenefits service raises an exception if a claim is not found,
-          # so catch the exception here and return a 404 instead
-          if e.message.include?("No BnftClaim found for #{claim_id}")
-            raise ::Common::Exceptions::ResourceNotFound.new(detail: 'Claim not found')
-          end
-
-          raise
         end
 
         def find_bgs_claims!
-          bgs_service.ebenefits_benefit_claims_status.find_benefit_claims_status_by_ptcpnt_id(
-            participant_id: target_veteran.participant_id
+          local_bgs_service.find_benefit_claims_status_by_ptcpnt_id(
+            target_veteran.participant_id
           )
-        rescue Savon::SOAPFault => e
-          # the ebenefits service raises an exception if a participant id is not found,
-          # so catch the exception here and return a 422 instead
-          if e.message.include?('No Person found for ptcpnt_id')
-            raise ::Common::Exceptions::UnprocessableEntity.new(detail:
-              "Unable to locate Veteran's Participant ID in Benefits Gateway Services (BGS). " \
-              'Please submit an issue at ask.va.gov or call 1-800-MyVA411 (800-698-2411) for assistance.')
-          end
+        end
 
-          raise
+        def find_tracked_items!(claim_id)
+          return if claim_id.blank?
+
+          local_bgs_service.find_tracked_items(claim_id)[:dvlpmt_items] || []
         end
 
         def looking_for_lighthouse_claim?(claim_id:)
@@ -184,7 +172,7 @@ module ClaimsApi
             claim_type_code: data[:bnft_claim_type_cd],
             claim_type: data[:claim_status_type],
             close_date: data[:claim_complete_dt].present? ? format_bgs_date(data[:claim_complete_dt]) : nil,
-            contention_list: data[:contentions]&.split(',')&.collect(&:strip) || [],
+            contention_list: data[:contentions]&.split(/(?<=\)),/)&.collect(&:strip) || [],
             decision_letter_sent: map_yes_no_to_boolean('decision_notification_sent',
                                                         data[:decision_notification_sent]),
             development_letter_sent: map_yes_no_to_boolean('development_letter_sent', data[:development_letter_sent]),
@@ -374,10 +362,8 @@ module ClaimsApi
           claim_id = bgs_claim.dig(:benefit_claim_details_dto, :benefit_claim_id)
           return [] if claim_id.nil?
 
-          tracked_items = bgs_service
-                          .tracked_items
-                          .find_tracked_items(claim_id)
-                          .dig(:benefit_claim, :dvlpmt_items) || []
+          tracked_items = find_tracked_items!(claim_id)
+
           ebenefits_details = bgs_claim[:benefit_claim_details_dto]
 
           tracked_ids = handle_array_or_hash(tracked_items, :dvlpmt_item_id)
@@ -429,13 +415,11 @@ module ClaimsApi
 
             {
               closed_date: date_present(item[:date_closed]),
-              description: item[:items],
+              description: item[:short_nm],
               displayed_name: "Request #{i + 1}", # +1 given a 1 index'd array
-              dvlpmt_tc: item[:dvlpmt_tc],
               opened_date: date_present(item[:date_open]),
               overdue: item[:suspns_dt].nil? ? false : item[:suspns_dt] < Time.zone.now, # EVSS generates this field
               requested_date: date_present(item[:req_dt]),
-              suspense_date: date_present(item[:suspns_dt]),
               tracked_item_id: id.to_i,
               tracked_item_status: status, # EVSS generates this field
               uploaded: !item[:date_rcvd].nil?, # EVSS generates this field

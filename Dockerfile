@@ -2,7 +2,7 @@
 #      stretch (or in alpine) and is switched automatically to pdftk-java in buster
 #      https://github.com/department-of-veterans-affairs/va.gov-team/issues/3032
 
-FROM ruby:2.7.6-slim-bullseye AS modules
+FROM ruby:3.0.5-slim-bullseye AS modules
 
 WORKDIR /tmp
 
@@ -14,7 +14,7 @@ RUN find modules -type f ! \( -name Gemfile -o -name "*.gemspec" -o -path "*/lib
 ###
 # shared build/settings for all child images, reuse these layers yo
 ###
-FROM ruby:2.7.6-slim-bullseye AS base
+FROM ruby:3.0.5-slim-bullseye AS base
 
 ARG userid=993
 SHELL ["/bin/bash", "-c"]
@@ -59,7 +59,7 @@ ARG rails_env=development
 
 ENV BUNDLE_ENTERPRISE__CONTRIBSYS__COM=$sidekiq_license
 ENV RAILS_ENV=$rails_env
-ENV BUNDLER_VERSION=2.4.8
+ENV BUNDLER_VERSION=2.4.9
 
 # only extra dev/build opts go here, common packages go in base 👆
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \

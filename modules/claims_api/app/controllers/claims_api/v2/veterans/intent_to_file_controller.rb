@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'claims_api/v2/params_validation/intent_to_file'
+require 'bgs_service/local_bgs'
 
 module ClaimsApi
   module V2
@@ -32,18 +33,19 @@ module ClaimsApi
           message = "No active '#{params[:type]}' intent to file found."
           raise ::Common::Exceptions::ResourceNotFound.new(detail: message) if active_itf.blank?
 
-          render json: ClaimsApi::V2::Blueprints::IntentToFileBlueprint.render(active_itf)
+          render json: ClaimsApi::V2::Blueprints::IntentToFileBlueprint.render(active_itf, root: :data)
         end
 
         def submit
           validate_request!(ClaimsApi::V2::ParamsValidation::IntentToFile)
           type = get_bgs_type(params)
           options = build_options_and_validate(type)
-          bgs_response = bgs_service.intent_to_file.insert_intent_to_file(options)
+
+          bgs_response = local_bgs_service.insert_intent_to_file(options)
 
           lighthouse_itf = bgs_itf_to_lighthouse_itf(bgs_itf: bgs_response)
 
-          render json: ClaimsApi::V2::Blueprints::IntentToFileBlueprint.render(lighthouse_itf)
+          render json: ClaimsApi::V2::Blueprints::IntentToFileBlueprint.render(lighthouse_itf, root: :data)
         end
 
         def validate
@@ -52,7 +54,7 @@ module ClaimsApi
           build_options_and_validate(type)
           render json: {
             data: {
-              type: 'intentToFileValidation',
+              type: 'intent_to_file_validation',
               attributes: {
                 status: 'valid'
               }
@@ -135,11 +137,6 @@ module ClaimsApi
 
         def itf_types
           ClaimsApi::V2::IntentToFile::ITF_TYPES_TO_BGS_TYPES
-        end
-
-        def bgs_service
-          BGS::Services.new(external_uid: target_veteran.participant_id,
-                            external_key: target_veteran.participant_id)
         end
 
         def bgs_itf_to_lighthouse_itf(bgs_itf:)

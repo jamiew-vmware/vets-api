@@ -731,7 +731,7 @@
                       "claimPhaseDates": {
                         "phaseChangeDate": "2017-10-18",
                         "currentPhaseBack": false,
-                        "latestPhaseType": "Complete",
+                        "latestPhaseType": "COMPLETE",
                         "previousPhases": {
                           "phase1CompleteDate": "2017-10-18"
                         }
@@ -776,13 +776,11 @@
                       "trackedItems": [
                         {
                           "closedDate": null,
-                          "description": null,
+                          "description": "MG-not a recognized condition",
                           "displayedName": "Request 1",
-                          "dvlpmtTc": "CLMNTRQST",
                           "openedDate": null,
                           "overdue": true,
                           "requestedDate": "2022-02-04",
-                          "suspenseDate": "2022-03-06",
                           "trackedItemId": 325525,
                           "trackedItemStatus": "NEEDED",
                           "uploaded": false,
@@ -790,13 +788,11 @@
                         },
                         {
                           "closedDate": null,
-                          "description": null,
+                          "description": "Line of Duty determination from claimant",
                           "displayedName": "Request 2",
-                          "dvlpmtTc": "CLMNTRQST",
                           "openedDate": null,
                           "overdue": true,
                           "requestedDate": "2022-02-04",
-                          "suspenseDate": "2022-03-06",
                           "trackedItemId": 325524,
                           "trackedItemStatus": "NEEDED",
                           "uploaded": false,
@@ -898,6 +894,19 @@
                                 },
                                 "latestPhaseType": {
                                   "type": "string",
+                                  "enum": [
+                                    "CANCELED",
+                                    "CLAIM_RECEIVED",
+                                    "INITIAL_REVIEW",
+                                    "PENDING",
+                                    "EVIDENCE_GATHERING",
+                                    "REVIEW_OF_EVIDENCE",
+                                    "PREPARATION_FOR_DECISION",
+                                    "PENDING_DECISION_APPROVAL",
+                                    "PREPARATION_FOR_NOTIFICATION",
+                                    "ERRORED",
+                                    "COMPLETE"
+                                  ],
                                   "nullable": true,
                                   "description": "The most current phase for the claim"
                                 },
@@ -1115,13 +1124,6 @@
                                     "description": "Description of the tracked item",
                                     "example": "Buddy mentioned - No complete address"
                                   },
-                                  "suspensionDate": {
-                                    "format": "date",
-                                    "type": "string",
-                                    "nullable": true,
-                                    "description": "Suspension date on the tracked item",
-                                    "example": "2017-10-18"
-                                  },
                                   "requestedDate": {
                                     "format": "date",
                                     "type": "string",
@@ -1133,11 +1135,6 @@
                                     "type": "integer",
                                     "description": "ID of the tracked item",
                                     "example": 293454
-                                  },
-                                  "dvlpmtTc": {
-                                    "type": "string",
-                                    "nullable": true,
-                                    "example": "CLMNTRQST"
                                   },
                                   "displayedName": {
                                     "type": "string",
@@ -1157,12 +1154,6 @@
                                     "nullable": true,
                                     "description": "True if the item is overdue",
                                     "example": true
-                                  },
-                                  "suspenseDate": {
-                                    "format": "date",
-                                    "type": "string",
-                                    "nullable": true,
-                                    "example": "2017-10-18"
                                   },
                                   "trackedItemStatus": {
                                     "type": "string",
@@ -1590,60 +1581,70 @@
             "content": {
               "application/json": {
                 "example": {
-                  "id": "193685",
-                  "type": "intent_to_file",
-                  "attributes": {
-                    "creationDate": "2021-03-16T19:15:21.000-05:00",
-                    "expirationDate": "2022-03-16T19:15:20.000-05:00",
-                    "type": "compensation",
-                    "status": "active"
+                  "data": {
+                    "id": "193685",
+                    "type": "intent_to_file",
+                    "attributes": {
+                      "creationDate": "2021-03-16T19:15:21.000-05:00",
+                      "expirationDate": "2022-03-16T19:15:20.000-05:00",
+                      "type": "compensation",
+                      "status": "active"
+                    }
                   }
                 },
                 "schema": {
                   "$schema": "http://json-schema.org/draft-04/schema#",
-                  "type": "object",
-                  "additionalProperties": false,
                   "required": [
-                    "id",
-                    "type"
+                    "data"
                   ],
                   "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "Intent To File ID",
-                      "example": "600131328"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "intent_to_file"
-                    },
-                    "attributes": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
                       "required": [
-                        "creationDate",
-                        "expirationDate",
-                        "status",
-                        "type"
+                        "id",
+                        "type",
+                        "attributes"
                       ],
                       "properties": {
-                        "creationDate": {
+                        "id": {
                           "type": "string",
-                          "format": "date",
-                          "description": "Date the Intent to File was received at the VA"
-                        },
-                        "expirationDate": {
-                          "type": "string",
-                          "format": "date",
-                          "description": "Date the Intent to File expires, this is 1 year from the createdDate"
-                        },
-                        "status": {
-                          "type": "string",
-                          "description": "The status of the Intent to File",
-                          "example": "active"
+                          "description": "Intent To File ID",
+                          "example": "600131328"
                         },
                         "type": {
                           "type": "string",
-                          "description": "The type of Intent to File filed.",
-                          "example": "compensation"
+                          "example": "intent_to_file"
+                        },
+                        "attributes": {
+                          "required": [
+                            "creationDate",
+                            "expirationDate",
+                            "status",
+                            "type"
+                          ],
+                          "properties": {
+                            "creationDate": {
+                              "type": "string",
+                              "format": "date",
+                              "description": "Date the Intent to File was received at the VA"
+                            },
+                            "expirationDate": {
+                              "type": "string",
+                              "format": "date",
+                              "description": "Date the Intent to File expires, this is 1 year from the createdDate"
+                            },
+                            "status": {
+                              "type": "string",
+                              "description": "The status of the Intent to File",
+                              "example": "active"
+                            },
+                            "type": {
+                              "type": "string",
+                              "description": "The type of Intent to File filed.",
+                              "example": "compensation"
+                            }
+                          }
                         }
                       }
                     }
@@ -1859,60 +1860,70 @@
             "content": {
               "application/json": {
                 "example": {
-                  "id": "1",
-                  "type": "intent_to_file",
-                  "attributes": {
-                    "creationDate": "2023-03-09",
-                    "expirationDate": "2024-03-09",
-                    "type": "compensation",
-                    "status": "active"
+                  "data": {
+                    "id": "1",
+                    "type": "intent_to_file",
+                    "attributes": {
+                      "creationDate": "2023-03-28",
+                      "expirationDate": "2024-03-28",
+                      "type": "compensation",
+                      "status": "active"
+                    }
                   }
                 },
                 "schema": {
                   "$schema": "http://json-schema.org/draft-04/schema#",
-                  "type": "object",
-                  "additionalProperties": false,
                   "required": [
-                    "id",
-                    "type"
+                    "data"
                   ],
                   "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "Intent To File ID",
-                      "example": "600131328"
-                    },
-                    "type": {
-                      "type": "string",
-                      "example": "intent_to_file"
-                    },
-                    "attributes": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
                       "required": [
-                        "creationDate",
-                        "expirationDate",
-                        "status",
-                        "type"
+                        "id",
+                        "type",
+                        "attributes"
                       ],
                       "properties": {
-                        "creationDate": {
+                        "id": {
                           "type": "string",
-                          "format": "date",
-                          "description": "Date the Intent to File was received at the VA"
-                        },
-                        "expirationDate": {
-                          "type": "string",
-                          "format": "date",
-                          "description": "Date the Intent to File expires, this is 1 year from the createdDate"
-                        },
-                        "status": {
-                          "type": "string",
-                          "description": "The status of the Intent to File",
-                          "example": "active"
+                          "description": "Intent To File ID",
+                          "example": "600131328"
                         },
                         "type": {
                           "type": "string",
-                          "description": "The type of Intent to File filed.",
-                          "example": "compensation"
+                          "example": "intent_to_file"
+                        },
+                        "attributes": {
+                          "required": [
+                            "creationDate",
+                            "expirationDate",
+                            "status",
+                            "type"
+                          ],
+                          "properties": {
+                            "creationDate": {
+                              "type": "string",
+                              "format": "date",
+                              "description": "Date the Intent to File was received at the VA"
+                            },
+                            "expirationDate": {
+                              "type": "string",
+                              "format": "date",
+                              "description": "Date the Intent to File expires, this is 1 year from the createdDate"
+                            },
+                            "status": {
+                              "type": "string",
+                              "description": "The status of the Intent to File",
+                              "example": "active"
+                            },
+                            "type": {
+                              "type": "string",
+                              "description": "The type of Intent to File filed.",
+                              "example": "compensation"
+                            }
+                          }
                         }
                       }
                     }
@@ -2215,7 +2226,7 @@
               "application/json": {
                 "example": {
                   "data": {
-                    "type": "intentToFileValidation",
+                    "type": "intent_to_file_validation",
                     "attributes": {
                       "status": "valid"
                     }

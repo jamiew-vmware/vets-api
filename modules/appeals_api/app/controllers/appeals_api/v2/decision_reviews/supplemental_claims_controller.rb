@@ -23,7 +23,7 @@ class AppealsApi::V2::DecisionReviews::SupplementalClaimsController < AppealsApi
   SCHEMA_ERROR_TYPE = Common::Exceptions::DetailedSchemaErrors
   ALLOWED_COLUMNS = %i[id status code detail created_at updated_at].freeze
   ICN_HEADER = 'X-VA-ICN'
-  ICN_REGEX = /^[0-9]{10}V[0-9]{6}$/.freeze
+  ICN_REGEX = /^[0-9]{10}V[0-9]{6}$/
 
   def index
     veteran_scs = AppealsApi::SupplementalClaim.select(ALLOWED_COLUMNS)
@@ -40,7 +40,7 @@ class AppealsApi::V2::DecisionReviews::SupplementalClaimsController < AppealsApi
       evidence_submission_indicated: evidence_submission_indicated?,
       api_version: 'V2',
       veteran_icn: request_headers['X-VA-ICN'],
-      metadata: { evidenceType: @json_body.dig(*%w[data attributes evidenceSubmission evidenceType]) }
+      metadata: { evidence_type: @json_body.dig(*%w[data attributes evidenceSubmission evidenceType]) }
     )
 
     render_model_errors(sc) and return unless sc.validate

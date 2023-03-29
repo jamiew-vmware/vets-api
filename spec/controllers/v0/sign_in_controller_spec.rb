@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'sign_in/logingov/service'
+require 'sign_in/idme/service'
 
 RSpec.describe V0::SignInController, type: :controller do
   describe 'GET authorize' do
@@ -65,23 +67,33 @@ RSpec.describe V0::SignInController, type: :controller do
 
       context 'and client_id maps to a web based configuration' do
         let(:authentication) { SignIn::Constants::Auth::COOKIE }
-        let(:expected_error_status) { :redirect }
-        let(:expected_redirect_params) do
-          { auth: 'fail', code: SignIn::Constants::ErrorCode::INVALID_REQUEST, request_id: request_id }.to_query
-        end
-        let(:expected_redirect) do
-          uri = URI.parse(Settings.sign_in.client_redirect_uris.web)
-          uri.query = expected_redirect_params
-          uri.to_s
-        end
+        let(:expected_error_status) { :ok }
+        let(:error_code) { SignIn::Constants::ErrorCode::INVALID_REQUEST }
+        let(:auth_param) { 'fail' }
         let(:request_id) { SecureRandom.uuid }
 
         before do
           allow_any_instance_of(ActionController::TestRequest).to receive(:request_id).and_return(request_id)
         end
 
-        it 'redirects to frontend failure page' do
-          expect(subject).to redirect_to(expected_redirect)
+        it 'renders the oauth_get_form template' do
+          expect(subject.body).to include('form id="oauth-form"')
+        end
+
+        it 'directs to the given redirect url set in the client configuration' do
+          expect(subject.body).to include("action=\"#{client_config.redirect_uri}\"")
+        end
+
+        it 'includes expected auth param' do
+          expect(subject.body).to include("value=\"#{auth_param}\"")
+        end
+
+        it 'includes expected code param' do
+          expect(subject.body).to include("value=\"#{error_code}\"")
+        end
+
+        it 'includes expected request_id param' do
+          expect(subject.body).to include("value=\"#{request_id}\"")
         end
 
         it 'returns expected status' do
@@ -484,15 +496,8 @@ RSpec.describe V0::SignInController, type: :controller do
 
       context 'and client_id maps to a web based configuration' do
         let(:authentication) { SignIn::Constants::Auth::COOKIE }
-        let(:expected_error_status) { :redirect }
-        let(:expected_redirect_params) do
-          { auth: 'fail', code: error_code, request_id: request_id }.to_query
-        end
-        let(:expected_redirect) do
-          uri = URI.parse(Settings.sign_in.client_redirect_uris.web)
-          uri.query = expected_redirect_params
-          uri.to_s
-        end
+        let(:expected_error_status) { :ok }
+        let(:auth_param) { 'fail' }
         let(:expected_error_log) { '[SignInService] [V0::SignInController] callback error' }
         let(:expected_error_message) do
           { errors: expected_error, client_id: client_id, type: type, acr: acr }
@@ -503,8 +508,24 @@ RSpec.describe V0::SignInController, type: :controller do
           allow_any_instance_of(ActionController::TestRequest).to receive(:request_id).and_return(request_id)
         end
 
-        it 'redirects to frontend failure page' do
-          expect(subject).to redirect_to(expected_redirect)
+        it 'renders the oauth_get_form template' do
+          expect(subject.body).to include('form id="oauth-form"')
+        end
+
+        it 'directs to the given redirect url set in the client configuration' do
+          expect(subject.body).to include("action=\"#{client_config.redirect_uri}\"")
+        end
+
+        it 'includes expected auth param' do
+          expect(subject.body).to include("value=\"#{auth_param}\"")
+        end
+
+        it 'includes expected code param' do
+          expect(subject.body).to include("value=\"#{error_code}\"")
+        end
+
+        it 'includes expected request_id param' do
+          expect(subject.body).to include("value=\"#{request_id}\"")
         end
 
         it 'returns expected status' do
@@ -661,9 +682,6 @@ RSpec.describe V0::SignInController, type: :controller do
                 let(:ial) { 2 }
                 let(:client_code) { 'some-client-code' }
                 let(:client_redirect_uri) { client_config.redirect_uri }
-                let(:expected_url) do
-                  "#{client_redirect_uri}?code=#{client_code}&state=#{client_state}&type=#{type}"
-                end
                 let(:expected_log) { '[SignInService] [V0::SignInController] callback' }
                 let(:statsd_callback_success) { SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_SUCCESS }
                 let(:expected_logger_context) do
@@ -693,12 +711,28 @@ RSpec.describe V0::SignInController, type: :controller do
 
                 before { allow(SecureRandom).to receive(:uuid).and_return(client_code) }
 
-                it 'returns found status' do
-                  expect(subject).to have_http_status(:found)
+                it 'returns ok status' do
+                  expect(subject).to have_http_status(:ok)
                 end
 
-                it 'redirects to expected url' do
-                  expect(subject).to redirect_to(expected_url)
+                it 'renders the oauth_get_form template' do
+                  expect(subject.body).to include('form id="oauth-form"')
+                end
+
+                it 'directs to the given redirect url set in the client configuration' do
+                  expect(subject.body).to include("action=\"#{client_redirect_uri}\"")
+                end
+
+                it 'includes expected code param' do
+                  expect(subject.body).to include("value=\"#{client_code}\"")
+                end
+
+                it 'includes expected state param' do
+                  expect(subject.body).to include("value=\"#{client_state}\"")
+                end
+
+                it 'includes expected type param' do
+                  expect(subject.body).to include("value=\"#{type}\"")
                 end
 
                 it 'logs the successful callback' do
@@ -806,9 +840,6 @@ RSpec.describe V0::SignInController, type: :controller do
                 let(:credential_ial) { LOA::IDME_CLASSIC_LOA3 }
                 let(:client_code) { 'some-client-code' }
                 let(:client_redirect_uri) { client_config.redirect_uri }
-                let(:expected_url) do
-                  "#{client_redirect_uri}?code=#{client_code}&state=#{client_state}&type=#{type}"
-                end
                 let(:expected_log) { '[SignInService] [V0::SignInController] callback' }
                 let(:statsd_callback_success) { SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_SUCCESS }
                 let(:expected_logger_context) do
@@ -824,12 +855,28 @@ RSpec.describe V0::SignInController, type: :controller do
                   allow(SecureRandom).to receive(:uuid).and_return(client_code)
                 end
 
-                it 'returns found status' do
-                  expect(subject).to have_http_status(:found)
+                it 'returns ok status' do
+                  expect(subject).to have_http_status(:ok)
                 end
 
-                it 'redirects to expected url' do
-                  expect(subject).to redirect_to(expected_url)
+                it 'renders the oauth_get_form template' do
+                  expect(subject.body).to include('form id="oauth-form"')
+                end
+
+                it 'directs to the given redirect url set in the client configuration' do
+                  expect(subject.body).to include("action=\"#{client_redirect_uri}\"")
+                end
+
+                it 'includes expected code param' do
+                  expect(subject.body).to include("value=\"#{client_code}\"")
+                end
+
+                it 'includes expected state param' do
+                  expect(subject.body).to include("value=\"#{client_state}\"")
+                end
+
+                it 'includes expected type param' do
+                  expect(subject.body).to include("value=\"#{type}\"")
                 end
 
                 it 'logs the successful callback' do
@@ -911,9 +958,6 @@ RSpec.describe V0::SignInController, type: :controller do
               let(:credential_ial) { LOA::IDME_CLASSIC_LOA3 }
               let(:client_code) { 'some-client-code' }
               let(:client_redirect_uri) { client_config.redirect_uri }
-              let(:expected_url) do
-                "#{client_redirect_uri}?code=#{client_code}&state=#{client_state}&type=#{type}"
-              end
               let(:expected_log) { '[SignInService] [V0::SignInController] callback' }
               let(:statsd_callback_success) { SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_SUCCESS }
               let(:expected_logger_context) do
@@ -930,12 +974,28 @@ RSpec.describe V0::SignInController, type: :controller do
               end
 
               shared_context 'dslogon successful callback' do
-                it 'returns found status' do
-                  expect(subject).to have_http_status(:found)
+                it 'returns ok status' do
+                  expect(subject).to have_http_status(:ok)
                 end
 
-                it 'redirects to expected url' do
-                  expect(subject).to redirect_to(expected_url)
+                it 'renders the oauth_get_form template' do
+                  expect(subject.body).to include('form id="oauth-form"')
+                end
+
+                it 'directs to the given redirect url set in the client configuration' do
+                  expect(subject.body).to include("action=\"#{client_redirect_uri}\"")
+                end
+
+                it 'includes expected code param' do
+                  expect(subject.body).to include("value=\"#{client_code}\"")
+                end
+
+                it 'includes expected state param' do
+                  expect(subject.body).to include("value=\"#{client_state}\"")
+                end
+
+                it 'includes expected type param' do
+                  expect(subject.body).to include("value=\"#{type}\"")
                 end
 
                 it 'logs the successful callback' do
@@ -1036,9 +1096,6 @@ RSpec.describe V0::SignInController, type: :controller do
               let(:credential_ial) { LOA::IDME_CLASSIC_LOA3 }
               let(:client_code) { 'some-client-code' }
               let(:client_redirect_uri) { client_config.redirect_uri }
-              let(:expected_url) do
-                "#{client_redirect_uri}?code=#{client_code}&state=#{client_state}&type=#{type}"
-              end
               let(:expected_log) { '[SignInService] [V0::SignInController] callback' }
               let(:statsd_callback_success) { SignIn::Constants::Statsd::STATSD_SIS_CALLBACK_SUCCESS }
               let(:expected_logger_context) do
@@ -1055,12 +1112,28 @@ RSpec.describe V0::SignInController, type: :controller do
               end
 
               shared_context 'mhv successful callback' do
-                it 'returns found status' do
-                  expect(subject).to have_http_status(:found)
+                it 'returns ok status' do
+                  expect(subject).to have_http_status(:ok)
                 end
 
-                it 'redirects to expected url' do
-                  expect(subject).to redirect_to(expected_url)
+                it 'renders the oauth_get_form template' do
+                  expect(subject.body).to include('form id="oauth-form"')
+                end
+
+                it 'directs to the given redirect url set in the client configuration' do
+                  expect(subject.body).to include("action=\"#{client_redirect_uri}\"")
+                end
+
+                it 'includes expected code param' do
+                  expect(subject.body).to include("value=\"#{client_code}\"")
+                end
+
+                it 'includes expected state param' do
+                  expect(subject.body).to include("value=\"#{client_state}\"")
+                end
+
+                it 'includes expected type param' do
+                  expect(subject.body).to include("value=\"#{type}\"")
                 end
 
                 it 'logs the successful callback' do

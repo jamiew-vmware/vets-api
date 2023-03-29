@@ -5,6 +5,7 @@ require 'evss/auth_headers'
 require 'token_validation/v2/client'
 require 'claims_api/error/error_handler'
 require 'claims_api/claim_logger'
+require 'bgs_service/local_bgs'
 
 module ClaimsApi
   module V2
@@ -130,6 +131,13 @@ module ClaimsApi
       def bgs_service
         BGS::Services.new(external_uid: target_veteran.participant_id,
                           external_key: target_veteran.participant_id)
+      end
+
+      def local_bgs_service
+        @local_bgs_service ||= ClaimsApi::LocalBGS.new(
+          external_uid: target_veteran.participant_id,
+          external_key: target_veteran.participant_id
+        )
       end
 
       def build_target_veteran(veteran_id:, loa:) # rubocop:disable Metrics/MethodLength
