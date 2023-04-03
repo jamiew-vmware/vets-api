@@ -155,7 +155,7 @@ module Login
 
     def type
       @type ||= case login_type
-                when SAML::User::MHV_ORIGINAL_CSID
+                when SAML::User::MHV_CSID
                   MHV_TYPE
                 when SAML::User::IDME_CSID
                   IDME_TYPE

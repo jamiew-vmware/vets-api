@@ -66,8 +66,8 @@ RSpec.describe Login::AfterLoginActions do
 
     context 'saving account_login_stats' do
       let(:user) { create(:user) }
-      let(:login_type) { SAML::User::MHV_ORIGINAL_CSID }
-      let(:login_type_stat) { SAML::User::MHV_MAPPED_CSID }
+      let(:login_type) { SAML::User::MHV_CSID }
+      let(:login_type_stat) { Accountable::MHV_MAPPED_CSID }
 
       before { allow_any_instance_of(UserIdentity).to receive(:sign_in).and_return(service_name: login_type) }
 

@@ -43,7 +43,7 @@ class AcceptableVerifiedCredentialAdoptionService
   end
 
   def logged_in_with_mhv?
-    credential_type == SAML::User::MHV_ORIGINAL_CSID
+    credential_type == SAML::User::MHV_CSID
   end
 
   def verified_credential_at?

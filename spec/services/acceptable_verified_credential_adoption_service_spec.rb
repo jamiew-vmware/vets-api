@@ -102,7 +102,7 @@ RSpec.describe AcceptableVerifiedCredentialAdoptionService do
         it 'hash returns true' do
           result = service.perform
           expect(result).to include(organic_modal: true)
-          expect(result).to include(credential_type: SAML::User::MHV_ORIGINAL_CSID)
+          expect(result).to include(credential_type: SAML::User::MHV_CSID)
         end
 
         it 'logs attempt' do
