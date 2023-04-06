@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '~> 3.0.5'
+ruby '~> 3.2.2'
 
 # Modules
 path 'modules' do

@@ -23,23 +23,23 @@ module Sidekiq
           form526_submission_id = msg['args'].first
 
           values = {
-            form526_submission_id: form526_submission_id,
-            job_id: job_id,
+            form526_submission_id:,
+            job_id:,
             job_class: msg['class'].demodulize,
             status: Form526JobStatus::STATUS[:exhausted],
-            error_class: error_class,
-            error_message: error_message,
+            error_class:,
+            error_message:,
             bgjob_errors: {},
             updated_at: timestamp
           }
 
-          form_job_status = Form526JobStatus.find_by(job_id: job_id)
+          form_job_status = Form526JobStatus.find_by(job_id:)
           bgjob_errors = form_job_status.bgjob_errors || {}
           new_error = {
             "#{timestamp.to_i}": {
               caller_method: __method__.to_s,
-              error_class: error_class, error_message: error_message,
-              timestamp: timestamp
+              error_class:, error_message:,
+              timestamp:
             }
           }
           bgjob_errors.merge!(new_error)
@@ -59,33 +59,35 @@ module Sidekiq
           # Required criteria to send a backup 526 submission from here:
           # Enabled in settings and flipper
           # Is an overall submission and NOT an upload attempt
-          # Does not have a valid claim ID (through RRD process)
-          # Does not have additional birls it is going to try and submit under
-          if Settings.form526_backup.enabled && Flipper.enabled?(flipper_sym) &&
-             values[:job_class] == 'SubmitForm526AllClaim' && submission_obj.submitted_claim_id.nil? &&
-             additional_birls_to_try.empty?
+          # Does not have a valid claim ID (through RRD process or otherwise) (protect against dup submissions)
+          # Does not have a backup submission ID (protect against dup submissions)
+          # Does not have additional birls it is going to try and submit with
+          send_backup_submission = Settings.form526_backup.enabled && Flipper.enabled?(flipper_sym) &&
+                                   values[:job_class] == 'SubmitForm526AllClaim' &&
+                                   submission_obj.submitted_claim_id.nil? &&
+                                   additional_birls_to_try.empty? && submission_obj.backup_submitted_claim_id.nil?
+
+          if send_backup_submission
             backup_job_jid = Sidekiq::Form526BackupSubmissionProcess::Submit.perform_async(form526_submission_id)
           end
 
           vagov_id = JSON.parse(submission_obj.auth_headers_json)['va_eauth_service_transaction_id']
           log_message = {
             submission_id: form526_submission_id,
-            job_id: job_id,
+            job_id:,
             job_class: values[:job_class],
-            error_class: error_class,
-            error_message: error_message,
+            error_class:,
+            error_message:,
             remaining_birls: additional_birls_to_try,
             va_eauth_service_transaction_id: vagov_id
           }
           log_message['backup_job_id'] = backup_job_jid unless backup_job_jid.nil?
-          ::Rails.logger.error('Form526 Exhausted', log_message)
+          ::Rails.logger.error('Form526 Exhausted or Errored (retryable-error-path)', log_message)
         rescue => e
           emsg = 'Form526 Exhausted, with error tracking job exhausted'
           error_details = {
-            message: emsg,
-            error: e,
-            class: msg['class'].demodulize,
-            jid: msg['jid'],
+            message: emsg, error: e,
+            class: msg['class'].demodulize, jid: msg['jid'],
             backtrace: e.backtrace
           }
           ::Rails.logger.error(emsg, error_details)
@@ -152,7 +154,7 @@ module Sidekiq
       #
       def non_retryable_error_handler(error)
         upsert_job_status(Form526JobStatus::STATUS[:non_retryable_error], error)
-        log_exception_to_sentry(error, status: :non_retryable_error, jid: jid)
+        log_exception_to_sentry(error, status: :non_retryable_error, jid:)
         log_error('non_retryable_error', error)
         metrics.increment_non_retryable(error, @is_bdd)
       end
@@ -165,7 +167,7 @@ module Sidekiq
         values = { form526_submission_id: @status_submission_id,
                    job_id: jid,
                    job_class: klass,
-                   status: status,
+                   status:,
                    error_class: nil,
                    error_message: nil,
                    bgjob_errors: {},
@@ -178,27 +180,27 @@ module Sidekiq
         values[:error_message] = error_message
 
         values[:bgjob_errors] = update_background_job_errors(job_id: jid,
-                                                             error_class: error_class,
-                                                             error_message: error_message,
-                                                             caller_method: caller_method,
-                                                             timestamp: timestamp)
+                                                             error_class:,
+                                                             error_message:,
+                                                             caller_method:,
+                                                             timestamp:)
         # rubocop:disable Rails/SkipsModelValidations
         Form526JobStatus.upsert(values, unique_by: :job_id)
         # rubocop:enable Rails/SkipsModelValidations
       end
 
       def update_background_job_errors(job_id:, error_class:, error_message:, caller_method:, timestamp: Time.now.utc)
-        form_job_status = Form526JobStatus.find_by(job_id: job_id)
+        form_job_status = Form526JobStatus.find_by(job_id:)
         return unless form_job_status
 
         bgjob_errors = form_job_status.bgjob_errors || {}
 
         new_error = {
           "#{timestamp.to_i}": {
-            caller_method: caller_method,
-            error_class: error_class,
-            error_message: error_message,
-            timestamp: timestamp
+            caller_method:,
+            error_class:,
+            error_message:,
+            timestamp:
           }
         }
 

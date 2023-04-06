@@ -177,6 +177,7 @@ module VAOS
             return i[:value] if i[:system].include? 'us-npi'
           end
         end
+        nil
       end
 
       def clear_provider_cache
@@ -202,14 +203,28 @@ module VAOS
             'VAOS Type of care and provider',
             kind: appt[:kind],
             status: appt[:status],
-            type_of_care: appt.dig(:service_types, 0, :coding, 0, :code),
-            treatment_specialty: appt.dig(:extension, :ccTreatingSpecialty),
-            provider_name: "#{appt.dig(:practitioners, 0, :name, :given,
-                                       0)}  #{appt.dig(:practitioners, 0, :name, :family)}",
-            practice_name: appt.dig(:practitioners, 0, :practice_name)
+            type_of_care: appt[:service_type],
+            treatment_specialty: appt.dig(:extension, :cc_treating_specialty),
+            provider_npi: find_npi(appt),
+            provider_name: find_provider_name(appt),
+            practice_name: find_practice_name(appt)
           )
           logged_toc_providers.add(logged_key)
         end
+      end
+
+      # helper method to extract provider name from appointment response, returns nil if not found
+      def find_provider_name(appt)
+        if appt.dig(:practitioners, 0, :name).present?
+          "#{appt.dig(:practitioners, 0, :name, :given, 0)} #{appt.dig(:practitioners, 0, :name, :family)}"
+        end
+      end
+
+      # helper method to extract practice name from appointment response,
+      # first checks for practice name in extension cc location, then in practitioners
+      # returns nil if not found in either
+      def find_practice_name(appt)
+        appt.dig(:extension, :cc_location, :practice_name) || appt.dig(:practitioners, 0, :practice_name)
       end
 
       # Makes a call to the VAOS service to create a new appointment.
@@ -292,12 +307,12 @@ module VAOS
       end
 
       def get_clinic(location_id, clinic_id)
-        mobile_facility_service.get_clinic(station_id: location_id, clinic_id: clinic_id)
+        mobile_facility_service.get_clinic(station_id: location_id, clinic_id:)
       rescue Common::Exceptions::BackendServiceException => e
         Rails.logger.error(
           "Error fetching clinic #{clinic_id} for location #{location_id}",
-          clinic_id: clinic_id,
-          location_id: location_id,
+          clinic_id:,
+          location_id:,
           vamf_msg: e.original_body
         )
         nil # on error log and return nil, calling code will handle nil
@@ -308,7 +323,7 @@ module VAOS
       rescue Common::Exceptions::BackendServiceException
         Rails.logger.error(
           "Error fetching facility details for location_id #{location_id}",
-          location_id: location_id
+          location_id:
         )
       end
 

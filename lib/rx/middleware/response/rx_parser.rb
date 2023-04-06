@@ -13,7 +13,8 @@ module Rx
         # @return [Faraday::Env]
         #
         def on_complete(env)
-          Rails.logger.info('RX Parser Debugging', status: env.status, body: env.body)
+          Rails.logger.info('RX Parser Debugging', status: env.status, body: env.body) if Rails.env.production?
+
           return unless env.response_headers['content-type']&.match?(/\bjson/)
           # If POST for prescriptions is successful message body is irrelevant
           # if it was not successul an exception would have already been raised
@@ -31,7 +32,7 @@ module Rx
 
           data =  parsed_prescription_list || parsed_tracking_object || parsed_prescription
           @parsed_json = {
-            data: data,
+            data:,
             errors: @errors,
             metadata: @meta_attributes
           }
@@ -43,7 +44,7 @@ module Rx
                        @parsed_json.delete(:last_updatedtime)
 
           {
-            updated_at: updated_at,
+            updated_at:,
             failed_station_list: @parsed_json.delete(:failed_station_list)
           }
         end

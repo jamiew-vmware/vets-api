@@ -32,7 +32,6 @@ require 'support/uploader_helpers'
 require 'super_diff/rspec-rails'
 require 'super_diff/active_support'
 require './spec/support/default_configuration_helper'
-require 'sidekiq/downtime_checker_middleware'
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
@@ -83,7 +82,6 @@ ActiveRecord::Migration.maintain_test_schema!
 require 'sidekiq/testing'
 Sidekiq::Testing.fake!
 Sidekiq::Testing.server_middleware do |chain|
-  chain.add Sidekiq::DowntimeCheckerMiddleware
   chain.add Sidekiq::SemanticLogging
   chain.add SidekiqStatsInstrumentation::ServerMiddleware
   chain.add Sidekiq::ErrorTag
@@ -108,14 +106,14 @@ RSpec.configure do |config|
 
   config.include(ValidationHelpers, type: :model)
   %i[controller model].each do |type|
-    config.include(ModelHelpers, type: type)
+    config.include(ModelHelpers, type:)
   end
   config.include(SAML, type: :controller)
   config.include(AwsHelpers, type: :aws_helpers)
   config.include(UploaderHelpers, uploader_helpers: true)
 
   %i[controller mdot_helpers request].each do |type|
-    config.include(MDOTHelpers, type: type)
+    config.include(MDOTHelpers, type:)
   end
 
   # Allows setting of filenet_id in the FinancialStatusReport model
@@ -160,7 +158,7 @@ RSpec.configure do |config|
   config.include SerializerSpecHelper, type: :serializer
 
   %i[model controller request].each do |type|
-    config.include PdfFillHelper, type: type
+    config.include PdfFillHelper, type:
   end
 
   # authentication_session_helper

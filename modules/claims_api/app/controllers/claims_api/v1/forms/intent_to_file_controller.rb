@@ -46,18 +46,24 @@ module ClaimsApi
         # @return [JSON] Response from BGS
         def active
           check_for_type
-
-          bgs_response = bgs_service.intent_to_file.find_intent_to_file_by_ptcpnt_id_itf_type_cd(
+          bgs_response = local_bgs_service.find_intent_to_file_by_ptcpnt_id_itf_type_cd(
             target_veteran.participant_id,
             ClaimsApi::IntentToFile::ITF_TYPES_TO_BGS_TYPES[active_param]
           )
+          if bgs_response.blank?
+            message = "No Intent to file is on record for #{target_veteran_name} of type #{active_param}"
+            raise ::Common::Exceptions::ResourceNotFound.new(detail: message)
+          end
+
           bgs_active = if bgs_response.is_a?(Array)
                          bgs_response.detect { |itf| active?(itf) }
                        elsif active?(bgs_response)
                          bgs_response
                        end
-          message = "No Intent to file is on record for #{target_veteran_name} of type #{active_param}"
-          raise ::Common::Exceptions::ResourceNotFound.new(detail: message) if bgs_active.blank?
+          if bgs_active.blank?
+            message = "No Intent to file is on record for #{target_veteran_name} of type #{active_param}"
+            raise ::Common::Exceptions::ResourceNotFound.new(detail: message)
+          end
 
           render json: bgs_active, serializer: ClaimsApi::IntentToFileSerializer
         end
@@ -67,7 +73,7 @@ module ClaimsApi
         # @return [JSON] Success if valid, error messages if invalid.
         def validate
           ClaimsApi::Logger.log('itf', detail: '0966/validate - Request Started')
-          add_deprecation_headers_to_response(response: response, link: ClaimsApi::EndpointDeprecation::V1_DEV_DOCS)
+          add_deprecation_headers_to_response(response:, link: ClaimsApi::EndpointDeprecation::V1_DEV_DOCS)
           validate_json_schema
           validate_veteran_identifiers(require_birls: true)
           check_for_invalid_burial_submission! if form_type == 'burial'
@@ -87,7 +93,7 @@ module ClaimsApi
             ssn: target_veteran.ssn
           }
 
-          handle_claimant_fields(options: options, form_attributes: form_attributes, target_veteran: target_veteran)
+          handle_claimant_fields(options:, form_attributes:, target_veteran:)
         end
 
         # BGS requires at least 1 of 'participant_claimant_id' or 'claimant_ssn'

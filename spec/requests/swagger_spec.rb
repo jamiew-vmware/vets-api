@@ -2,6 +2,7 @@
 
 require 'rails_helper'
 
+require 'lighthouse/direct_deposit/configuration'
 require 'support/bb_client_helpers'
 require 'support/pagerduty/services/spec_setup'
 require 'support/stub_debt_letters'
@@ -70,9 +71,9 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
         let(:code_challenge) { '1BUpxy37SoIPmKw96wbd6MDcvayOYm3ptT-zbe6L_zM' }
         let!(:code_container) do
           create(:code_container,
-                 code: code,
-                 code_challenge: code_challenge,
-                 user_verification_id: user_verification_id)
+                 code:,
+                 code_challenge:,
+                 user_verification_id:)
         end
 
         it 'validates the authorization_code & returns tokens' do
@@ -87,14 +88,14 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
 
       describe 'POST v0/sign_in/refresh' do
         let(:user_verification) { create(:user_verification) }
-        let(:validated_credential) { create(:validated_credential, user_verification: user_verification) }
+        let(:validated_credential) { create(:validated_credential, user_verification:) }
         let(:session_container) do
-          SignIn::SessionCreator.new(validated_credential: validated_credential).perform
+          SignIn::SessionCreator.new(validated_credential:).perform
         end
         let(:refresh_token) do
           CGI.escape(SignIn::RefreshTokenEncryptor.new(refresh_token: session_container.refresh_token).perform)
         end
-        let(:refresh_token_param) { { refresh_token: refresh_token } }
+        let(:refresh_token_param) { { refresh_token: } }
 
         it 'refreshes the session and returns new tokens' do
           expect(subject).to validate(
@@ -125,9 +126,9 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
 
       describe 'POST v0/sign_in/revoke' do
         let(:user_verification) { create(:user_verification) }
-        let(:validated_credential) { create(:validated_credential, user_verification: user_verification) }
+        let(:validated_credential) { create(:validated_credential, user_verification:) }
         let(:session_container) do
-          SignIn::SessionCreator.new(validated_credential: validated_credential).perform
+          SignIn::SessionCreator.new(validated_credential:).perform
         end
         let(:refresh_token) do
           CGI.escape(SignIn::RefreshTokenEncryptor.new(refresh_token: session_container.refresh_token).perform)
@@ -146,9 +147,9 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
 
       describe 'GET v0/sign_in/revoke_all_sessions' do
         let(:user_verification) { create(:user_verification) }
-        let(:validated_credential) { create(:validated_credential, user_verification: user_verification) }
+        let(:validated_credential) { create(:validated_credential, user_verification:) }
         let(:session_container) do
-          SignIn::SessionCreator.new(validated_credential: validated_credential).perform
+          SignIn::SessionCreator.new(validated_credential:).perform
         end
         let(:access_token_object) { session_container.access_token }
         let!(:user) { create(:user, :loa3, uuid: access_token_object.user_uuid, middle_name: 'leo') }
@@ -2210,6 +2211,83 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
       end
     end
 
+    describe 'Direct Deposit Disability Compensation' do
+      let(:user) { create(:user, :loa3, :accountable, icn: '1012666073V986297') }
+
+      before do
+        token = 'abcdefghijklmnop'
+        allow_any_instance_of(DirectDeposit::Configuration).to receive(:access_token).and_return(token)
+      end
+
+      context 'GET' do
+        it 'returns a 200' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          VCR.use_cassette('lighthouse/direct_deposit/show/200_response') do
+            expect(subject).to validate(:get, '/v0/profile/direct_deposits/disability_compensations', 200, headers)
+          end
+        end
+
+        it 'returns a 400' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          VCR.use_cassette('lighthouse/direct_deposit/show/400_response') do
+            expect(subject).to validate(:get, '/v0/profile/direct_deposits/disability_compensations', 400, headers)
+          end
+        end
+
+        it 'returns a 401' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          VCR.use_cassette('lighthouse/direct_deposit/show/401_response') do
+            expect(subject).to validate(:get, '/v0/profile/direct_deposits/disability_compensations', 401, headers)
+          end
+        end
+
+        it 'returns a 403' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          VCR.use_cassette('lighthouse/direct_deposit/show/403_response') do
+            expect(subject).to validate(:get, '/v0/profile/direct_deposits/disability_compensations', 403, headers)
+          end
+        end
+
+        it 'returns a 404' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          VCR.use_cassette('lighthouse/direct_deposit/show/404_response') do
+            expect(subject).to validate(:get, '/v0/profile/direct_deposits/disability_compensations', 404, headers)
+          end
+        end
+
+        it 'returns a 502' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          VCR.use_cassette('lighthouse/direct_deposit/show/502_response') do
+            expect(subject).to validate(:get, '/v0/profile/direct_deposits/disability_compensations', 502, headers)
+          end
+        end
+      end
+
+      context 'PUT' do
+        it 'returns a 200' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          params = { account_number: '1234567890', account_type: 'CHECKING', routing_number: '031000503' }
+          VCR.use_cassette('lighthouse/direct_deposit/update/200_response') do
+            expect(subject).to validate(:put,
+                                        '/v0/profile/direct_deposits/disability_compensations',
+                                        200,
+                                        headers.merge('_data' => params))
+          end
+        end
+
+        it 'returns a 400' do
+          headers = { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+          params = { account_number: '1234567890', account_type: 'CHECKING', routing_number: '031000503' }
+          VCR.use_cassette('lighthouse/direct_deposit/update/400_response') do
+            expect(subject).to validate(:put,
+                                        '/v0/profile/direct_deposits/disability_compensations',
+                                        400,
+                                        headers.merge('_data' => params))
+          end
+        end
+      end
+    end
+
     describe 'onsite notifications' do
       let(:private_key) { OpenSSL::PKey::EC.new(File.read('spec/support/certificates/notification-private.pem')) }
 
@@ -2937,7 +3015,7 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
           :va_profile_initialize_person_transaction,
           :init_vet360_id,
           user_uuid: user_without_vet360_id.uuid,
-          transaction_id: transaction_id
+          transaction_id:
         )
 
         expect(subject).to validate(
@@ -2964,7 +3042,7 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
       let(:headers) { { '_headers' => { 'Cookie' => sign_in(user, token, true) } } }
 
       before do
-        Session.create(uuid: user.uuid, token: token)
+        Session.create(uuid: user.uuid, token:)
       end
 
       it 'supports getting connected applications' do

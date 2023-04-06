@@ -12,7 +12,7 @@ module VAForms
     def perform
       Rails.logger.info('VAForms::FormReloader is being called.')
       query = File.read(Rails.root.join('modules', 'va_forms', 'config', 'graphql_query.txt'))
-      body = { query: query }
+      body = { query: }
       response = connection.post do |req|
         req.path = 'graphql'
         req.body = body.to_json
@@ -37,7 +37,7 @@ module VAForms
     def test
       Rails.logger.info('VAForms::FormReloaderTest is being called.')
       query = File.read(Rails.root.join('modules', 'va_forms', 'config', 'test.txt'))
-      body = { query: query }
+      body = { query: }
       response = connection.post do |req|
         req.path = 'graphql'
         req.body = body.to_json
@@ -166,15 +166,12 @@ module VAForms
     def notify_slack(old_form_url, new_form_url, form_name)
       return unless Settings.va_forms.slack.enabled
 
-      slack_url = Settings.va_forms.slack.notification_url
-      slack_users = Settings.va_forms.slack.users
-      begin
-        Faraday.post(slack_url,
-                     "{\"text\": \"#{slack_users} #{form_name} has changed from #{old_form_url} to #{new_form_url}\" }",
-                     'Content-Type' => 'application/json')
-      rescue Faraday::ClientError, Faraday::Error => e
-        Rails.logger.error("Failed to notify slack channel of forms change! #{e.message}", e)
-      end
+      slack_details = {
+        class: self.class.name,
+        alert: "#{form_name} has changed from #{old_form_url} to #{new_form_url}"
+      }
+
+      VAForms::Slack::Messenger.new(slack_details).notify!
     end
   end
 end

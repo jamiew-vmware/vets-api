@@ -6,7 +6,7 @@ require 'mockdata/writer'
 describe MockedAuthentication::Mockdata::Writer do
   describe '.save_credential' do
     subject do
-      MockedAuthentication::Mockdata::Writer.save_credential(credential: credential, credential_type: credential_type)
+      MockedAuthentication::Mockdata::Writer.save_credential(credential:, credential_type:)
     end
 
     let(:credential) do
@@ -18,7 +18,7 @@ describe MockedAuthentication::Mockdata::Writer do
     let(:expected_email) { credential['email'].split('@')[0].tr('!', '') }
     let(:credential_type) { 'some-credential-type' }
     let(:expected_filename) do
-      "#{Settings.sign_in.mock_credential_dir}/credentials/#{credential_type}/#{expected_email}"
+      "#{Settings.sign_in.mock_credential_dir}/credentials/#{credential_type}/#{expected_email}.json"
     end
     let(:expected_payload) { JSON.pretty_generate(credential) }
 

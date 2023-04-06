@@ -11,8 +11,7 @@ module AppealsApi
     DISABLED_FLAG_EMOJI = ':vertical_traffic_light:'
     MISSING_FLAG_EMOJI = ':no_entry_sign:'
 
-    # No need to retry since the schedule will run this every hour
-    sidekiq_options retry: false, unique_for: 30.minutes
+    sidekiq_options retry: 5, unique_for: 30.minutes
 
     def perform
       features_to_check = load_features_from_config

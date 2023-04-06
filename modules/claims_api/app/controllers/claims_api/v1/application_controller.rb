@@ -59,7 +59,7 @@ module ClaimsApi
 
         ClaimsApi::Logger.log('validate_identifiers',
                               rid: request.request_id,
-                              require_birls: require_birls,
+                              require_birls:,
                               header_request: header_request?,
                               ptcpnt_id: target_veteran.participant_id.present?,
                               icn: target_veteran&.mpi_icn,
@@ -72,9 +72,16 @@ module ClaimsApi
               'Please submit an issue at ask.va.gov or call 1-800-MyVA411 (800-698-2411) for assistance.'
           )
         end
-
         mpi_add_response = target_veteran.mpi.add_person_proxy
+
         raise mpi_add_response.error unless mpi_add_response.ok?
+
+        ids = target_veteran&.mpi&.participant_ids
+        if ids.nil? || ids.size.zero?
+          raise ::Common::Exceptions::UnprocessableEntity.new(detail:
+            'Veteran missing Participant ID. ' \
+            'Please submit an issue at ask.va.gov or call 1-800-MyVA411 (800-698-2411) for assistance.')
+        end
 
         ClaimsApi::Logger.log('validate_identifiers',
                               rid: request.request_id, mpi_res_ok: mpi_add_response.ok?,
@@ -126,7 +133,7 @@ module ClaimsApi
           headers_to_validate = %w[X-VA-SSN X-VA-First-Name X-VA-Last-Name X-VA-Birth-Date]
           validate_headers(headers_to_validate)
           validate_ccg_token! if token.client_credentials_token?
-          veteran_from_headers(with_gender: with_gender)
+          veteran_from_headers(with_gender:)
         else
           ClaimsApi::Veteran.from_identity(identity: @current_user)
         end

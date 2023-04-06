@@ -777,24 +777,26 @@
                         {
                           "closedDate": null,
                           "description": "MG-not a recognized condition",
-                          "displayedName": "Request 1",
+                          "displayName": "Request 1",
                           "openedDate": null,
                           "overdue": true,
                           "requestedDate": "2022-02-04",
+                          "status": "NEEDED",
+                          "suspenseDate": "2022-03-06",
                           "trackedItemId": 325525,
-                          "trackedItemStatus": "NEEDED",
                           "uploaded": false,
                           "uploadsAllowed": true
                         },
                         {
                           "closedDate": null,
                           "description": "Line of Duty determination from claimant",
-                          "displayedName": "Request 2",
+                          "displayName": "Request 2",
                           "openedDate": null,
                           "overdue": true,
                           "requestedDate": "2022-02-04",
+                          "status": "NEEDED",
+                          "suspenseDate": "2022-03-06",
                           "trackedItemId": 325524,
-                          "trackedItemStatus": "NEEDED",
                           "uploaded": false,
                           "uploadsAllowed": true
                         }
@@ -1136,7 +1138,7 @@
                                     "description": "ID of the tracked item",
                                     "example": 293454
                                   },
-                                  "displayedName": {
+                                  "displayName": {
                                     "type": "string",
                                     "nullable": true,
                                     "description": "Request #",
@@ -1155,7 +1157,7 @@
                                     "description": "True if the item is overdue",
                                     "example": true
                                   },
-                                  "trackedItemStatus": {
+                                  "status": {
                                     "type": "string",
                                     "nullable": true,
                                     "description": "Enum with the status of the tracked item",
@@ -1163,10 +1165,17 @@
                                     "enum": [
                                       "ACCEPTED",
                                       "INITIAL_REVIEW_COMPLETE",
-                                      "NEEDED",
+                                      "NEEDED_FROM_YOU",
+                                      "NEEDED_FROM_OTHERS",
                                       "NO_LONGER_REQUIRED",
                                       "SUBMITTED_AWAITING_REVIEW"
                                     ]
+                                  },
+                                  "suspenseDate": {
+                                    "format": "date",
+                                    "type": "string",
+                                    "nullable": true,
+                                    "example": "2017-10-18"
                                   },
                                   "uploaded": {
                                     "type": "boolean",
@@ -2030,8 +2039,8 @@
                     "id": "1",
                     "type": "intent_to_file",
                     "attributes": {
-                      "creationDate": "2023-03-28",
-                      "expirationDate": "2024-03-28",
+                      "creationDate": "2023-04-03",
+                      "expirationDate": "2024-04-03",
                       "type": "compensation",
                       "status": "active"
                     }

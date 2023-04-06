@@ -42,9 +42,9 @@ module SignIn
 
     def set_cookie!(name:, value:, expires:, path: '/')
       cookies[name] = {
-        value: value,
-        expires: expires,
-        path: path,
+        value:,
+        expires:,
+        path:,
         secure: Settings.sign_in.cookies_secure,
         httponly: true
       }
@@ -52,7 +52,7 @@ module SignIn
 
     def set_info_cookie
       cookies[Constants::Auth::INFO_COOKIE_NAME] = {
-        value: info_cookie_value,
+        value: info_cookie_value.to_json,
         expires: session_expiration,
         secure: Settings.sign_in.cookies_secure,
         httponly: false,
@@ -62,7 +62,7 @@ module SignIn
 
     def info_cookie_value
       {
-        access_token_expiration: access_token_expiration,
+        access_token_expiration:,
         refresh_token_expiration: session_expiration
       }
     end

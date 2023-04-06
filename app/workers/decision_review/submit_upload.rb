@@ -31,7 +31,7 @@ module DecisionReview
                      end.body.dig('data', 'id')
       appeal_submission_upload.update!(lighthouse_upload_id: lh_upload_id)
       log_success(internal_id: appeal_submission.id, lighthouse_uuid: appeal_submission.submitted_appeal_uuid,
-                  lighthouse_evidence_uuid: lh_upload_id)
+                  lighthouse_evidence_uuid: lh_upload_id, appeal_type: appeal_submission.type_of_appeal)
       StatsD.increment("#{STATSD_KEY_PREFIX}.success")
     rescue => e
       handle_error(e)
@@ -44,11 +44,14 @@ module DecisionReview
 
     private
 
-    def log_success(internal_id:, lighthouse_uuid:, lighthouse_evidence_uuid:)
+    def log_success(internal_id:, lighthouse_uuid:, lighthouse_evidence_uuid:, appeal_type:)
       Rails.logger.info({
                           message: 'Appeal evidence upload complete',
-                          internal_appeal_submission_id: internal_id,
-                          lighthouse_supplemental_claim_uuid: lighthouse_uuid,
+                          appeal_submission_id: internal_id,
+                          appeal_type:,
+                          lighthouse_submission: {
+                            id: lighthouse_uuid
+                          },
                           lighthouse_evidence_upload_id: lighthouse_evidence_uuid
                         })
     end
@@ -64,7 +67,7 @@ module DecisionReview
         file_number: file_number_or_ssn
       )
       upload_url = upload_url_response.body.dig('data', 'attributes', 'location')
-      get_dr_svc.put_notice_of_disagreement_upload(upload_url: upload_url,
+      get_dr_svc.put_notice_of_disagreement_upload(upload_url:,
                                                    file_upload: sanitized_file,
                                                    metadata_string: appeal_submission.upload_metadata)
       upload_url_response
@@ -77,7 +80,7 @@ module DecisionReview
         file_number: file_number_or_ssn
       )
       upload_url = upload_url_response.body.dig('data', 'attributes', 'location')
-      get_dr_svc.put_supplemental_claim_upload(upload_url: upload_url,
+      get_dr_svc.put_supplemental_claim_upload(upload_url:,
                                                file_upload: sanitized_file,
                                                metadata_string: appeal_submission.upload_metadata)
       upload_url_response

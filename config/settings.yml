@@ -580,8 +580,9 @@ vba_documents:
       - vagov-arn
   slack:
     enabled: false
-    default_alert_url: https://example.com
-    default_alert_email: example@slack.com
+    api_token: ''
+    channel_id: ''
+    default_alert_email: ''
     in_flight_notification_hung_time_in_days: 14
     renotification_in_minutes: 240
     update_stalled_notification_in_minutes: 180
@@ -847,7 +848,7 @@ flipper:
   mute_logs: false
   admin_user_emails:
     - aditya.sharma@thoughtworks.com # Virtual Agent
-    - adrian.rollett@agile6.com # Adrian Rollett (Agile6), Engineer/Product Manager Health Care Experience/Check-In
+    - adrian.rollett@va.gov
     - alexander.schmidt.garcia@gmail.com # Alexander Garcia (Clarity), Identity, Frontend Engineer
     - afia.caruso@oddball.io # Afia Caruso (Oddball), Identity, Frontend Engineer
     - alastair@adhocteam.us
@@ -991,7 +992,6 @@ flipper:
     - wesley.rowe@agile6.com
     - jill.adams@agile6.com
     - allison@cityfriends.tech
-    - cnunez@kindsys.us
     - helene.mccarron@thoughtworks.com # Virtual Agent
     - ryan.shaw@adhocteam.us
     - brandyn.sullins@govcio.com # Brandyn Sullins - Front End Engineer - GCIO
@@ -1016,6 +1016,11 @@ flipper:
     - NOAH.STERN@va.gov # Noah Sterngo GCIO VFEP BE Dev
     - GREGG.PUHALA@va.gov # Gregg Puhala GCIO VFEP BE Dev
     - derrick.ellerbie@agile6.com # Derrick Ellerbie - Engineer - Agile 6
+    - daniel.sasser@va.gov # Daniel Sasser - Engineer - Agile 6 - Sitewide Crew, Public Websites
+    - daniel.sasser@agile6.com # Daniel Sasser - Engineer - Agile 6 - Sitewide Crew, Public Websites
+    - florence.mccafferty@agile6.com # Florence McCafferty - Agile 6 - Authenticated Experience
+    - berni.xiong@agile6.com # Berni Xiong - Agile 6 - Authenticated Experience
+    - liz.lantz@adhocteam.us # Liz Lantz - Ad Hoc - Authenticated Experience
 
 bgs:
   application: ~
@@ -1246,8 +1251,8 @@ va_forms:
   # A notification for when a forms url has changed
   slack:
     enabled: false
-    notification_url: ''
-    users: '<>'
+    api_token: ''
+    channel_id: ''
 
 # Settings for connecting to genISIS, this is the storage system for the COVID Research initiative
 genisis:
@@ -1489,7 +1494,7 @@ lgy:
   mock_coe: true
 
 form526_backup:
-  enabled: false
+  enabled: true
   # Can be single or multi, to send 1 payload or many, to central mail
   submission_method: 'single'
   api_key: ~
