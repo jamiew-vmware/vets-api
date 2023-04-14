@@ -13,7 +13,7 @@ RSpec.describe 'Claims', type: :request do
   let(:profile) do
     MPI::Responses::FindProfileResponse.new(
       status: 'OK',
-      profile: FactoryBot.build(:mvi_profile,
+      profile: FactoryBot.build(:mpi_profile,
                                 participant_id: nil,
                                 participant_ids: [])
     )
@@ -23,7 +23,7 @@ RSpec.describe 'Claims', type: :request do
   let(:profile_erroneous_icn) do
     MPI::Responses::FindProfileResponse.new(
       status: 'OK',
-      profile: FactoryBot.build(:mvi_profile, icn: '667711332299')
+      profile: FactoryBot.build(:mpi_profile, icn: '667711332299')
     )
   end
 
@@ -316,6 +316,29 @@ RSpec.describe 'Claims', type: :request do
                 VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
                   expect_any_instance_of(bcs)
                     .to receive(:find_benefit_claims_status_by_ptcpnt_id).and_return(bgs_claims)
+                  expect(ClaimsApi::AutoEstablishedClaim)
+                    .to receive(:where).and_return(lighthouse_claims)
+
+                  get all_claims_path, headers: auth_header
+
+                  json_response = JSON.parse(response.body)
+
+                  expect(response.status).to eq(200)
+                  expect(json_response['data']).to be_an_instance_of(Array)
+                  expect(json_response.count).to eq(1)
+                  claim = json_response['data'].first
+                  expect(claim['attributes']['status']).to eq('PENDING')
+                  expect(claim['attributes']['lighthouseId']).to eq('0958d973-36fb-43ef-8801-2718bd33c825')
+                  expect(claim['id']).to be nil
+                end
+              end
+            end
+
+            it "provides a value for 'lighthouseId', but 'claimId' will be 'nil' when bgs returns nil" do
+              with_okta_user(scopes) do |auth_header|
+                VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
+                  expect_any_instance_of(bcs)
+                    .to receive(:find_benefit_claims_status_by_ptcpnt_id).and_return(nil)
                   expect(ClaimsApi::AutoEstablishedClaim)
                     .to receive(:where).and_return(lighthouse_claims)
 
@@ -839,8 +862,9 @@ RSpec.describe 'Claims', type: :request do
 
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
-                  claim_contentions_res = json_response['data']['attributes']['contentionList']
-                  expect(claim_contentions_res).to eq(['c1 (New)', 'c2 (Old)', 'c3 (Unknown)'])
+                  claim_contentions_res = json_response['data']['attributes']['contentions']
+                  expect(claim_contentions_res).to eq([{ 'name' => 'c1 (New)' }, { 'name' => 'c2 (Old)' },
+                                                       { 'name' => 'c3 (Unknown)' }])
                 end
               end
             end
@@ -864,8 +888,9 @@ RSpec.describe 'Claims', type: :request do
 
                   json_response = JSON.parse(response.body)
                   expect(response.status).to eq(200)
-                  claim_contentions_res = json_response['data']['attributes']['contentionList']
-                  expect(claim_contentions_res).to eq(['Low back strain (New)', 'Knee, internal derangement (New)'])
+                  claim_contentions_res = json_response['data']['attributes']['contentions']
+                  expect(claim_contentions_res).to eq([{ 'name' => 'Low back strain (New)' },
+                                                       { 'name' => 'Knee, internal derangement (New)' }])
                 end
               end
             end
@@ -1031,16 +1056,27 @@ RSpec.describe 'Claims', type: :request do
                     get claim_by_id_with_items_path, headers: auth_header
 
                     json_response = JSON.parse(response.body)
-                    first_doc_id = json_response['data']['attributes'].dig('trackedItems', 0, 'trackedItemId')
+                    first_doc_id = json_response['data']['attributes'].dig('trackedItems', 0, 'id')
+                    resp_tracked_items = json_response['data']['attributes']['trackedItems']
                     expect(response.status).to eq(200)
                     expect(json_response).to be_an_instance_of(Hash)
                     expect(json_response['data']['id']).to eq('600236068')
                     expect(first_doc_id).to eq(325_525)
-                    expect(json_response['data']['attributes']['trackedItems'][0]['description']).to eq(
+                    expect(resp_tracked_items[0]['description']).to eq(nil)
+                    expect(resp_tracked_items[7]['description']).to start_with('On your application,')
+                    expect(json_response['data']['attributes']['trackedItems'][0]['displayName']).to eq(
                       'MG-not a recognized condition'
                     )
-                    expect(json_response['data']['attributes']['trackedItems'][1]['description']).to eq(
+                    expect(json_response['data']['attributes']['trackedItems'][1]['displayName']).to eq(
                       'Line of Duty determination from claimant'
+                    )
+                    # date_open
+                    expect(json_response['data']['attributes']['trackedItems'][0]['requestedDate']).to eq(
+                      '2022-02-04'
+                    )
+                    # req_dt
+                    expect(json_response['data']['attributes']['trackedItems'][2]['requestedDate']).to eq(
+                      '2021-05-05'
                     )
                   end
                 end

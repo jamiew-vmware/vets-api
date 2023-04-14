@@ -256,6 +256,9 @@ features:
   decision_review_supplemental_claim_pdf_v3:
     actor_type: user
     description: Defaults to v3 of the Supplemental Claim PDF form instead of v2
+  decision_review_sc_pact_act_boolean:
+    actor_type: user
+    description: Adds a 'potentialPactAct' field to the Supplemental Claims V2 API schema
   dependency_verification:
     actor_type: user
     description: Feature gates the dependency verification modal for updating the diaries service.
@@ -366,6 +369,10 @@ features:
   form1990_confirmation_email:
     actor_type: user
     description: Enables form 1990 email submission confirmation (VaNotify)
+    enable_in_development: true
+  form1990e_confirmation_email:
+    actor_type: user
+    description: Enables form 1990e email submission confirmation (VaNotify)
     enable_in_development: true
   form5490_confirmation_email:
     actor_type: user
@@ -818,6 +825,9 @@ features:
     actor_type: user
     description: Enables the redirect of Ch33 form.
     enable_in_development: true
+  show_meb_enhancements:
+    actor_type: user
+    description: Provides a flag wrapper for minor code changes to be gated from Prod.
   move_form_back_button:
     actor_type: user
     description: Test moving form back button to the top of the page

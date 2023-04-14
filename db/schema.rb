@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_03_14_210725) do
+ActiveRecord::Schema.define(version: 2023_04_12_000222) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gin"
@@ -950,6 +950,15 @@ ActiveRecord::Schema.define(version: 2023_03_14_210725) do
     t.index ["valid_pdf"], name: "index_va_forms_forms_on_valid_pdf"
   end
 
+  create_table "va_notify_in_progress_reminders_sent", force: :cascade do |t|
+    t.string "form_id", null: false
+    t.uuid "user_account_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_account_id", "form_id"], name: "index_in_progress_reminders_sent_user_account_form_id", unique: true
+    t.index ["user_account_id"], name: "index_va_notify_in_progress_reminders_sent_on_user_account_id"
+  end
+
   create_table "vba_documents_git_items", force: :cascade do |t|
     t.string "url", null: false
     t.jsonb "git_item"
@@ -1101,5 +1110,6 @@ ActiveRecord::Schema.define(version: 2023_03_14_210725) do
   add_foreign_key "user_acceptable_verified_credentials", "user_accounts"
   add_foreign_key "user_credential_emails", "user_verifications"
   add_foreign_key "user_verifications", "user_accounts"
+  add_foreign_key "va_notify_in_progress_reminders_sent", "user_accounts"
   add_foreign_key "veteran_device_records", "devices"
 end

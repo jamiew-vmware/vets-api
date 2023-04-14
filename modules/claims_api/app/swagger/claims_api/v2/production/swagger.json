@@ -738,15 +738,31 @@
                       },
                       "claimType": "Compensation",
                       "closeDate": "2017-10-18",
-                      "contentionList": [
-                        "abnormal heart (New)",
-                        "abscess kidney (New)",
-                        "encephalitis lethargica residuals (New)",
-                        "dracunculiasis (New)",
-                        "gingivitis (New)",
-                        "abnormal weight loss (New)",
-                        "groin condition (New)",
-                        "metritis (New)"
+                      "contentions": [
+                        {
+                          "name": "abnormal heart (New)"
+                        },
+                        {
+                          "name": "abscess kidney (New)"
+                        },
+                        {
+                          "name": "encephalitis lethargica residuals (New)"
+                        },
+                        {
+                          "name": "dracunculiasis (New)"
+                        },
+                        {
+                          "name": "gingivitis (New)"
+                        },
+                        {
+                          "name": "abnormal weight loss (New)"
+                        },
+                        {
+                          "name": "groin condition (New)"
+                        },
+                        {
+                          "name": "metritis (New)"
+                        }
                       ],
                       "decisionLetterSent": false,
                       "developmentLetterSent": false,
@@ -776,27 +792,27 @@
                       "trackedItems": [
                         {
                           "closedDate": null,
-                          "description": "MG-not a recognized condition",
-                          "displayName": "Request 1",
-                          "openedDate": null,
-                          "overdue": true,
                           "requestedDate": "2022-02-04",
-                          "status": "NEEDED",
+                          "receivedDate": null,
+                          "description": null,
+                          "displayName": "MG-not a recognized condition",
+                          "overdue": true,
+                          "status": "INITIAL_REVIEW_COMPLETE",
                           "suspenseDate": "2022-03-06",
-                          "trackedItemId": 325525,
+                          "id": 325525,
                           "uploaded": false,
                           "uploadsAllowed": true
                         },
                         {
                           "closedDate": null,
-                          "description": "Line of Duty determination from claimant",
-                          "displayName": "Request 2",
-                          "openedDate": null,
-                          "overdue": true,
                           "requestedDate": "2022-02-04",
-                          "status": "NEEDED",
+                          "receivedDate": null,
+                          "description": null,
+                          "displayName": "Line of Duty determination from claimant",
+                          "overdue": true,
+                          "status": "INITIAL_REVIEW_COMPLETE",
                           "suspenseDate": "2022-03-06",
-                          "trackedItemId": 325524,
+                          "id": 325524,
                           "uploaded": false,
                           "uploadsAllowed": true
                         }
@@ -840,7 +856,7 @@
                             "claimPhaseDates",
                             "claimType",
                             "closeDate",
-                            "contentionList",
+                            "contentions",
                             "decisionLetterSent",
                             "developmentLetterSent",
                             "documentsNeeded",
@@ -869,16 +885,18 @@
                               "description": "Name of claim type",
                               "example": "Compensation"
                             },
-                            "contentionList": {
+                            "contentions": {
                               "type": "array",
-                              "items": {
-                                "type": "string"
-                              },
                               "description": "The contentions being submitted with a claim",
-                              "example": [
-                                "abnormal heart (New)",
-                                "abscess kidney (New)"
-                              ]
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string",
+                                    "example": "abscess kidney (New)"
+                                  }
+                                }
+                              }
                             },
                             "claimDate": {
                               "format": "date",
@@ -1133,7 +1151,7 @@
                                     "description": "Date the tracked item was requested",
                                     "example": "2017-10-18"
                                   },
-                                  "trackedItemId": {
+                                  "id": {
                                     "type": "integer",
                                     "description": "ID of the tracked item",
                                     "example": 293454
@@ -1141,14 +1159,14 @@
                                   "displayName": {
                                     "type": "string",
                                     "nullable": true,
-                                    "description": "Request #",
-                                    "example": "Request 5"
+                                    "description": "Description of the tracked item",
+                                    "example": "Buddy mentioned - No complete address"
                                   },
-                                  "openedDate": {
+                                  "receivedDate": {
                                     "format": "date",
                                     "type": "string",
                                     "nullable": true,
-                                    "description": "Date the tracked item was opened",
+                                    "description": "Date the tracked item was received",
                                     "example": "2017-10-18"
                                   },
                                   "overdue": {
@@ -1873,8 +1891,8 @@
                     "id": "1",
                     "type": "intent_to_file",
                     "attributes": {
-                      "creationDate": "2023-04-03",
-                      "expirationDate": "2024-04-03",
+                      "creationDate": "2023-04-12",
+                      "expirationDate": "2024-04-12",
                       "type": "compensation",
                       "status": "active"
                     }

@@ -418,6 +418,7 @@ Rails.application.routes.draw do
   mount FacilitiesApi::Engine, at: '/facilities_api'
   mount FormsApi::Engine, at: '/forms_api'
   mount HealthQuest::Engine, at: '/health_quest'
+  mount IncomeLimits::Engine, at: '/income_limits'
   mount MebApi::Engine, at: '/meb_api'
   mount Mobile::Engine, at: '/mobile'
   mount MyHealth::Engine, at: '/my_health', as: 'my_health'
@@ -437,7 +438,7 @@ Rails.application.routes.draw do
 
   mount TestUserDashboard::Engine, at: '/test_user_dashboard' if Settings.test_user_dashboard.env == 'staging'
 
-  if %w[test localhost development].include?(Settings.vsp_environment)
+  if %w[test localhost development staging].include?(Settings.vsp_environment)
     mount MockedAuthentication::Engine, at: '/mocked_authentication'
   end
 

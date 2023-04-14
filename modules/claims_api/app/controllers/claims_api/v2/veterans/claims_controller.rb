@@ -6,7 +6,7 @@ require 'claims_api/v2/mock_documents_service'
 module ClaimsApi
   module V2
     module Veterans
-      class ClaimsController < ClaimsApi::V2::ApplicationController
+      class ClaimsController < ClaimsApi::V2::ApplicationController # rubocop:disable Metrics/ClassLength
         before_action :verify_access!
 
         def index
@@ -90,7 +90,7 @@ module ClaimsApi
         end
 
         def map_claims(bgs_claims:, lighthouse_claims:) # rubocop:disable Metrics/MethodLength
-          mapped_claims = bgs_claims[:benefit_claims_dto][:benefit_claim].map do |bgs_claim|
+          mapped_claims = (bgs_claims&.dig(:benefit_claims_dto, :benefit_claim) || []).map do |bgs_claim|
             matching_claim = find_bgs_claim_in_lighthouse_collection(
               lighthouse_collection: lighthouse_claims,
               bgs_claim:
@@ -172,7 +172,7 @@ module ClaimsApi
             claim_type_code: data[:bnft_claim_type_cd],
             claim_type: data[:claim_status_type],
             close_date: data[:claim_complete_dt].present? ? format_bgs_date(data[:claim_complete_dt]) : nil,
-            contention_list: data[:contentions]&.split(/(?<=\)),/)&.collect(&:strip) || [],
+            contentions: build_contentions(data),
             decision_letter_sent: map_yes_no_to_boolean('decision_notification_sent',
                                                         data[:decision_notification_sent]),
             development_letter_sent: map_yes_no_to_boolean('development_letter_sent', data[:development_letter_sent]),
@@ -188,6 +188,17 @@ module ClaimsApi
             submitter_role_code: data[:submtr_role_type_cd],
             temp_jurisdiction: data[:temp_regional_office_jrsdctn]
           }
+        end
+
+        def build_contentions(data)
+          contentions = data[:contentions]&.split(/(?<=\)),/)
+          return [] if contentions.nil?
+
+          [].tap do |a|
+            contentions.map do |contention|
+              a << { name: contention.strip }
+            end
+          end
         end
 
         def get_phase_type_indicator_array(data)
@@ -234,18 +245,33 @@ module ClaimsApi
           end
         end
 
+        def get_completed_phase_number_from_phase_details(details)
+          if details[:phase_type_change_ind].present?
+            return if details[:phase_type_change_ind] == 'N'
+
+            details[:phase_type_change_ind].split('').first
+          end
+        end
+
         def get_bgs_phase_completed_dates(data)
           phase_dates = {}
 
           if data&.dig(:benefit_claim_details_dto, :bnft_claim_lc_status).is_a?(Array)
-            data[:benefit_claim_details_dto][:bnft_claim_lc_status].each do |lc|
-              phase_number = get_phase_number_from_phase_details(lc)
-              phase_dates["phase#{phase_number}CompleteDate"] = date_present(lc[:phase_chngd_dt])
+            max_completed_phase = 0
+            data[:benefit_claim_details_dto][:bnft_claim_lc_status].each_with_index do |lc, i|
+              completed_phase_number = get_completed_phase_number_from_phase_details(lc)
+              if i.zero?
+                max_completed_phase = completed_phase_number
+                phase_dates["phase#{completed_phase_number}CompleteDate"] = date_present(lc[:phase_chngd_dt])
+              elsif completed_phase_number.present? && completed_phase_number < max_completed_phase
+                phase_dates["phase#{completed_phase_number}CompleteDate"] = date_present(lc[:phase_chngd_dt])
+              end
             end
           else
             date = data[:benefit_claim_details_dto][:bnft_claim_lc_status][:phase_chngd_dt]
             phase_dates['phase1CompleteDate'] = date_present(date)
           end
+
           phase_dates
         end
 
@@ -375,9 +401,13 @@ module ClaimsApi
           # wwd What We Still Need From Others
           wwd = handle_array_or_hash(ebenefits_details[:wwd], :dvlpmt_item_id) || []
 
+          # convert to array and flatten to prevent hashes from breaking this
+          ebenefits_items = ([ebenefits_details[:wwsnfy]].flatten | [ebenefits_details[:wwr]].flatten |
+                             [ebenefits_details[:wwd]].flatten).compact
+
           ids = tracked_ids | wwsnfy | wwr | wwd
 
-          ids.map.with_index do |id, i|
+          ids.map do |id|
             item = tracked_items.find do |t|
               if t.is_a?(Hash)
                 t[:dvlpmt_item_id] == id
@@ -420,18 +450,34 @@ module ClaimsApi
 
             {
               closed_date: date_present(item[:date_closed]),
-              description: item[:short_nm],
-              display_name: "Request #{i + 1}", # +1 given a 1 index'd array
-              opened_date: date_present(item[:date_open]),
+              requested_date: tracked_item_req_date(ebenefits_details, item, id),
+              received_date: date_present(item[:receive_dt]),
+              description: tracked_item_description(ebenefits_items, id),
+              display_name: item[:short_nm],
               overdue: item[:suspns_dt].nil? ? false : item[:suspns_dt] < Time.zone.now, # EVSS generates this field
-              requested_date: date_present(item[:req_dt]),
               status:, # EVSS generates this field
               suspense_date: date_present(item[:suspns_dt]),
-              tracked_item_id: id.to_i,
+              id: id.to_i,
               uploaded: item[:receive_dt].present?, # EVSS generates this field
               uploads_allowed: # EVSS generates this field
             }
           end
+        end
+
+        def tracked_item_req_date(ebenefits_details, item, id)
+          items = ([ebenefits_details[:wwsnfy]].flatten |
+          [ebenefits_details[:wwr]].flatten |
+          [ebenefits_details[:wwd]].flatten).compact
+
+          tracked_item = items.find { |i| i[:dvlpmt_item_id] == id } || {}
+          date_present(tracked_item[:date_open] || item[:req_dt] || item[:create_dt])
+        end
+
+        def tracked_item_description(tracked_items, id)
+          return nil if tracked_items.nil?
+
+          tracked_item = tracked_items.find { |a| a[:dvlpmt_item_id] == id }
+          tracked_item.present? ? tracked_item[:items] : nil
         end
 
         def build_supporting_docs(bgs_claim)
@@ -450,9 +496,15 @@ module ClaimsApi
               document_type_label: doc['document_type_label'],
               original_file_name: doc['original_file_name'],
               tracked_item_id: doc['tracked_item_id'],
-              upload_date: date_present(doc['upload_date'])
+              upload_date: upload_date(doc['upload_date'])
             }
           end
+        end
+
+        def upload_date(upload_date)
+          return if upload_date.nil?
+
+          Time.zone.at(upload_date / 1000).strftime('%Y-%m-%d')
         end
 
         def build_claim_phase_attributes(bgs_claim, view)

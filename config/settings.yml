@@ -59,6 +59,7 @@ sign_in:
   mock_auth_url: http://localhost:3000/mock_auth_frontend
   mock_redirect_uri: http://localhost:3000/v0/sign_in/callback
   mock_credential_dir: '../vets-api-mockdata'
+  mockdata_sync_api_key: ~
 
 lockbox:
   master_key: "0d78eaf0e90d4e7b8910c9112e16e66d8b00ec4054a89aa426e32712a13371e9"
@@ -284,16 +285,24 @@ modules_appeals_api:
       api_key: ''
   # The token generation values below are only used for development rake tasks.
   token_generation:
-    # URI to the well-known configuration endpoint for appeals auth:
-    config_uri: ''
     ccg:
-      # Get a client ID by submitting your public jwk here - make sure to check the box for the API under
+      config_uri: 'https://dev-api.va.gov/oauth2/appeals/system/v1/.well-known/openid-configuration'
+      # Get a client ID by submitting your public jwk here - make sure to check the boxes for the APIs under
       # "Client Credentials Grant APIs": https://developer.va.gov/onboarding/request-sandbox-access
       client_id: ''
       # Absolute path to the private key file matching the jwk:
       private_key_path: ''
+    auth:
+      config_uri: 'https://dev-api.va.gov/oauth2/appeals/v1/.well-known/openid-configuration'
+      # Get a client ID/secret by submitting this form - make sure to check the boxes for the APIs under
+      # "Authorization Code Flow APIs": https://developer.va.gov/onboarding/request-sandbox-access
+      client_id: ''
+      client_secret: ''
+      redirect_uri: ''
+      user_email: ''
+      user_password: ''
   slack:
-    api_token: ''
+    api_key: ''
     appeals_channel_id: ''
   documentation:
     path_enabled_flag: false
@@ -301,6 +310,7 @@ modules_appeals_api:
       # List of flags to indicate parts of documentation that are still WIP and not ready for production.
       # See the rswag:appeals_api:dev rake task, spec_helper, and DocHelpers#wip_doc_enabled? for usage info to opt-in.
       # NOTE: Do not remove this key even if it's empty.
+      - sc_v2_potential_pact_act
   legacy_appeals_enabled: true
   reports:
     daily_decision_review:
@@ -580,7 +590,7 @@ vba_documents:
       - vagov-arn
   slack:
     enabled: false
-    api_token: ''
+    api_key: ''
     channel_id: ''
     default_alert_email: ''
     in_flight_notification_hung_time_in_days: 14
@@ -1112,7 +1122,7 @@ lighthouse:
     use_mocks: false
     access_token:
       path: oauth2/va-letter-generator/system/v1/token
-      client_id: ~ 
+      client_id: ~
       rsa_key: ~
       aud_claim_url: https://deptva-eval.okta.com/oauth2/ausftw7zk6eHr7gMN2p7/v1/token
   benefits_reference_data:
@@ -1145,6 +1155,13 @@ lighthouse:
   facilities:
     url: https://sandbox-api.va.gov
     api_key: fake_key
+  veteran_verification:
+    host: https://staging-api.va.gov
+    access_token:
+      aud_claim_url: https://deptva-eval.okta.com/oauth2/ausi3u00gw66b9Ojk2p7/v1/token
+      client_id: ~
+      rsa_key: ~
+    use_mocks: false
 
 mail_automation:
   url: https://viccs-api-test.ibm-intelligent-automation.com
@@ -1217,6 +1234,7 @@ vanotify:
         preneeds_burial_form_email: preneeds_burial_form_email_template_id
         contact_info_change: fake_template_id
         form1990_confirmation_email: form1990_confirmation_email_template_id
+        form1990e_confirmation_email: form1990e_confirmation_email_template_id
         form526_confirmation_email: fake_template_id
         form526_submission_failed_email: fake_template_id
         form5490_confirmation_email: form5490_confirmation_email_template_id
@@ -1251,7 +1269,7 @@ va_forms:
   # A notification for when a forms url has changed
   slack:
     enabled: false
-    api_token: ''
+    api_key: ''
     channel_id: ''
 
 # Settings for connecting to genISIS, this is the storage system for the COVID Research initiative

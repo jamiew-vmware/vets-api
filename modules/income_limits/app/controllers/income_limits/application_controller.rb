@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module MockedAuthentication
+module IncomeLimits
   class ApplicationController < ::ApplicationController
   end
 end
