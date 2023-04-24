@@ -56,7 +56,7 @@ sign_in:
   cookies_secure: false
   info_cookie_domain: localhost
   auto_uplevel: true
-  mock_auth_url: http://localhost:3000/mock_auth_frontend
+  mock_auth_url: http://localhost:3000/mocked_authentication/profiles
   mock_redirect_uri: http://localhost:3000/v0/sign_in/callback
   mock_credential_dir: '../vets-api-mockdata'
   mockdata_sync_api_key: ~
@@ -357,6 +357,9 @@ coe:
 adapted_housing:
   prefill: true
 
+medical_release:
+  prefill: true
+
 # Settings for Expiry Scanner
 expiry_scanner:
   slack:
@@ -596,7 +599,6 @@ vba_documents:
     in_flight_notification_hung_time_in_days: 14
     renotification_in_minutes: 240
     update_stalled_notification_in_minutes: 180
-    daily_notification_hour: 7
   webhooks:
     registration_next_run_in_minutes: 15
     registration_max_retries: 3
@@ -943,6 +945,7 @@ flipper:
     - michael.pelz-sherman@gcio.com
     - michelle.middaugh@adhocteam.us
     - mmiller@pluribusdigital.com
+    - mmiller+staging@pluribusdigital.com
     - n.ratana@gmail.com
     - nathaniel.buck@gmail.com # AFS - My Education Benefits
     - narin@adhocteam.us
@@ -1256,6 +1259,12 @@ vanotify:
       template_id:
         fsr_confirmation_email: fake_template_id
         vha_fsr_confirmation_email: fake_template_id
+    check_in:
+      api_key: fake_secret
+      template_id:
+        claim_submission_success_text: fake_template_id
+        claim_submission_duplicate_text: fake_template_id
+        claim_submission_error_text: fake_template_id
   mock: false
   links:
     connected_applications: https://www.va.gov/profile/connected-applications
@@ -1483,14 +1492,9 @@ lighthouse_health_immunization:
     - "patient/Immunization.read"
     - "patient/Location.read"
 
-mobile_lighthouse_letters:
+mobile_lighthouse:
   client_id: '0oajpx78t3M8kurld2p7'
-  key_path: ~
-  aud_claim_url: "https://deptva-eval.okta.com/oauth2/ausftw7zk6eHr7gMN2p7/v1/token"
-  access_token_url: 'https://sandbox-api.va.gov/oauth2/va-letter-generator/system/v1/token'
-  api_url: 'https://sandbox-api.va.gov/services/va-letter-generator/v1/'
-  api_scopes:
-    - "letters.read"
+  rsa_key: ~
 
 token_validation:
   url: https://dev-api.va.gov/internal/auth

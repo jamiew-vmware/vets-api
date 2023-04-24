@@ -12,6 +12,10 @@
 # Sorted using http://yaml-sorter.herokuapp.com/
 
 features:
+  bcas_letters_use_lighthouse:
+    actor_type: user
+    description: Use lighthouse instead of EVSS to view/download benefit letters.
+    enable_in_development: true
   binding_flow_modal_dsl:
     actor_type: user
     description: Enables grandfathering modal to begin binding from dslogon to login.gov
@@ -211,39 +215,30 @@ features:
   decision_review_hlr_pii_expunge_enabled:
     actor_type: user
     description: Enables the higher level review PII expunge job
-    enable_in_development: true
   decision_review_nod_pii_expunge_enabled:
     actor_type: user
     description: Enables the notice of disagreement PII expunge job
-    enable_in_development: true
   decision_review_sc_pii_expunge_enabled:
     actor_type: user
     description: Enables the supplemental claim PII expunge job
-    enable_in_development: true
   decision_review_hlr_status_updater_enabled:
     actor_type: user
     description: Enables the Higher Level Review status update batch job
-    enable_in_development: true
   decision_review_nod_status_updater_enabled:
     actor_type: user
     description: Enables the Notice of Disagreement status update batch job
-    enable_in_development: true
   decision_review_sc_status_updater_enabled:
     actor_type: user
     description: Enables the Supplemental Claim status update batch job
-    enable_in_development: true
   decision_review_icn_updater_enabled:
     actor_type: user
     description: Enables the ICN lookup job
-    enable_in_development: true
   decision_review_weekly_error_report_enabled:
     actor_type: user
     description: Enables the weekly decision review text error report
-    enable_in_development: true
   decision_review_daily_error_report_enabled:
     actor_type: user
     description: Enables the daily error report email
-    enable_in_development: true
   decision_review_daily_stuck_records_report_enabled:
     actor_type: user
     description: Enables the daily decision review stuck records Slack report
@@ -315,9 +310,6 @@ features:
     actor_type: user
     description: enable covid search/display
     enable_in_development: true
-  facility_locator_ppms_forced_unique_id:
-    actor_type: user
-    description: Use an hexdigest for the ID on PPMS Place of Service Calls
   facility_locator_ppms_legacy_urgent_care_to_pos_locator:
     actor_type: user
     description: force the legacy urgent care path to use the new POS locator
@@ -463,6 +455,10 @@ features:
     actor_type: user
     description: enables us to easily turn off pre-caching appointments if our requests are overwhelming the upstream service
     enable_in_development: true
+  mobile_filter_doc_27_decision_letters_out:
+    actor_type: user
+    description: filters out doc type 27 decision letters out of list of decision letters for mobile
+    enable_in_development: false
   multiple_address_10_10ez:
     actor_type: cookie_id
     description: >
@@ -545,6 +541,10 @@ features:
   rrd_asthma_compensation:
     actor_type: user
     description: Fast tracks 526 disability compensation asthma claims by submitting additional health data
+    enable_in_development: true
+  my_va_experimental:
+    actor_type: user
+    description: Use for experimental features for My VA application
     enable_in_development: true
   my_va_redirect:
     actor_type: user
@@ -791,10 +791,10 @@ features:
     description: Enables payment and debt section
   show_dashboard_notifications:
     actor_type: user
-    description: Enables on-site notifications
+    description: Enables on-site notifications 
   show_myva_dashboard_2_0:
     actor_type: user
-    description: Enables myva 2.0
+    description: Enables My VA 2.0
   check_va_inbox_enabled:
     actor_type: user
     description: Enables check inbox link
@@ -855,3 +855,6 @@ features:
   btsss_login_widget:
     actor_type: user
     description: If enabled shows the BTSSS login widget on the /get-reimbursed-for-travel-pay/ page
+  disability_compensation_lighthouse_intent_to_file_provider:
+    actor_type: user
+    description: If enabled uses the lighthouse intent to file endpoint

@@ -20,6 +20,8 @@ module DecisionReviewV1
     include DecisionReviewV1::Appeals::SupplementalClaimServices
 
     STATSD_KEY_PREFIX = 'api.decision_review'
+    ZIP_REGEX = /^\d{5}(-\d{4})?$/
+    NO_ZIP_PLACEHOLDER = '00000'
 
     configuration DecisionReviewV1::Configuration
 
@@ -226,11 +228,20 @@ module DecisionReviewV1
       end
     end
 
-    def self.file_upload_metadata(user)
+    def self.file_upload_metadata(user, backup_zip = nil)
+      original_zip = user.postal_code.to_s
+      backup_zip_from_frontend = backup_zip.to_s
+      zip = if original_zip =~ ZIP_REGEX
+              original_zip
+            elsif backup_zip_from_frontend =~ ZIP_REGEX
+              backup_zip_from_frontend
+            else
+              NO_ZIP_PLACEHOLDER
+            end
       {
         'veteranFirstName' => transliterate_name(user.first_name),
         'veteranLastName' => transliterate_name(user.last_name),
-        'zipCode' => user.postal_code,
+        'zipCode' => zip,
         'fileNumber' => user.ssn.to_s.strip,
         'source' => 'va.gov',
         'businessLine' => 'BVA',

@@ -99,6 +99,7 @@ Rails.application.routes.draw do
       collection do
         get(:healthcheck)
         get(:enrollment_status)
+        get(:rating_info)
       end
     end
 
@@ -137,6 +138,7 @@ Rails.application.routes.draw do
     end
 
     resources :evss_claims_async, only: %i[index show]
+    resources :evss_benefits_claims, only: %i[index show]
 
     namespace :virtual_agent do
       get 'claim', to: 'virtual_agent_claim#index'
