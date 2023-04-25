@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 require 'sign_in/logger'
+require_relative '../openid_application_controller'
 
 module V0
   class SignInController < SignIn::ApplicationController
-    skip_before_action :authenticate, only: %i[authorize callback token refresh revoke logout logingov_logout_proxy]
+    skip_before_action :authenticate,
+                       only: %i[authorize callback token refresh revoke logout logingov_logout_proxy
+                                fetch_openid_configuration]
 
     def authorize # rubocop:disable Metrics/MethodLength
       type = params[:type].presence
@@ -223,6 +226,46 @@ module V0
       render json: @current_user, serializer: SignIn::IntrospectSerializer, status: :ok
     rescue SignIn::Errors::StandardError => e
       render json: { errors: e }, status: :unauthorized
+    end
+
+    def fetch_openid_configuration
+      render json: openid_configuration_data
+    end
+
+    def openid_configuration_data
+      openid_data.merge(openid_data_two)
+    end
+
+    def openid_data
+      {
+        issuer: 'https://www.rfc-editor.org',
+        authorization_endpoint: 'https://www.rfc-editor.org/oauth/authorize',
+        token_endpoint: 'https://www.rfc-editor.org/oauth/token',
+        jwks_uri: 'https://www.rfc-editor.org/oauth/jwks',
+        registration_endpoint: 'https://www.rfc-editor.org/oauth/register',
+        service_documentation: 'https://www.rfc-editor.org/oauth/docs',
+        op_policy_uri: 'https://www.rfc-editor.org/oauth/policy',
+        op_tos_uri: 'https://www.rfc-editor.org/oauth/tos',
+        revocation_endpoint: 'https://www.rfc-editor.org/oauth/revoke',
+        introspection_endpoint: 'https://www.rfc-editor.org/oauth/introspect'
+      }
+    end
+
+    def openid_data_two
+      {
+        scopes_supported: %w[openid profile email],
+        response_types_supported: %w[code token id_token],
+        response_modes_supported: %w[query fragment],
+        grant_types_supported: %w[authorization_code refresh_token client_credentials],
+        token_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post private_key_jwt],
+        token_endpoint_auth_signing_alg_values_supported: %w[RS256 ES256],
+        ui_locales_supported: %w[en-US fr-FR],
+        revocation_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post],
+        revocation_endpoint_auth_signing_alg_values_supported: %w[HS256 HS384],
+        introspection_endpoint_auth_methods_supported: %w[client_secret_basic private_key_jwt],
+        introspection_endpoint_auth_signing_alg_values_supported: %w[HS256 HS384],
+        code_challenge_methods_supported: %w[plain S256]
+      }
     end
 
     private
