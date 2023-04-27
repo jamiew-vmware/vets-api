@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_04_12_000222) do
+ActiveRecord::Schema.define(version: 2023_04_27_194605) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gin"
@@ -229,12 +229,10 @@ ActiveRecord::Schema.define(version: 2023_04_12_000222) do
     t.string "fingerprint"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.geography "location", limit: {:srid=>4326, :type=>"st_point", :geographic=>true}
     t.boolean "mobile"
     t.string "active_status"
     t.string "visn"
     t.index ["lat"], name: "index_base_facilities_on_lat"
-    t.index ["location"], name: "index_base_facilities_on_location", using: :gist
     t.index ["name"], name: "index_base_facilities_on_name", opclass: :gin_trgm_ops, using: :gin
     t.index ["unique_id", "facility_type"], name: "index_base_facilities_on_unique_id_and_facility_type", unique: true
   end
@@ -420,14 +418,12 @@ ActiveRecord::Schema.define(version: 2023_04_12_000222) do
   create_table "drivetime_bands", force: :cascade do |t|
     t.string "name"
     t.string "unit"
-    t.geography "polygon", limit: {:srid=>4326, :type=>"st_polygon", :geographic=>true}, null: false
     t.string "vha_facility_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "min"
     t.integer "max"
     t.datetime "vssc_extract_date", default: "2001-01-01 00:00:00"
-    t.index ["polygon"], name: "index_drivetime_bands_on_polygon", using: :gist
   end
 
   create_table "education_benefits_claims", id: :serial, force: :cascade do |t|
