@@ -2256,29 +2256,24 @@ RSpec.describe V0::SignInController, type: :controller do
       get(:fetch_openid_configuration)
     end
 
+    let(:expected_oauth_url) { Settings.logingov.oauth_url }
     let(:expected_data) do
       {
-        issuer: 'https://www.rfc-editor.org',
-        authorization_endpoint: 'https://www.rfc-editor.org/oauth/authorize',
-        token_endpoint: 'https://www.rfc-editor.org/oauth/token',
-        jwks_uri: 'https://www.rfc-editor.org/oauth/jwks',
-        registration_endpoint: 'https://www.rfc-editor.org/oauth/register',
-        service_documentation: 'https://www.rfc-editor.org/oauth/docs',
-        op_policy_uri: 'https://www.rfc-editor.org/oauth/policy',
-        op_tos_uri: 'https://www.rfc-editor.org/oauth/tos',
-        revocation_endpoint: 'https://www.rfc-editor.org/oauth/revoke',
-        introspection_endpoint: 'https://www.rfc-editor.org/oauth/introspect',
-        scopes_supported: %w[openid profile email],
-        response_types_supported: %w[code token id_token],
-        response_modes_supported: %w[query fragment],
-        grant_types_supported: %w[authorization_code refresh_token client_credentials],
-        token_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post private_key_jwt],
-        token_endpoint_auth_signing_alg_values_supported: %w[RS256 ES256],
-        ui_locales_supported: %w[en-US fr-FR],
-        revocation_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post],
-        revocation_endpoint_auth_signing_alg_values_supported: %w[HS256 HS384],
-        introspection_endpoint_auth_methods_supported: %w[client_secret_basic private_key_jwt],
-        introspection_endpoint_auth_signing_alg_values_supported: %w[HS256 HS384],
+        issuer: expected_oauth_url,
+        authorization_endpoint: "#{expected_oauth_url}/oauth2/authorize",
+        token_endpoint: "#{expected_oauth_url}/oauth2/token",
+        token_refresh_endpoint: "#{expected_oauth_url}/oauth2/refresh",
+        introspection_endpoint: "#{expected_oauth_url}/oauth2/introspect",
+        end_session_endpoint: "#{expected_oauth_url}/oauth2/logout",
+        token_revocation_individual_endpoint: "#{expected_oauth_url}/oauth2/revoke",
+        revocation_endpoint: "#{expected_oauth_url}/oauth2/revoke_all",
+        scopes_supported: %w[openid profile email address phone offline_access],
+        response_types_supported: %w[code token code token],
+        response_modes_supported: %w[query fragment form_post okta_post_message],
+        grant_types_supported: %w[authorization_code implicit refresh_token password client_credentials],
+        token_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post client_secret_jwt private_key_jwt none], # rubocop:disable Layout/LineLength
+        revocation_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post client_secret_jwt private_key_jwt none], # rubocop:disable Layout/LineLength
+        introspection_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post client_secret_jwt private_key_jwt none], # rubocop:disable Layout/LineLength
         code_challenge_methods_supported: %w[plain S256]
       }
     end
