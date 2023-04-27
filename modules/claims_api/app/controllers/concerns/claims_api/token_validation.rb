@@ -8,6 +8,10 @@ module ClaimsApi
     TOKEN_REGEX = /Bearer /
 
     included do
+      def authenticate
+        verify_access!
+      end
+
       def verify_access!
         verify_access_token!
       rescue

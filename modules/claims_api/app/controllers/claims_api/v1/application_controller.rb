@@ -20,7 +20,6 @@ module ClaimsApi
       before_action :validate_json_format, if: -> { request.post? }
       before_action :target_veteran
       before_action :validate_veteran_identifiers
-      skip_before_action :authenticate
 
       protected
 
