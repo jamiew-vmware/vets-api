@@ -14,9 +14,7 @@ module ClaimsApi
         render_unauthorized
       end
 
-      #
       # Determine if the current authenticated user is allowed access
-      #
       # raise if current authenticated user is neither the target veteran, nor target veteran representative
       def verify_access_token!
         @validated_token = validate_token!['data']
@@ -63,9 +61,7 @@ module ClaimsApi
       icn = act['icn']
       claims_user = ClaimsUser.new(uid)
       claims_user.set_icn(icn) unless icn.nil?
-      unless act['last_name'].nil?
-        claims_user.first_name_last_name(act['first_name'], act['last_name'])
-      end
+      claims_user.first_name_last_name(act['first_name'], act['last_name']) unless act['last_name'].nil?
       claims_user
     end
 
