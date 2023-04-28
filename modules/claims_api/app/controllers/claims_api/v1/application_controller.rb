@@ -16,10 +16,14 @@ module ClaimsApi
       include ClaimsApi::TokenValidation
       include ClaimsApi::TargetVeteran
 
-      before_action :verify_access!
       before_action :validate_json_format, if: -> { request.post? }
-      before_action :target_veteran
       before_action :validate_veteran_identifiers
+
+      # fetch_audience: defines the audience used for oauth
+      # NOTE: required for oauth through claims_api to function
+      def fetch_aud
+        Settings.oidc.isolated_audience.claims
+      end
 
       protected
 
@@ -142,6 +146,12 @@ module ClaimsApi
         vet.participant_id = vet.participant_id_mpi
         vet.icn = vet&.mpi_icn
         vet
+      end
+
+      def authenticate_token
+        authenticate
+      rescue ::Common::Exceptions::TokenValidationError => e
+        raise ::Common::Exceptions::Unauthorized.new(detail: e.detail)
       end
 
       def set_tags_and_extra_context
