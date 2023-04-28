@@ -6,7 +6,6 @@ module ClaimsApi
   module V1
     class ClaimsController < ApplicationController
       include ClaimsApi::PoaVerification
-      include ClaimsApi::TokenValidation
       before_action { permit_scopes %w[claim.read] }
       before_action :verify_power_of_attorney!, if: :header_request?
 
