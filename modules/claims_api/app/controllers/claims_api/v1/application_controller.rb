@@ -14,6 +14,7 @@ module ClaimsApi
       include ClaimsApi::JsonFormatValidation
       include ClaimsApi::TokenValidation
       include ClaimsApi::CcgTokenValidation
+      include ClaimsApi::TargetVeteran
       skip_before_action :verify_authenticity_token
       skip_after_action :set_csrf_header
       before_action :authenticate
@@ -138,7 +139,7 @@ module ClaimsApi
           validate_ccg_token! if token.client_credentials_token?
           veteran_from_headers(with_gender:)
         else
-          ClaimsApi::Veteran.from_identity(identity: @current_user)
+          build_target_veteran(veteran_id: @current_user.icn, loa: { current: 3, highest: 3 })
         end
       end
 
