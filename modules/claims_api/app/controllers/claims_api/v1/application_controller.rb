@@ -12,9 +12,8 @@ module ClaimsApi
       include ClaimsApi::MPIVerification
       include ClaimsApi::HeaderValidation
       include ClaimsApi::JsonFormatValidation
-      include ClaimsApi::CcgTokenValidation
       include ClaimsApi::TokenValidation
-      include ClaimsApi::TargetVeteran
+      include ClaimsApi::CcgTokenValidation
       skip_before_action :verify_authenticity_token
       skip_after_action :set_csrf_header
       before_action :authenticate
