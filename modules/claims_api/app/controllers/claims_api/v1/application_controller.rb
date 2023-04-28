@@ -17,6 +17,7 @@ module ClaimsApi
       include ClaimsApi::TargetVeteran
       skip_before_action :verify_authenticity_token
       skip_after_action :set_csrf_header
+      before_action :authenticate
       before_action :validate_json_format, if: -> { request.post? }
       before_action :validate_veteran_identifiers
 
@@ -158,12 +159,6 @@ module ClaimsApi
         vet.participant_id = vet.participant_id_mpi
         vet.icn = vet&.mpi_icn
         vet
-      end
-
-      def authenticate_token
-        authenticate
-      rescue ::Common::Exceptions::TokenValidationError => e
-        raise ::Common::Exceptions::Unauthorized.new(detail: e.detail)
       end
 
       def set_tags_and_extra_context
