@@ -130,6 +130,17 @@ module ClaimsApi
         (request.headers.to_h.keys & headers_to_check).length.positive?
       end
 
+      def target_veteran(with_gender: false)
+        if header_request?
+          headers_to_validate = %w[X-VA-SSN X-VA-First-Name X-VA-Last-Name X-VA-Birth-Date]
+          validate_headers(headers_to_validate)
+          validate_ccg_token! if token.client_credentials_token?
+          veteran_from_headers(with_gender:)
+        else
+          ClaimsApi::Veteran.from_identity(identity: @current_user)
+        end
+      end
+
       def veteran_from_headers(with_gender: false)
         vet = ClaimsApi::Veteran.new(
           uuid: header('X-VA-SSN')&.gsub(/[^0-9]/, ''),
