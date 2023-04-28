@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-password}"
       POSTGRES_USER: "${POSTGRES_USER:-postgres}"
     volumes:
-      - ./data-v12:/var/lib/postgresql/data:cached
+      - ./data:/var/lib/postgresql/data:cached
     ports:
       - "54320:5432"
   vets-api:
