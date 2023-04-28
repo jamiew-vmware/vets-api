@@ -136,7 +136,7 @@ module ClaimsApi
         if header_request?
           headers_to_validate = %w[X-VA-SSN X-VA-First-Name X-VA-Last-Name X-VA-Birth-Date]
           validate_headers(headers_to_validate)
-          validate_ccg_token! if token.client_credentials_token?
+          validate_ccg_token! if @is_valid_ccg_flow
           veteran_from_headers(with_gender:)
         else
           build_target_veteran(veteran_id: @current_user.icn, loa: { current: 3, highest: 3 })
@@ -151,7 +151,7 @@ module ClaimsApi
           last_name: header('X-VA-Last-Name'),
           va_profile: ClaimsApi::Veteran.build_profile(header('X-VA-Birth-Date')),
           last_signed_in: Time.now.utc,
-          loa: token.client_credentials_token? ? { current: 3, highest: 3 } : @current_user.loa
+          loa: @is_valid_ccg_flow ? { current: 3, highest: 3 } : @current_user.loa
         )
         vet.mpi_record?
         vet.gender = header('X-VA-Gender') || vet.gender_mpi if with_gender
