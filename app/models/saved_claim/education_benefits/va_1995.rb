@@ -24,7 +24,6 @@ class SavedClaim::EducationBenefits::VA1995 < SavedClaim::EducationBenefits
   private
 
   def send_confirmation_email(parsed_form_data, email)
-
     VANotify::EmailJob.perform_async(
       email,
       Settings.vanotify.services.va_gov.template_id.form1995_confirmation_email,
