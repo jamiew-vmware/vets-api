@@ -14,6 +14,9 @@ module ClaimsApi
       include ClaimsApi::TokenValidation
       include ClaimsApi::CcgTokenValidation
       include ClaimsApi::TargetVeteran
+      skip_before_action :verify_authenticity_token
+      skip_after_action :set_csrf_header
+      before_action :authenticate
 
       def schema
         render json: { data: [ClaimsApi::FormSchemas.new(schema_version: 'v2').schemas[self.class::FORM_NUMBER]] }
