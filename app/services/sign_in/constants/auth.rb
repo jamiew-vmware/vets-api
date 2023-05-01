@@ -29,7 +29,13 @@ module SignIn
       INFO_COOKIE_NAME = 'vagov_info_token'
       JWT_ENCODE_ALGORITHM = 'RS256'
       LOA = [LOA_ONE = 1, LOA_THREE = 3].freeze
+      AUTHORIZATION_ENDPOINT = '/v0/sign_in/authorize'
+      TOKEN_ENDPOINT = '/v0/sign_in/token'
       REFRESH_ROUTE_PATH = '/v0/sign_in/refresh'
+      INTROSPECTION_ENDPOINT = '/v0/sign_in/introspect'
+      END_SESSION_ENDPOINT = '/v0/sign_in/logout'
+      TOKEN_REVOCATION_INDIVIDUAL_ENDPOINT = '/v0/sign_in/revoke'
+      REVOCATION_ENDPOINT = '/v0/sign_in/revoke_all'
       REFRESH_TOKEN_COOKIE_NAME = 'vagov_refresh_token'
     end
   end

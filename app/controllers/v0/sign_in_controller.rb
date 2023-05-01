@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require 'sign_in/logger'
-require 'sign_in/logingov/well_known/service'
+require 'sign_in/well_known'
 
 module V0
   class SignInController < SignIn::ApplicationController
     skip_before_action :authenticate,
                        only: %i[authorize callback token refresh revoke logout logingov_logout_proxy
-                                fetch_openid_configuration]
+                                openid_configuration]
 
     def authorize # rubocop:disable Metrics/MethodLength
       type = params[:type].presence
@@ -228,8 +228,8 @@ module V0
       render json: { errors: e }, status: :unauthorized
     end
 
-    def fetch_openid_configuration
-      well_known = SignIn::WellKnown::Service.new
+    def openid_configuration
+      well_known = SignIn::WellKnown.new
       render json: well_known.openid_data
     end
 

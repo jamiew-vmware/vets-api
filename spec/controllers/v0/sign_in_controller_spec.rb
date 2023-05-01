@@ -2251,30 +2251,46 @@ RSpec.describe V0::SignInController, type: :controller do
     end
   end
 
-  describe 'fetch_openid_configuration' do
+  describe 'openid_configuration' do
     subject do
-      get(:fetch_openid_configuration)
+      get(:openid_configuration)
     end
 
-    let(:expected_oauth_url) { Settings.logingov.oauth_url }
+    let(:expected_oauth_url) { Settings.hostname }
+    let(:authorization_endpoint) { SignIn::Constants::Auth::AUTHORIZATION_ENDPOINT }
+    let(:token_endpoint) { SignIn::Constants::Auth::TOKEN_ENDPOINT }
+    let(:token_refresh_endpoint) { SignIn::Constants::Auth::REFRESH_ROUTE_PATH }
+    let(:introspection_endpoint) { SignIn::Constants::Auth::INTROSPECTION_ENDPOINT }
+    let(:end_session_endpoint)   { SignIn::Constants::Auth::END_SESSION_ENDPOINT }
+    let(:token_revocation_individual_endpoint) { SignIn::Constants::Auth::TOKEN_REVOCATION_INDIVIDUAL_ENDPOINT }
+    let(:revocation_endpoint) { SignIn::Constants::Auth::REVOCATION_ENDPOINT }
+    let(:code_challenge_methods_supported) { SignIn::Constants::Auth::CODE_CHALLENGE_METHOD }
+    let(:scopes_supported) { 'openid profile email address phone offline_access' }
+    let(:response_types_supported) { 'code token code token' }
+    let(:response_modes_supported) { 'query fragment form_post okta_post_message' }
+    let(:grant_types_supported) { 'authorization_code implicit refresh_token password client_credentials' }
+    let(:token_endpoint_auth_methods_supported) { 'client_secret_basic client_secret_post client_secret_jwt private_key_jwt none' } # rubocop:disable Layout/LineLength
+    let(:revocation_endpoint_auth_methods_supported) { 'client_secret_basic client_secret_post client_secret_jwt private_key_jwt none' } # rubocop:disable Layout/LineLength
+    let(:introspection_endpoint_auth_methods_supported) { 'client_secret_basic client_secret_post client_secret_jwt private_key_jwt none' } # rubocop:disable Layout/LineLength
+
     let(:expected_data) do
       {
         issuer: expected_oauth_url,
-        authorization_endpoint: "#{expected_oauth_url}/oauth2/authorize",
-        token_endpoint: "#{expected_oauth_url}/oauth2/token",
-        token_refresh_endpoint: "#{expected_oauth_url}/oauth2/refresh",
-        introspection_endpoint: "#{expected_oauth_url}/oauth2/introspect",
-        end_session_endpoint: "#{expected_oauth_url}/oauth2/logout",
-        token_revocation_individual_endpoint: "#{expected_oauth_url}/oauth2/revoke",
-        revocation_endpoint: "#{expected_oauth_url}/oauth2/revoke_all",
-        scopes_supported: %w[openid profile email address phone offline_access],
-        response_types_supported: %w[code token code token],
-        response_modes_supported: %w[query fragment form_post okta_post_message],
-        grant_types_supported: %w[authorization_code implicit refresh_token password client_credentials],
-        token_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post client_secret_jwt private_key_jwt none], # rubocop:disable Layout/LineLength
-        revocation_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post client_secret_jwt private_key_jwt none], # rubocop:disable Layout/LineLength
-        introspection_endpoint_auth_methods_supported: %w[client_secret_basic client_secret_post client_secret_jwt private_key_jwt none], # rubocop:disable Layout/LineLength
-        code_challenge_methods_supported: %w[plain S256]
+        authorization_endpoint: "#{expected_oauth_url}#{authorization_endpoint}",
+        token_endpoint: "#{expected_oauth_url}#{token_endpoint}",
+        token_refresh_endpoint: "#{expected_oauth_url}#{token_refresh_endpoint}",
+        introspection_endpoint: "#{expected_oauth_url}#{introspection_endpoint}",
+        end_session_endpoint: "#{expected_oauth_url}#{end_session_endpoint}",
+        token_revocation_individual_endpoint: "#{expected_oauth_url}#{token_revocation_individual_endpoint}",
+        revocation_endpoint: "#{expected_oauth_url}#{revocation_endpoint}",
+        scopes_supported: scopes_supported.to_s,
+        response_types_supported: response_types_supported.to_s,
+        response_modes_supported: response_modes_supported.to_s,
+        grant_types_supported: grant_types_supported.to_s,
+        token_endpoint_auth_methods_supported: token_endpoint_auth_methods_supported.to_s,
+        revocation_endpoint_auth_methods_supported: revocation_endpoint_auth_methods_supported.to_s,
+        introspection_endpoint_auth_methods_supported: introspection_endpoint_auth_methods_supported.to_s,
+        code_challenge_methods_supported: code_challenge_methods_supported.to_s
       }
     end
 
