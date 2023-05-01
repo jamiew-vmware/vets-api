@@ -21,6 +21,14 @@ module ClaimsApi
 
     attr_reader :uuid, :first_name, :last_name
 
+    def authn_context
+      'authn'
+    end
+
+    def mhv_icn
+      @identifier.icn
+    end
+
     def first_name_last_name(first_name, last_name)
       @first_name = first_name
       @last_name = last_name
