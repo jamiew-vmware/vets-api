@@ -27,8 +27,7 @@ RSpec.describe SavedClaim::EducationBenefits::VA1995 do
           'form1995_confirmation_email_template_id',
           {
             'first_name' => 'FIRST',
-            'benefit_relinquished' => '',
-            'benefits' => '',
+            'benefit' => 'Transfer of Entitlement Program',
             'date_submitted' => Time.zone.today.strftime('%B %d, %Y'),
             'confirmation_number' => confirmation_number,
             'regional_office_address' => "P.O. Box 4616\nBuffalo, NY 14240-4616"
