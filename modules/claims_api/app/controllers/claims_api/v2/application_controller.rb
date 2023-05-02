@@ -53,6 +53,35 @@ module ClaimsApi
       end
 
       #
+      # Veteran being acted on.
+      #
+      # @return [ClaimsApi::Veteran] Veteran to act on
+      def target_veteran
+        @target_veteran ||= if @is_valid_ccg_flow
+                              build_target_veteran(veteran_id: params[:veteranId], loa: { current: 3, highest: 3 })
+                            elsif @validated_token_payload && !@current_user.icn.nil?
+                              build_target_veteran(veteran_id: @current_user.icn, loa: { current: 3, highest: 3 })
+                            elsif user_is_representative?
+                              build_target_veteran(veteran_id: params[:veteranId], loa: @current_user.loa)
+                            else
+                              raise ::Common::Exceptions::Unauthorized
+                            end
+      end
+
+      #
+      # Determine if the current authenticated user is an accredited representative
+      #
+      # @return [boolean] True if current user is an accredited representative, false otherwise
+      def user_is_representative?
+        return if @is_valid_ccg_flow
+
+        ::Veteran::Service::Representative.find_by(
+          first_name: @current_user.first_name,
+          last_name: @current_user.last_name
+        ).present?
+      end
+
+      #
       # Determine if the current authenticated user is the Veteran being acted on
       #
       # @return [boolean] True if the current user is the Veteran being acted on, false otherwise
