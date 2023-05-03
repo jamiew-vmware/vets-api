@@ -26,8 +26,8 @@ module BenefitsClaims
     ##
     # @return [String] Base path for benefits_claims URLs.
     #
-    def base_path
-      "#{settings.host}/#{CLAIMS_PATH}"
+    def base_path(host = nil)
+      "#{host || settings.host}/#{CLAIMS_PATH}"
     end
 
     ##
@@ -40,8 +40,14 @@ module BenefitsClaims
     ##
     # @return [Faraday::Response] response from GET request
     #
-    def get(path, params = {})
-      connection.get(path, params, { Authorization: "Bearer #{access_token}" })
+    def get(path, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+      connection.get(path, options[:params], { Authorization: "Bearer #{
+        access_token(
+          lighthouse_client_id,
+          lighthouse_rsa_key_path,
+          options
+        )
+      }" })
     end
 
     ##
@@ -83,19 +89,27 @@ module BenefitsClaims
       !use_mocks? || Settings.betamocks.recording
     end
 
-    def access_token
-      token_service.get_token if get_access_token?
+    def access_token(lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+      if get_access_token?
+        token_service(
+          lighthouse_client_id,
+          lighthouse_rsa_key_path,
+          options[:aud_claim_url],
+          options[:host]
+        ).get_token(options[:auth_params])
+      end
     end
 
     ##
     # @return [BenefitsClaims::AccessToken::Service] Service used to generate access tokens.
     #
-    def token_service
-      url = "#{settings.host}/#{TOKEN_PATH}"
-      token = settings.access_token
+    def token_service(lighthouse_client_id, lighthouse_rsa_key_path, aud_claim_url = nil, host = nil)
+      host ||= base_path(host)
+      url = "#{host}/#{TOKEN_PATH}"
+      aud_claim_url ||= settings.aud_claim_url
 
       @token_service ||= Auth::ClientCredentials::Service.new(
-        url, API_SCOPES, token.client_id, token.aud_claim_url, token.rsa_key
+        url, API_SCOPES, lighthouse_client_id, aud_claim_url, lighthouse_rsa_key_path
       )
     end
   end

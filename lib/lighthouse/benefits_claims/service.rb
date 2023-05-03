@@ -14,14 +14,21 @@ module BenefitsClaims
       raise ArgumentError, 'no ICN passed in for LH API request.' if icn.blank?
     end
 
-    def get_claims
-      config.get("#{@icn}/claims").body
+    def get_claims(lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+      config.get("#{@icn}/claims", lighthouse_client_id, lighthouse_rsa_key_path, options).body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end
 
-    def get_claim(id)
-      config.get("#{@icn}/claims/#{id}").body
+    def get_claim(id, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+      config.get("#{@icn}/claims/#{id}", lighthouse_client_id, lighthouse_rsa_key_path, options).body
+    rescue Faraday::ClientError => e
+      raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
+    end
+
+    def get_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+      path = "#{@icn}/intent-to-file/#{type}"
+      config.get(path, lighthouse_client_id, lighthouse_rsa_key_path, options).body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end
