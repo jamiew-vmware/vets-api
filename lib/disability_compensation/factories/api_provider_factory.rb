@@ -44,11 +44,9 @@ class ApiProviderFactory
     when API_PROVIDER[:evss]
       EvssIntentToFileProvider.new(current_user)
     when API_PROVIDER[:lighthouse]
-      # TODO: Implement this
-      raise NotImplementedError, 'Not implemented yet'
-      # LighthouseIntentToFileProvider.new(current_user)
+      LighthouseIntentToFileProvider.new(current_user)
     else
-      raise NotImplementedError, 'No known Rated Disabilities Api Provider type provided'
+      raise NotImplementedError, 'No known Intent to File Api Provider type provided'
     end
   end
 end
