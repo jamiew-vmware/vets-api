@@ -58,7 +58,6 @@ sign_in:
   auto_uplevel: true
   mock_auth_url: http://localhost:3000/mocked_authentication/profiles
   mock_redirect_uri: http://localhost:3000/v0/sign_in/callback
-  mock_credential_dir: '../vets-api-mockdata'
   mockdata_sync_api_key: ~
 
 lockbox:
@@ -176,6 +175,10 @@ edu:
       - david.rowley@accenturefederal.com
       - nick.barthelemy@accenturefederal.com
     staging_emails:
+  staging_spool_contents:
+    emails:
+      - noah.stern@va.gov
+      - gregg.puhala@dbitpro.com
 dependents:
   prefill: true
 
@@ -835,6 +838,7 @@ maintenance:
 betamocks:
   enabled: true
   recording: false
+  cache_dir: ~
   services_config: config/betamocks/services_config.yml
 
 # Settings for search
@@ -1265,6 +1269,7 @@ vanotify:
         vha_fsr_confirmation_email: fake_template_id
     check_in:
       api_key: fake_secret
+      sms_sender_id: fake_secret
       template_id:
         claim_submission_success_text: fake_template_id
         claim_submission_duplicate_text: fake_template_id
