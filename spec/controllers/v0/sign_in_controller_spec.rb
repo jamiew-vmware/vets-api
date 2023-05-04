@@ -2257,23 +2257,17 @@ RSpec.describe V0::SignInController, type: :controller do
     end
 
     let(:expected_oauth_url) { Settings.hostname }
-    let(:authorization_endpoint) { SignIn::Constants::Auth::AUTHORIZATION_ENDPOINT }
-    let(:token_endpoint) { SignIn::Constants::Auth::TOKEN_ENDPOINT }
+    let(:authorization_endpoint) { SignIn::Constants::Auth::AUTHORIZATION_ROUTE_PATH }
+    let(:token_endpoint) { SignIn::Constants::Auth::TOKEN_ROUTE_PATH }
     let(:token_refresh_endpoint) { SignIn::Constants::Auth::REFRESH_ROUTE_PATH }
-    let(:introspection_endpoint) { SignIn::Constants::Auth::INTROSPECTION_ENDPOINT }
-    let(:end_session_endpoint)   { SignIn::Constants::Auth::END_SESSION_ENDPOINT }
-    let(:token_revocation_individual_endpoint) { SignIn::Constants::Auth::TOKEN_REVOCATION_INDIVIDUAL_ENDPOINT }
-    let(:revocation_endpoint) { SignIn::Constants::Auth::REVOCATION_ENDPOINT }
+    let(:introspection_endpoint) { SignIn::Constants::Auth::INTROSPECTION_ROUTE_PATH }
+    let(:end_session_endpoint)   { SignIn::Constants::Auth::END_SESSION_ROUTE_PATH }
+    let(:token_revocation_individual_endpoint) { SignIn::Constants::Auth::TOKEN_REVOCATION_INDIVIDUAL_ROUTE_PATH }
+    let(:revocation_endpoint) { SignIn::Constants::Auth::REVOCATION_ROUTE_PATH }
+    let(:grant_types_supported) { SignIn::Constants::Auth::GRANT_TYPE }
     let(:code_challenge_methods_supported) { SignIn::Constants::Auth::CODE_CHALLENGE_METHOD }
-    let(:scopes_supported) { 'openid profile email address phone offline_access' }
-    let(:response_types_supported) { 'code token code token' }
-    let(:response_modes_supported) { 'query fragment form_post okta_post_message' }
-    let(:grant_types_supported) { 'authorization_code implicit refresh_token password client_credentials' }
-    let(:token_endpoint_auth_methods_supported) { 'client_secret_basic client_secret_post client_secret_jwt private_key_jwt none' } # rubocop:disable Layout/LineLength
-    let(:revocation_endpoint_auth_methods_supported) { 'client_secret_basic client_secret_post client_secret_jwt private_key_jwt none' } # rubocop:disable Layout/LineLength
-    let(:introspection_endpoint_auth_methods_supported) { 'client_secret_basic client_secret_post client_secret_jwt private_key_jwt none' } # rubocop:disable Layout/LineLength
 
-    let(:expected_data) do
+    let(:end_points) do
       {
         issuer: expected_oauth_url,
         authorization_endpoint: "#{expected_oauth_url}#{authorization_endpoint}",
@@ -2282,15 +2276,19 @@ RSpec.describe V0::SignInController, type: :controller do
         introspection_endpoint: "#{expected_oauth_url}#{introspection_endpoint}",
         end_session_endpoint: "#{expected_oauth_url}#{end_session_endpoint}",
         token_revocation_individual_endpoint: "#{expected_oauth_url}#{token_revocation_individual_endpoint}",
-        revocation_endpoint: "#{expected_oauth_url}#{revocation_endpoint}",
-        scopes_supported: scopes_supported.to_s,
-        response_types_supported: response_types_supported.to_s,
-        response_modes_supported: response_modes_supported.to_s,
-        grant_types_supported: grant_types_supported.to_s,
-        token_endpoint_auth_methods_supported: token_endpoint_auth_methods_supported.to_s,
-        revocation_endpoint_auth_methods_supported: revocation_endpoint_auth_methods_supported.to_s,
-        introspection_endpoint_auth_methods_supported: introspection_endpoint_auth_methods_supported.to_s,
-        code_challenge_methods_supported: code_challenge_methods_supported.to_s
+        revocation_endpoint: "#{expected_oauth_url}#{revocation_endpoint}"
+      }
+    end
+
+    let(:types) { { grant_types_supported: "#{expected_oauth_url}#{grant_types_supported}" } }
+
+    let(:methods) { { code_challenge_methods_supported: code_challenge_methods_supported.to_s } }
+
+    let(:expected_data) do
+      {
+        end_points:,
+        types:,
+        methods:
       }
     end
 

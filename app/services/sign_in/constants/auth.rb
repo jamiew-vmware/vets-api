@@ -20,23 +20,23 @@ module SignIn
                           LOGIN_GOV_IAL2 = 'http://idmanagement.gov/ns/assurance/ial/2'].freeze
       ANTI_CSRF_COOKIE_NAME = 'vagov_anti_csrf_token'
       AUTHENTICATION_TYPES = [COOKIE = 'cookie', API = 'api', MOCK = 'mock'].freeze
+      AUTHORIZATION_ROUTE_PATH = '/v0/sign_in/authorize'
       BROKER_CODE = 'sis'
       CLIENT_STATE_MINIMUM_LENGTH = 22
       CODE_CHALLENGE_METHOD = 'S256'
       CSP_TYPES = [IDME = 'idme', LOGINGOV = 'logingov', DSLOGON = 'dslogon', MHV = 'mhv'].freeze
+      END_SESSION_ROUTE_PATH = '/v0/sign_in/logout'
       GRANT_TYPE = 'authorization_code'
       IAL = [IAL_ONE = 1, IAL_TWO = 2].freeze
       INFO_COOKIE_NAME = 'vagov_info_token'
+      INTROSPECTION_ROUTE_PATH = '/v0/sign_in/introspect'
       JWT_ENCODE_ALGORITHM = 'RS256'
       LOA = [LOA_ONE = 1, LOA_THREE = 3].freeze
-      AUTHORIZATION_ENDPOINT = '/v0/sign_in/authorize'
-      TOKEN_ENDPOINT = '/v0/sign_in/token'
       REFRESH_ROUTE_PATH = '/v0/sign_in/refresh'
-      INTROSPECTION_ENDPOINT = '/v0/sign_in/introspect'
-      END_SESSION_ENDPOINT = '/v0/sign_in/logout'
-      TOKEN_REVOCATION_INDIVIDUAL_ENDPOINT = '/v0/sign_in/revoke'
-      REVOCATION_ENDPOINT = '/v0/sign_in/revoke_all'
       REFRESH_TOKEN_COOKIE_NAME = 'vagov_refresh_token'
+      REVOCATION_ROUTE_PATH = '/v0/sign_in/revoke_all'
+      TOKEN_ROUTE_PATH = '/v0/sign_in/token'
+      TOKEN_REVOCATION_INDIVIDUAL_ROUTE_PATH = '/v0/sign_in/revoke'
     end
   end
 end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'sign_in/logger'
-require 'sign_in/well_known'
 
 module V0
   class SignInController < SignIn::ApplicationController
@@ -229,8 +228,8 @@ module V0
     end
 
     def openid_configuration
-      well_known = SignIn::WellKnown.new
-      render json: well_known.openid_data
+      well_known = SignIn::WellKnown::Generator.new
+      render json: well_known.perform
     end
 
     private
