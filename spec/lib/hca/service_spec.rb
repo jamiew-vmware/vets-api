@@ -80,6 +80,13 @@ describe HCA::Service do
       end
     end
 
+    it 'f' do
+      form = get_fixture('hca/medicare_claim_num')
+
+      result = HCA::Service.new.submit_form(form)
+      binding.pry; fail
+    end
+
     context 'with a medicare claim number' do
       it 'submits successfully to hca', run_at: 'Wed, 27 Jul 2022 23:54:25 GMT' do
         VCR.use_cassette(
