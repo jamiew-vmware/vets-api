@@ -25,6 +25,8 @@ include IntentToFileProvider
     # transform(data)
   end
 
+  private
+
   def transform(data)
     DisabilityCompensation::ApiProvider::IntentToFilesResponse.new(
       intent_to_file: [

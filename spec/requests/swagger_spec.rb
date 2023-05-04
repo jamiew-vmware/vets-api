@@ -1124,7 +1124,6 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
           expect(subject).to validate(
             :get,
             '/v0/intent_to_file/{type}/active',
-            # GET https://sandbox-api.va.gov/services/claims/v2/veterans/fake_icn/intent-to-file/compensation
             200,
             headers.update('type' => 'compensation')
           )
