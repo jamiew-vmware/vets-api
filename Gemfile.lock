@@ -198,6 +198,16 @@ PATH
     veteran_verification (0.0.1)
 
 GEM
+  remote: https://enterprise.contribsys.com/
+  specs:
+    sidekiq-ent (2.5.3)
+      einhorn (>= 0.7.4)
+      sidekiq (>= 6.5.0, < 7)
+      sidekiq-pro (>= 5.5.0, < 6)
+    sidekiq-pro (5.5.8)
+      sidekiq (~> 6.0, >= 6.5.6)
+
+GEM
   remote: https://rubygems.org/
   specs:
     Ascii85 (1.1.0)
@@ -377,6 +387,7 @@ GEM
       zeitwerk (~> 2.6)
     ecma-re-validator (0.4.0)
       regexp_parser (~> 2.2)
+    einhorn (1.0.0)
     erubi (1.12.0)
     et-orbi (1.2.7)
       tzinfo
@@ -1168,6 +1179,8 @@ DEPENDENCIES
   sentry-raven
   shrine
   sidekiq (>= 6.4.0)
+  sidekiq-ent!
+  sidekiq-pro!
   sidekiq-scheduler
   sidekiq_alive
   simplecov
