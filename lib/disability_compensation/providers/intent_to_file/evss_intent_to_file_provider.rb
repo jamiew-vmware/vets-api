@@ -10,7 +10,7 @@ class EvssIntentToFileProvider
     @service = EVSS::IntentToFile::Service.new(current_user)
   end
 
-  def get_intent_to_file
+  def get_intent_to_file(_type, _client_id, _rsa_key_path)
     @service.get_intent_to_file
   end
 
