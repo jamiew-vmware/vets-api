@@ -34,7 +34,7 @@ module DirectDeposit
     private
 
     def request_body(params)
-      params.delete('financial_institution_name') if params['financial_institution_name'].blank?
+      params.delete('financial_institution_name') if params.respond_to?(:financial_institution_name) && ['financial_institution_name'].blank?
       {
         'paymentAccount' =>
         {
