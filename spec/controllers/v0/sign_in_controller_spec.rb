@@ -2280,17 +2280,11 @@ RSpec.describe V0::SignInController, type: :controller do
       }
     end
 
-    let(:types) { { grant_types_supported: "#{expected_oauth_url}#{grant_types_supported}" } }
+    let(:types) { { grant_types_supported: grant_types_supported.to_s } }
 
     let(:methods) { { code_challenge_methods_supported: code_challenge_methods_supported.to_s } }
 
-    let(:expected_data) do
-      {
-        end_points:,
-        types:,
-        methods:
-      }
-    end
+    let(:expected_data) { end_points.merge(types).merge(methods) }
 
     it 'returns the expected openid_configuration data' do
       expect(subject.body).to eq(expected_data.to_json)

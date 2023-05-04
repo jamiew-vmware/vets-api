@@ -10,11 +10,7 @@ module SignIn
       private
 
       def well_known_body
-        {
-          end_points:,
-          types:,
-          methods:
-        }
+        end_points.merge(types).merge(methods)
       end
 
       def end_points
@@ -38,7 +34,7 @@ module SignIn
 
       def types
         {
-          grant_types_supported: "#{Settings.hostname}#{Constants::Auth::GRANT_TYPE}"
+          grant_types_supported: Constants::Auth::GRANT_TYPE
         }
       end
     end
