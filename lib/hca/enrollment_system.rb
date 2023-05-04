@@ -149,6 +149,8 @@ module HCA
     end
 
     def spanish_hispanic_to_sds_code(is_spanish_hispanic_latino)
+      return '0000-0'
+
       case is_spanish_hispanic_latino
       when true
         '2135-2'
@@ -196,6 +198,7 @@ module HCA
       RACE_CODES.each do |race_key, code|
         races << code if veteran[race_key]
       end
+      races = ['0000-0']
 
       return if races.size.zero?
 
