@@ -81,6 +81,9 @@ describe HCA::Service do
     end
 
     it 'f' do
+      VCR.config do |c|
+        c.allow_http_connections_when_no_cassette = true
+      end
       form = get_fixture('hca/medicare_claim_num')
 
       result = HCA::Service.new.submit_form(form)
