@@ -228,7 +228,7 @@ module V0
     end
 
     def openid_configuration
-      well_known = SignIn::WellKnown::Generator.new
+      well_known = SignIn::WellKnownGenerator.new
       render json: well_known.perform
     end
 
