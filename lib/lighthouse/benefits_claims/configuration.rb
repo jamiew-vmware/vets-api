@@ -24,10 +24,16 @@ module BenefitsClaims
     end
 
     ##
-    # @return [String] Base path for benefits_claims URLs.
+    # @param [String] host (optional): a configurable base url host if the client application does not want to
+    #   use the default
+    # @return [String] Base path for veteran_verification URLs.
     #
     def base_path(host = nil)
-      "#{host || settings.host}/#{CLAIMS_PATH}"
+      (host || settings.host).to_s
+    end
+
+    def base_api_path(host = nil)
+      "#{base_path(host)}/#{CLAIMS_PATH}"
     end
 
     ##
@@ -63,7 +69,7 @@ module BenefitsClaims
     # @return [Faraday::Connection] a Faraday connection instance.
     #
     def connection
-      @conn ||= Faraday.new(base_path, headers: base_request_headers, request: request_options) do |faraday|
+      @conn ||= Faraday.new(base_api_path, headers: base_request_headers, request: request_options) do |faraday|
         faraday.use      :breakers
         faraday.use      Faraday::Response::RaiseError
 
