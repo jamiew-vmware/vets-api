@@ -32,12 +32,12 @@ include IntentToFileProvider
       intent_to_file: [
         DisabilityCompensation::ApiProvider::IntentToFile.new(
           id: data['id'],
-          creation_date: data['creationDate'],
-          expiration_date: data['expirationDate'],
-          source: nil,
-          participant_id: nil,
-          status: data['status'],
-          type: data['type']
+          creation_date: data['attributes']['creationDate'],
+          expiration_date: data['attributes']['expirationDate'],
+          source: "",
+          participant_id: 0,
+          status: data['attributes']['status'],
+          type: data['attributes']['type']
         )
       ]
     ) 

@@ -5,7 +5,7 @@ require 'lighthouse/benefits_claims/service'
 
 RSpec.describe BenefitsClaims::Service do
   before(:all) do
-    @service = BenefitsClaims::Service.new('fake_icn')
+    @service = BenefitsClaims::Service.new('123498767V234859')
   end
 
   describe 'making requests' do
