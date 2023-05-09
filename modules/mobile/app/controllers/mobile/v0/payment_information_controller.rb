@@ -11,9 +11,12 @@ module Mobile
       include Mobile::Concerns::SSOLogging
 
       before_action { authorize :evss, :access? unless lighthouse? }
-      before_action { authorize :ppiu, :access? }
+      before_action { authorize :ppiu, :access? unless lighthouse? }
+      before_action { authorize :lighthouse, :access? if lighthouse? }
       before_action :validate_pay_info, only: :update
+
       before_action(only: :update) { authorize(:ppiu, :access_update?) unless lighthouse? }
+      before_action(only: :update) { authorize(:lighthouse, :access_update?) if lighthouse? }
       after_action(only: :update) { evss_proxy.send_confirmation_email unless lighthouse? }
 
       def index
@@ -58,8 +61,7 @@ module Mobile
         params[:routing_number] = params[:financial_institution_routing_number]
         params.permit(:account_type,
                       :account_number,
-                      :routing_number
-        )
+                      :routing_number)
       end
 
       def pay_info

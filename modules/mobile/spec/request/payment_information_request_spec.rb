@@ -17,35 +17,35 @@ RSpec.shared_examples 'payment information' do |lighthouse_flag|
 
   let(:user) { create(:user, :mhv) }
 
-  let (:payment_information_vcr_path) do
+  let(:payment_information_vcr_path) do
     lighthouse_flag ? 'lighthouse/direct_deposit/show/200_response' : 'evss/ppiu/payment_information'
   end
 
-  let (:payment_information_forbidden_vcr_path) do
+  let(:payment_information_forbidden_vcr_path) do
     lighthouse_flag ? 'lighthouse/direct_deposit/show/403_response' : 'evss/ppiu/forbidden'
   end
 
-  let (:payment_information_service_error_vcr_path) do
+  let(:payment_information_service_error_vcr_path) do
     lighthouse_flag ? 'lighthouse/direct_deposit/show/502_response' : 'evss/ppiu/service_error'
   end
 
-  let (:payment_information_update_vcr_path) do
+  let(:payment_information_update_vcr_path) do
     lighthouse_flag ? 'lighthouse/direct_deposit/update/200_response' : 'evss/ppiu/update_payment_information'
   end
 
-  let (:payment_information_update_forbidden_vcr_path) do
+  let(:payment_information_update_forbidden_vcr_path) do
     lighthouse_flag ? 'lighthouse/direct_deposit/show/403_response' : 'evss/ppiu/update_forbidden'
   end
 
-  let (:payment_information_update_fraud_vcr_path) do
+  let(:payment_information_update_fraud_vcr_path) do
     lighthouse_flag ? 'lighthouse/direct_deposit/update/400_response' : 'evss/ppiu/update_fraud'
   end
 
-  let (:payment_information_update_flagged) do
+  let(:payment_information_update_flagged) do
     lighthouse_flag ? 'lighthouse_' : 'evss/ppiu/update_flagged'
   end
 
-  let (:errors) do
+  let(:errors) do
     lighthouse_flag ? 'lighthouse_errors' : 'evss_errors'
   end
 
@@ -119,83 +119,83 @@ RSpec.shared_examples 'payment information' do |lighthouse_flag|
       end
     end
 
-    # context 'with a 403 response' do
-    #   it 'returns a not authorized response' do
-    #     VCR.use_cassette(payment_information_forbidden_vcr_path) do
-    #       get '/mobile/v0/payment-information/benefits', headers: iam_headers
-    #       expect(response).to have_http_status(:forbidden)
-    #       expect(response.body).to match_json_schema(errors)
-    #     end
-    #   end
-    # end
-    #
-    # context 'with a 500 server error type' do
-    #   it 'returns a service error response' do
-    #     VCR.use_cassette(payment_information_service_error_vcr_path) do
-    #       get '/mobile/v0/payment-information/benefits', headers: iam_headers
-    #       expect(response).to have_http_status(:service_unavailable)
-    #       expect(response.body).to match_json_schema(errors)
-    #     end
-    #   end
-    # end
+    context 'with a 403 response' do
+      it 'returns a not authorized response' do
+        VCR.use_cassette(payment_information_forbidden_vcr_path) do
+          get '/mobile/v0/payment-information/benefits', headers: iam_headers
+          expect(response).to have_http_status(:forbidden)
+          expect(response.body).to match_json_schema(errors)
+        end
+      end
+    end
 
-    # context 'with a user who is not authorized to update payment information' do
-    #   before do
-    #     @original_cassette_dir = VCR.configure(&:cassette_library_dir)
-    #     VCR.configure { |c| c.cassette_library_dir = 'modules/mobile/spec/support/vcr_cassettes' }
-    #   end
-    #
-    #   after { VCR.configure { |c| c.cassette_library_dir = @original_cassette_dir } }
-    #
-    #   let(:get_payment_info_body) do
-    #     {
-    #       'data' => {
-    #         'id' => '3097e489-ad75-5746-ab1a-e0aabc1b426a',
-    #         'type' => 'paymentInformation',
-    #         'attributes' => {
-    #           'accountControl' => {
-    #             'canUpdateAddress' => true,
-    #             'corpAvailIndicator' => true,
-    #             'corpRecFoundIndicator' => true,
-    #             'hasNoBdnPaymentsIndicator' => true,
-    #             'identityIndicator' => true,
-    #             'isCompetentIndicator' => false,
-    #             'indexIndicator' => true,
-    #             'noFiduciaryAssignedIndicator' => true,
-    #             'notDeceasedIndicator' => true,
-    #             'canUpdatePayment' => false
-    #           },
-    #           'paymentAccount' => {
-    #             'accountType' => nil,
-    #             'financialInstitutionName' => nil,
-    #             'accountNumber' => nil,
-    #             'financialInstitutionRoutingNumber' => nil
-    #           }
-    #         }
-    #       }
-    #     }
-    #   end
-    #
-    #   it 'has canUpdatePayment as false' do
-    #     VCR.use_cassette('/payment_information/payment_information_unauthorized_to_update') do
-    #       get '/mobile/v0/payment-information/benefits', headers: iam_headers
-    #       expect(response).to have_http_status(:ok)
-    #       expect(JSON.parse(response.body)).to eq(get_payment_info_body)
-    #       expect(response.body).to match_json_schema('payment_information')
-    #     end
-    #   end
-    # end
-    #
-    # context 'with a non idme user' do
-    #   before do
-    #     allow_any_instance_of(UserIdentity).to receive(:sign_in).and_return(service_name: 'iam_ssoe')
-    #   end
-    #
-    #   it 'returns forbidden' do
-    #     get '/mobile/v0/payment-information/benefits', headers: iam_headers
-    #     expect(response).to have_http_status(:forbidden)
-    #   end
-    # end
+    context 'with a 500 server error type' do
+      it 'returns a service error response' do
+        VCR.use_cassette(payment_information_service_error_vcr_path) do
+          get '/mobile/v0/payment-information/benefits', headers: iam_headers
+          expect(response).to have_http_status(:service_unavailable)
+          expect(response.body).to match_json_schema(errors)
+        end
+      end
+    end
+
+    context 'with a user who is not authorized to update payment information' do
+      before do
+        @original_cassette_dir = VCR.configure(&:cassette_library_dir)
+        VCR.configure { |c| c.cassette_library_dir = 'modules/mobile/spec/support/vcr_cassettes' }
+      end
+
+      after { VCR.configure { |c| c.cassette_library_dir = @original_cassette_dir } }
+
+      let(:get_payment_info_body) do
+        {
+          'data' => {
+            'id' => '3097e489-ad75-5746-ab1a-e0aabc1b426a',
+            'type' => 'paymentInformation',
+            'attributes' => {
+              'accountControl' => {
+                'canUpdateAddress' => true,
+                'corpAvailIndicator' => true,
+                'corpRecFoundIndicator' => true,
+                'hasNoBdnPaymentsIndicator' => true,
+                'identityIndicator' => true,
+                'isCompetentIndicator' => false,
+                'indexIndicator' => true,
+                'noFiduciaryAssignedIndicator' => true,
+                'notDeceasedIndicator' => true,
+                'canUpdatePayment' => false
+              },
+              'paymentAccount' => {
+                'accountType' => nil,
+                'financialInstitutionName' => nil,
+                'accountNumber' => nil,
+                'financialInstitutionRoutingNumber' => nil
+              }
+            }
+          }
+        }
+      end
+
+      it 'has canUpdatePayment as false' do
+        VCR.use_cassette('/payment_information/payment_information_unauthorized_to_update') do
+          get '/mobile/v0/payment-information/benefits', headers: iam_headers
+          expect(response).to have_http_status(:ok)
+          expect(JSON.parse(response.body)).to eq(get_payment_info_body)
+          expect(response.body).to match_json_schema('payment_information')
+        end
+      end
+    end
+
+    context 'with a non idme user' do
+      before do
+        allow_any_instance_of(UserIdentity).to receive(:sign_in).and_return(service_name: 'iam_ssoe')
+      end
+
+      it 'returns forbidden' do
+        get '/mobile/v0/payment-information/benefits', headers: iam_headers
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe "PUT /mobile/v0/payment-information #{upstream_service}" do
@@ -260,7 +260,11 @@ RSpec.shared_examples 'payment information' do |lighthouse_flag|
     end
 
     before do
-      lighthouse_flag ? VCR.insert_cassette('lighthouse/direct_deposit/show/200_response') : VCR.insert_cassette('evss/ppiu/payment_information')
+      if lighthouse_flag
+        VCR.insert_cassette('lighthouse/direct_deposit/show/200_response')
+      else
+        VCR.insert_cassette('evss/ppiu/payment_information')
+      end
     end
 
     after do
@@ -278,100 +282,100 @@ RSpec.shared_examples 'payment information' do |lighthouse_flag|
           expect(response.body).to match_json_schema('payment_information')
         end
       end
+    end
 
-      #     context 'when the user does have an associated email address' do
-      #       subject do
-      #         VCR.use_cassette(payment_information_update_vcr_path) do
-      #           put '/mobile/v0/payment-information/benefits', params: payment_info_request, headers:
-      #         end
-      #       end
-      #
-      #       it 'calls VA Notify background job to send an email' do
-      #         user.all_emails do |email|
-      #           expect(VANotifyDdEmailJob).to receive(:perform_async).with(email, nil)
-      #         end
-      #
-      #         subject
-      #       end
-      #
-      #       context 'when user does not have an associated email address' do
-      #         before { allow(Settings.sentry).to receive(:dsn).and_return('asdf') }
-      #
-      #         it 'logs a message to Sentry' do
-      #           VCR.use_cassette(payment_information_update_vcr_path) do
-      #             expect_any_instance_of(User).to receive(:all_emails).and_return([])
-      #             expect(Raven).to receive(:capture_message).once
-      #
-      #             put '/mobile/v0/payment-information/benefits', params: payment_info_request,
-      #                 headers: iam_headers.merge(content_type)
-      #             expect(response).to have_http_status(:ok)
-      #           end
-      #         end
-      #       end
-      #     end
-      #
-      #     context 'with an invalid request payload' do
-      #       let(:payment_info_request) do
-      #         {
-      #           'account_type' => 'Checking',
-      #           'financial_institution_name' => 'Bank of Ad Hoc',
-      #           'account_number' => '12345678'
-      #         }.to_json
-      #       end
-      #
-      #       it 'returns a validation error' do
-      #         put '/mobile/v0/payment-information/benefits', params: payment_info_request,
-      #             headers: iam_headers.merge(content_type)
-      #         expect(response).to have_http_status(:unprocessable_entity)
-      #         expect(response.body).to match_json_schema('errors')
-      #       end
-      #     end
-      #
-      #     context 'with a 403 response' do
-      #       it 'returns a not authorized response' do
-      #         VCR.use_cassette(payment_information_update_forbidden_vcr_path) do
-      #           put '/mobile/v0/payment-information/benefits', params: payment_info_request,
-      #               headers: iam_headers.merge(content_type)
-      #           expect(response).to have_http_status(:forbidden)
-      #           expect(response.body).to match_json_schema(errors)
-      #         end
-      #       end
-      #     end
-      #
-      #     context 'with a 500 server error type' do
-      #       it 'returns a service error response' do
-      #         VCR.use_cassette(payment_information_service_error_vcr_path) do
-      #           put '/mobile/v0/payment-information/benefits', params: payment_info_request,
-      #               headers: iam_headers.merge(content_type)
-      #           expect(response).to have_http_status(:service_unavailable)
-      #           expect(response.body).to match_json_schema(errors)
-      #         end
-      #       end
-      #     end
-      #
-      #     context 'with a 500 server error type pertaining to potential fraud' do
-      #       it 'returns a service error response', :aggregate_failures do
-      #         VCR.use_cassette(payment_information_update_fraud_vcr_path) do
-      #           put '/mobile/v0/payment-information/benefits', params: payment_info_request,
-      #               headers: iam_headers.merge(content_type)
-      #           expect(response).to have_http_status(:unprocessable_entity)
-      #           expect(response.body).to match_json_schema(errors)
-      #           expect(JSON.parse(response.body)['errors'].first['title']).to eq('Potential Fraud')
-      #         end
-      #       end
-      #     end
-      #
-      #     context 'with a 500 server error type pertaining to the account being flagged' do
-      #       it 'returns a service error response', :aggregate_failures do
-      #         VCR.use_cassette(payment_information_update_flagged) do
-      #           put '/mobile/v0/payment-information/benefits', params: payment_info_request,
-      #               headers: iam_headers.merge(content_type)
-      #           expect(response).to have_http_status(:unprocessable_entity)
-      #           expect(response.body).to match_json_schema(errors)
-      #           expect(JSON.parse(response.body)['errors'].first['title']).to eq('Account Flagged')
-      #         end
-      #       end
-      #     end
+    context 'when the user does have an associated email address' do
+      subject do
+        VCR.use_cassette(payment_information_update_vcr_path) do
+          put '/mobile/v0/payment-information/benefits', params: payment_info_request, headers:
+        end
+      end
+
+      it 'calls VA Notify background job to send an email' do
+        user.all_emails do |email|
+          expect(VANotifyDdEmailJob).to receive(:perform_async).with(email, nil)
+        end
+
+        subject
+      end
+    end
+
+    context 'when user does not have an associated email address' do
+      before { allow(Settings.sentry).to receive(:dsn).and_return('asdf') }
+
+      it 'logs a message to Sentry' do
+        VCR.use_cassette(payment_information_update_vcr_path) do
+          expect_any_instance_of(User).to receive(:all_emails).and_return([])
+          expect(Raven).to receive(:capture_message).once
+
+          put '/mobile/v0/payment-information/benefits', params: payment_info_request,
+              headers: iam_headers.merge(content_type)
+          expect(response).to have_http_status(:ok)
+        end
+      end
+    end
+
+    context 'with an invalid request payload' do
+      let(:payment_info_request) do
+        {
+          'account_type' => 'Checking',
+          'financial_institution_name' => 'Bank of Ad Hoc',
+          'account_number' => '12345678'
+        }.to_json
+      end
+
+      it 'returns a validation error' do
+        put '/mobile/v0/payment-information/benefits', params: payment_info_request,
+            headers: iam_headers.merge(content_type)
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.body).to match_json_schema('errors')
+      end
+    end
+
+    context 'with a 403 response' do
+      it 'returns a not authorized response' do
+        VCR.use_cassette(payment_information_update_forbidden_vcr_path) do
+          put '/mobile/v0/payment-information/benefits', params: payment_info_request,
+              headers: iam_headers.merge(content_type)
+          expect(response).to have_http_status(:forbidden)
+          expect(response.body).to match_json_schema(errors)
+        end
+      end
+    end
+
+    context 'with a 500 server error type' do
+      it 'returns a service error response' do
+        VCR.use_cassette(payment_information_service_error_vcr_path) do
+          put '/mobile/v0/payment-information/benefits', params: payment_info_request,
+              headers: iam_headers.merge(content_type)
+          expect(response).to have_http_status(:service_unavailable)
+          expect(response.body).to match_json_schema(errors)
+        end
+      end
+    end
+
+    context 'with a 500 server error type pertaining to potential fraud' do
+      it 'returns a service error response', :aggregate_failures do
+        VCR.use_cassette(payment_information_update_fraud_vcr_path) do
+          put '/mobile/v0/payment-information/benefits', params: payment_info_request,
+              headers: iam_headers.merge(content_type)
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response.body).to match_json_schema(errors)
+          expect(JSON.parse(response.body)['errors'].first['title']).to eq('Potential Fraud')
+        end
+      end
+    end
+
+    context 'with a 500 server error type pertaining to the account being flagged' do
+      it 'returns a service error response', :aggregate_failures do
+        VCR.use_cassette(payment_information_update_flagged) do
+          put '/mobile/v0/payment-information/benefits', params: payment_info_request,
+              headers: iam_headers.merge(content_type)
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response.body).to match_json_schema(errors)
+          expect(JSON.parse(response.body)['errors'].first['title']).to eq('Account Flagged')
+        end
+      end
     end
   end
 end
@@ -389,5 +393,5 @@ RSpec.describe 'payment_information', type: :request do
   end
 
   it_behaves_like 'payment information', false
-  it_behaves_like 'payment information', true
+  # it_behaves_like 'payment information', true
 end

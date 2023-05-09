@@ -6,9 +6,9 @@ module Mobile
       class LighthouseDirectDeposit
         def parse(direct_deposit_info)
           JSON.parse({
-                       control_information: parse_control_information(direct_deposit_info.control_information),
-                       payment_account: parse_payment_account(direct_deposit_info.payment_account)
-                     }.to_json,
+            control_information: parse_control_information(direct_deposit_info.control_information),
+            payment_account: parse_payment_account(direct_deposit_info.payment_account)
+          }.to_json,
                      object_class: OpenStruct)
         end
 

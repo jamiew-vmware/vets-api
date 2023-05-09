@@ -11,6 +11,12 @@ LighthousePolicy = Struct.new(:user, :lighthouse) do
       user.icn.present? && user.participant_id.present?
   end
 
+  def access_update?
+    res = Mobile::V0::LighthouseDirectDeposit::Service.new(user.icn).get_payment_information
+
+    res.control_information.authorized?
+  end
+
   private
 
   def allowed_providers

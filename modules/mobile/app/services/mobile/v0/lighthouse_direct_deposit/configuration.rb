@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require Rails.root.join(*%w(lib lighthouse direct_deposit configuration))
+
+require Rails.root.join(*%w[lib lighthouse direct_deposit configuration])
 
 module Mobile
   module V0
@@ -7,7 +8,6 @@ module Mobile
       # Configuration for the Mobile::V0::LighthouseDirectDeposit::Service
       #
       class Configuration < ::DirectDeposit::Configuration
-
         def service_name
           'MOBILE_LIGHTHOUSE_DIRECT_DEPOSIT'
         end

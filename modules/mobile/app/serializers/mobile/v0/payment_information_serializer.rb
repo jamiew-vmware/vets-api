@@ -9,7 +9,11 @@ module Mobile
       attributes :account_control, :payment_account
 
       def initialize(id, payment_account, account_control, options = {})
-        account_control = account_control.to_h.merge(can_update_payment: account_control.try(:can_update_payment) || account_control.authorized?)
+        if Flipper.enabled?(:mobile_lighthouse_direct_deposit)
+          account_control = account_control.to_h
+        else
+          account_control = account_control.to_h.merge(can_update_payment: account_control.authorized?)
+        end
         payment_account&.account_number = StringHelpers.mask_sensitive(payment_account&.account_number)
         resource = PaymentInformationStruct.new(id, payment_account.to_h, account_control)
         super(resource, options)
