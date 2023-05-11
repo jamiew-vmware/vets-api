@@ -19,14 +19,11 @@ module Lighthouse
       '401': Common::Exceptions::Unauthorized,
       '400': Common::Exceptions::BadRequest
     }.freeze
-    
+
     # sends error logs to sentry that contains the client id and url that the consumer was trying call
     # raises an error based off of what the response status was
     # formats the Lighthouse exception for the controller ExceptionHandling to report out to the consumer
     def self.send_error(error, service_name, lighthouse_client_id, url)
-      # binding.pry if error.response[:status] == '404'
-      puts error.response[:status]
-      puts '#' * 100
       error_response = error.response
       return error unless error_response&.key?(:status)
 
@@ -37,6 +34,7 @@ module Lighthouse
       errors = get_errors_from_response(error, error_status)
 
       error_status_sym = error_status.to_s.to_sym
+
       raise error_class(error_status_sym).new(errors:)
     end
 
