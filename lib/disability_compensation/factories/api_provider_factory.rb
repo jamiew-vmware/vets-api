@@ -45,7 +45,7 @@ class ApiProviderFactory
 
     case api_provider
     when API_PROVIDER[:evss]
-      EvssIntentToFileProvider.new(current_user)
+      EvssIntentToFileProvider.new(current_user, nil)
     when API_PROVIDER[:lighthouse]
       LighthouseIntentToFileProvider.new(current_user)
     else

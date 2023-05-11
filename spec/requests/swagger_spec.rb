@@ -1120,7 +1120,7 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
 
       it 'supports getting an active compensation intent to file' do
         expect(subject).to validate(:get, '/v0/intent_to_file/{type}/active', 401, 'type' => 'compensation')
-        VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
+        VCR.use_cassette('evss/intent_to_file/active_compensation') do
           expect(subject).to validate(
             :get,
             '/v0/intent_to_file/{type}/active',
