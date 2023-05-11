@@ -27,7 +27,7 @@ RSpec.describe EvssIntentToFileProvider do
 
   it 'retrieves intent to file from the EVSS API' do
     VCR.use_cassette('evss/intent_to_file/intent_to_file') do
-      provider = EvssIntentToFileProvider.new(auth_headers)
+      provider = EvssIntentToFileProvider.new(nil, auth_headers)
       response = provider.get_intent_to_file('compensation', '', '')
       expect(response['intent_to_file'].length).to eq(5)
     end
@@ -38,7 +38,7 @@ RSpec.describe EvssIntentToFileProvider do
       receive(:perform).and_raise(Common::Client::Errors::ClientError)
     )
     expect do
-      provider = EvssIntentToFileProvider.new(auth_headers)
+      provider = EvssIntentToFileProvider.new(nil, auth_headers)
       provider.get_intent_to_file('compensation', '', '')
     end.to raise_error Common::Exceptions::BackendServiceException
   end
