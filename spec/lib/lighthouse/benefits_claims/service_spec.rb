@@ -21,7 +21,7 @@ RSpec.describe BenefitsClaims::Service do
               launch: Base64.encode64(JSON.generate({ patient: '123498767V234859' }, space: ' '))
             }
             response = @service.get_intent_to_file('compensation', '', { auth_params: })
-            expect(response['data']['id']).to eq('12303')
+            expect(response['data']['id']).to eq('193685')
           end
         end
       end
