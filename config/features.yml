@@ -29,10 +29,6 @@ features:
   caregiver_use_facilities_API:
     actor_type: user
     description: Allow list of caregiver facilites to be fetched by way of the Facilities API.
-  hca_american_indian_enabled:
-    actor_type: user
-    description: Enables American Indian SIGI question page.
-    enable_in_development: true
   hca_browser_monitoring_enabled:
     actor_type: user
     description: Enables browser monitoring for the health care application.
@@ -377,6 +373,10 @@ features:
   form264555:
     actor_type: user
     description: If enabled shows the digital form experience for form 26-4555
+  form_confirmation_edu_auth_user:
+    actor_type: user
+    description: Skips sending confirmation emails to authenticated users
+    enable_in_development: true
   fsr_confirmation_email:
     actor_type: user
     description: Enables notifications to be sent via email upon FSR submission
@@ -400,6 +400,14 @@ features:
   in_progress_form_reminder_age_param:
     actor_type: user
     description: Enable/disable in progress form reminder age param
+    enable_in_development: true
+  in_progress_1880_form_cron:
+    actor_type: user
+    description: Enable/disable scheduled cron for 1880 in progress form reminders (sent via VaNotify)
+    enable_in_development: true
+  in_progress_1880_form_reminder:
+    actor_type: user
+    description: Enable/disable 1880 in progress form reminders (sent via VaNotify)
     enable_in_development: true
   in_progress_form_reminder_1010ez:
     actor_type: user
@@ -519,6 +527,9 @@ features:
   profile_show_pronouns_and_sexual_orientation:
     actor_type: user
     description: Show/hide Pronouns and Sexual Orientation fields on profile page
+  profile_show_quick_submit_notification_setting:
+    actor_type: user
+    description: Show/Hide the quick submit section of notification settings in profile
   profile_use_experimental:
     description: "Use experimental features for Pofile application - Do not remove"
     enable_in_development: true
@@ -780,9 +791,9 @@ features:
   va_view_dependents_access:
     actor_type: user
     description: Allows us to gate the View/ Modify dependents content in a progressive rollout
-  vba_documents_skip_dimension_check:
+  vba_documents_larger_page_size_limit:
     actor_type: user
-    description: Allows Benefits Intake to accept any size of PDF, skipping the check for page dimensions
+    description: Allows Benefits Intake to accept PDFs up to 78x101 inches (instead of the default 21x21)
   yellow_ribbon_mvp_enhancement:
     actor_type: user
     description: Enhances Yellow Ribbon MVP.
@@ -842,6 +853,9 @@ features:
   mobile_lighthouse_letters:
     actor_type: user
     description: For mobile app, use Lighthouse instead of EVSS for our letters endpoints upstream service
+  mobile_lighthouse_claims:
+    actor_type: user
+    description: For mobile app, use Lighthouse instead of EVSS for our claims endpoints upstream service
   form526_backup_submission_temp_killswitch:
     actor_type: user
     description: Provide a temporary killswitch to disable form526 backup submission if something were to go awry
@@ -863,3 +877,6 @@ features:
   disability_compensation_lighthouse_intent_to_file_provider:
     actor_type: user
     description: If enabled uses the lighthouse intent to file endpoint
+  income_limits_new:
+    actor_type: user
+    description: If enabled, shows the newly designed income limits application

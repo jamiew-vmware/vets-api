@@ -29,6 +29,28 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
         allow(Settings).to receive(:vsp_environment).and_call_original
       end
 
+      it 'returns unknown status when most recent open appeal is of an unknown status' do
+        sign_in_as(user)
+        # run job
+
+        VCR.use_cassette('caseflow/virtual_agent_appeals/recent_open_unknown_appeal_status') do
+          get '/v0/virtual_agent/appeal'
+          res_body = JSON.parse(response.body)['data']
+          expect(response).to have_http_status(:ok)
+          expect(res_body).to be_kind_of(Array)
+          expect(JSON.parse(response.body)['data'].size).to equal(1)
+          expect(res_body[0]).to include({
+                                           'appeal_type' => 'Compensation',
+                                           'filing_date' => '06/11/2008',
+                                           'appeal_status' => 'Unknown Status',
+                                           'updated_date' => '01/16/2018',
+                                           'description' => ' ',
+                                           'appeal_or_review' => 'appeal'
+                                         })
+        end
+        allow(Settings).to receive(:vsp_environment).and_call_original
+      end
+
       it 'returns empty array when no appeals are found' do
         sign_in_as(user)
 
@@ -364,7 +386,7 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
           sign_in_as(user)
 
           # new cassette to use for lighthouse mock request
-          VCR.use_cassette('caseflow/virtual_agent_appeals/lighthouse_mock_no_appeals',
+          VCR.use_cassette('caseflow/virtual_agent_appeals/lighthouse_mock_no_appeals_another_user',
                            match_requests_on: [:headers]) do
             get '/v0/virtual_agent/appeal'
           end
@@ -373,6 +395,20 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
           expect(res_body).to be_kind_of(Array)
           expect(res_body.length).to equal(0)
           expect(res_body).to eq([])
+        end
+      end
+
+      describe 'when logged in with user that does not exist' do
+        let(:user) { create(:user, :loa3, ssn: '111222333', email: 'vets.gov.user+110@gmail.com') }
+
+        it 'returns not found but defaults to 500' do
+          sign_in_as(user)
+
+          # new cassette to use for lighthouse mock request
+          VCR.use_cassette('caseflow/virtual_agent_appeals/lighthouse_mock_not_found') do
+            get '/v0/virtual_agent/appeal'
+          end
+          expect(response).to have_http_status(:internal_server_error)
         end
       end
     end
@@ -384,7 +420,7 @@ RSpec.describe 'VirtualAgentAppeals', type: :request do
         VCR.use_cassette('caseflow/server_error') do
           get '/v0/virtual_agent/appeal'
 
-          expect(response).to have_http_status(:service_unavailable)
+          expect(response).to have_http_status(:internal_server_error)
         end
       end
     end
