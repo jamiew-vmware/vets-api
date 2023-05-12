@@ -5,6 +5,7 @@ module Accountable
   include SentryLogging
 
   MHV_MAPPED_CSID = 'myhealthevet'
+
   def update_account_login_stats(login_type)
     return unless account_login_stats.present? && login_type.in?(SAML::User::LOGIN_TYPES)
 

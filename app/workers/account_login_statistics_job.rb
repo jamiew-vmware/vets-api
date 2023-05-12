@@ -4,6 +4,7 @@ class AccountLoginStatisticsJob
   include Sidekiq::Worker
 
   MHV_MAPPED_CSID = 'myhealthevet'
+
   def perform
     total_stats.each do |metric, count|
       StatsD.gauge(metric, count)
