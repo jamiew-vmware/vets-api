@@ -54,10 +54,6 @@ module Common
       attributes = Oj.load(response)
       return nil if attributes.blank?
 
-      unless attributes.is_a?(Hash)
-        Rails.logger.info("response: #{response} - oj parsed attributes: #{attributes} redis_key: #{redis_key}")
-      end
-
       object = new(attributes, true)
       if object.valid?
         object
