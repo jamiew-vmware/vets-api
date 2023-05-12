@@ -17,8 +17,8 @@ module SignIn
         issuer: Settings.hostname,
         authorization_endpoint: "#{Settings.hostname}#{Constants::Auth::AUTHORIZATION_ROUTE_PATH}",
         token_endpoint: "#{Settings.hostname}#{Constants::Auth::TOKEN_ROUTE_PATH}",
-        token_refresh_endpoint: "#{Settings.hostname}#{Constants::Auth::REFRESH_ROUTE_PATH}",
-        introspection_endpoint: "#{Settings.hostname}#{Constants::Auth::INTROSPECTION_ROUTE_PATH}",
+        refresh_session_endpoint: "#{Settings.hostname}#{Constants::Auth::REFRESH_SESSION_ROUTE_PATH}",
+        userinfo_endpoint: "#{Settings.hostname}#{Constants::Auth::USERINFO_ROUTE_PATH}",
         end_session_endpoint: "#{Settings.hostname}#{Constants::Auth::END_SESSION_ROUTE_PATH}",
         token_revocation_individual_endpoint: "#{Settings.hostname}#{Constants::Auth::TOKEN_REVOCATION_INDIVIDUAL_ROUTE_PATH}", # rubocop:disable Layout/LineLength
         revocation_endpoint: "#{Settings.hostname}#{Constants::Auth::REVOCATION_ROUTE_PATH}"
@@ -33,7 +33,13 @@ module SignIn
 
     def types
       {
-        grant_types_supported: Constants::Auth::GRANT_TYPE
+        grant_types_supported: Constants::Auth::GRANT_TYPE,
+        response_types_supported: Constants::Auth::RESPONSE_TYPES_SUPPORTED,
+        scopes_supported: Constants::Auth::SCOPES_SUPPORTED,
+        acr_values_supported: Constants::Auth::ACR_VALUES,
+        subject_types_supported: Constants::Auth::SUBJECT_TYPES_SUPPORTED,
+        claims_supported: Constants::Auth::CLAIMS_SUPPORTED,
+        jwks_uri: Constants::Auth::JWKS_URI
       }
     end
   end

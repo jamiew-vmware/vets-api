@@ -20,23 +20,29 @@ module SignIn
                           LOGIN_GOV_IAL2 = 'http://idmanagement.gov/ns/assurance/ial/2'].freeze
       ANTI_CSRF_COOKIE_NAME = 'vagov_anti_csrf_token'
       AUTHENTICATION_TYPES = [COOKIE = 'cookie', API = 'api', MOCK = 'mock'].freeze
-      AUTHORIZATION_ROUTE_PATH = '/v0/sign_in/authorize'
+      AUTHORIZATION_ROUTE_PATH = 'https://api.va.gov/v0/sign_in/authorize'
       BROKER_CODE = 'sis'
+      CLAIMS_SUPPORTED = 'normal'
       CLIENT_STATE_MINIMUM_LENGTH = 22
       CODE_CHALLENGE_METHOD = 'S256'
       CSP_TYPES = [IDME = 'idme', LOGINGOV = 'logingov', DSLOGON = 'dslogon', MHV = 'mhv'].freeze
-      END_SESSION_ROUTE_PATH = '/v0/sign_in/logout'
+      END_SESSION_ROUTE_PATH = 'https://api.va.gov/v0/sign_in/logout'
       GRANT_TYPE = 'authorization_code'
       IAL = [IAL_ONE = 1, IAL_TWO = 2].freeze
+      ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED = 'RS256'
       INFO_COOKIE_NAME = 'vagov_info_token'
-      INTROSPECTION_ROUTE_PATH = '/v0/sign_in/introspect'
+      JWKS_URI = 'tester'
       JWT_ENCODE_ALGORITHM = 'RS256'
       LOA = [LOA_ONE = 1, LOA_THREE = 3].freeze
       REFRESH_ROUTE_PATH = '/v0/sign_in/refresh'
-      REFRESH_TOKEN_COOKIE_NAME = 'vagov_refresh_token'
-      REVOCATION_ROUTE_PATH = '/v0/sign_in/revoke_all'
-      TOKEN_ROUTE_PATH = '/v0/sign_in/token'
-      TOKEN_REVOCATION_INDIVIDUAL_ROUTE_PATH = '/v0/sign_in/revoke'
+      REFRESH_SESSION_ROUTE_PATH = 'https://api.va.gov/v0/sign_in/refresh'
+      RESPONSE_TYPES_SUPPORTED = 'code'
+      REVOCATION_ROUTE_PATH = 'https://api.va.gov/v0/sign_in/revoke_all'
+      SCOPES_SUPPORTED = 'tester'
+      TOKEN_ROUTE_PATH = 'https://api.va.gov/v0/sign_in/token'
+      SUBJECT_TYPES_SUPPORTED = 'public'
+      TOKEN_REVOCATION_INDIVIDUAL_ROUTE_PATH = 'https://api.va.gov/v0/sign_inrevoke'
+      USERINFO_ROUTE_PATH = 'https://api.va.gov/v0/sign_in/introspect'
     end
   end
 end

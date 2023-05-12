@@ -2259,28 +2259,46 @@ RSpec.describe V0::SignInController, type: :controller do
     let(:expected_oauth_url) { Settings.hostname }
     let(:authorization_endpoint) { SignIn::Constants::Auth::AUTHORIZATION_ROUTE_PATH }
     let(:token_endpoint) { SignIn::Constants::Auth::TOKEN_ROUTE_PATH }
-    let(:token_refresh_endpoint) { SignIn::Constants::Auth::REFRESH_ROUTE_PATH }
-    let(:introspection_endpoint) { SignIn::Constants::Auth::INTROSPECTION_ROUTE_PATH }
-    let(:end_session_endpoint)   { SignIn::Constants::Auth::END_SESSION_ROUTE_PATH }
+    let(:refresh_session_endpoint) { SignIn::Constants::Auth::REFRESH_SESSION_ROUTE_PATH }
+    let(:userinfo_endpoint) { SignIn::Constants::Auth::USERINFO_ROUTE_PATH }
+    let(:end_session_endpoint) { SignIn::Constants::Auth::END_SESSION_ROUTE_PATH }
     let(:token_revocation_individual_endpoint) { SignIn::Constants::Auth::TOKEN_REVOCATION_INDIVIDUAL_ROUTE_PATH }
     let(:revocation_endpoint) { SignIn::Constants::Auth::REVOCATION_ROUTE_PATH }
     let(:grant_types_supported) { SignIn::Constants::Auth::GRANT_TYPE }
     let(:code_challenge_methods_supported) { SignIn::Constants::Auth::CODE_CHALLENGE_METHOD }
+    let(:response_types_supported) { SignIn::Constants::Auth::RESPONSE_TYPES_SUPPORTED }
+    let(:scopes_supported) { SignIn::Constants::Auth::SCOPES_SUPPORTED }
+    let(:acr_values_supported) { SignIn::Constants::Auth::ACR_VALUES }
+    let(:subject_types_supported) { SignIn::Constants::Auth::SUBJECT_TYPES_SUPPORTED }
+    let(:id_token_signing_alg_values_supported) { SignIn::Constants::Auth::SUBJECT_TYPES_SUPPORTED }
+    let(:claims_supported) { SignIn::Constants::Auth::CLAIMS_SUPPORTED }
+    let(:jwks_uri) { SignIn::Constants::Auth::JWKS_URI }
 
     let(:end_points) do
       {
         issuer: expected_oauth_url,
         authorization_endpoint: "#{expected_oauth_url}#{authorization_endpoint}",
         token_endpoint: "#{expected_oauth_url}#{token_endpoint}",
-        token_refresh_endpoint: "#{expected_oauth_url}#{token_refresh_endpoint}",
-        introspection_endpoint: "#{expected_oauth_url}#{introspection_endpoint}",
+        refresh_session_endpoint: "#{expected_oauth_url}#{refresh_session_endpoint}",
+        userinfo_endpoint: "#{expected_oauth_url}#{userinfo_endpoint}",
         end_session_endpoint: "#{expected_oauth_url}#{end_session_endpoint}",
         token_revocation_individual_endpoint: "#{expected_oauth_url}#{token_revocation_individual_endpoint}",
         revocation_endpoint: "#{expected_oauth_url}#{revocation_endpoint}"
+
       }
     end
 
-    let(:types) { { grant_types_supported: grant_types_supported.to_s } }
+    let(:types) do
+      {
+        grant_types_supported: grant_types_supported.to_s,
+        response_types_supported: response_types_supported.to_s,
+        scopes_supported: scopes_supported.to_s,
+        acr_values_supported:,
+        subject_types_supported: subject_types_supported.to_s,
+        claims_supported: claims_supported.to_s,
+        jwks_uri: jwks_uri.to_s
+      }
+    end
 
     let(:methods) { { code_challenge_methods_supported: code_challenge_methods_supported.to_s } }
 
