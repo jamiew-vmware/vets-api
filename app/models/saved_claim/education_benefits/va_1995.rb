@@ -13,11 +13,8 @@ class SavedClaim::EducationBenefits::VA1995 < SavedClaim::EducationBenefits
     'transferOfEntitlement' => 'Transfer of Entitlement Program'
   }.freeze
 
-  def after_submit(user)
+  def after_submit(_user)
     return unless Flipper.enabled?(:form1995_confirmation_email)
-
-    # send to unauthenticated users only
-    return if user.present?
 
     parsed_form_data ||= JSON.parse(form)
     email = parsed_form_data['email']
