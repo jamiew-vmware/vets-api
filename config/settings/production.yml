@@ -1,2 +1,5 @@
 hca:
   ca: []
+
+dvp:
+  url: http://blue.staging-lab.lighthouse.va.gov/
