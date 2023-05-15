@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: get
-    uri: https://sandbox-api.va.gov/services/claims/v2/veterans/fake_icn/intent-to-file/compensation
+    uri: https://sandbox-api.va.gov/services/claims/v2/veterans/123498767V234859/intent-to-file/compensation
     body:
       encoding: US-ASCII
       string: ''
@@ -81,21 +81,16 @@ http_interactions:
     body:
       encoding: ASCII-8BIT
       string: '{
-  "data": {
-    "id": "12303",
-    "type": "intent_to_file",
-    "attributes": {
-      "combined_disability_rating": 100,
-      "combined_effective_date": "2018-03-27",
-      "legal_effective_date": "2018-03-27",
-      "attributes": {
-        "creationDate": "2021-03-16T19:15:21.000-05:00",
-        "expirationDate": "2022-03-16T19:15:20.000-05:00",
-        "type": "compensation",
-        "status": "active"
-      }
-    }
-  }
-}'
+        "data": {
+          "id": "193685",
+          "type": "intent_to_file",
+          "attributes": {
+            "creationDate": "2021-03-16T19:15:21.000-05:00",
+            "expirationDate": "2022-03-16T19:15:20.000-05:00",
+            "type": "compensation",
+            "status": "active"
+          }
+        }
+      }'
   recorded_at: Tue, 28 Feb 2023 21:02:39 GMT
 recorded_with: VCR 6.1.0

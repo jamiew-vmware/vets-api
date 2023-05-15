@@ -58,7 +58,6 @@ sign_in:
   auto_uplevel: true
   mock_auth_url: http://localhost:3000/mocked_authentication/profiles
   mock_redirect_uri: http://localhost:3000/v0/sign_in/callback
-  mock_credential_dir: '../vets-api-mockdata'
   mockdata_sync_api_key: ~
 
 lockbox:
@@ -176,6 +175,10 @@ edu:
       - david.rowley@accenturefederal.com
       - nick.barthelemy@accenturefederal.com
     staging_emails:
+  staging_spool_contents:
+    emails:
+      - noah.stern@va.gov
+      - gregg.puhala@dbitpro.com
 dependents:
   prefill: true
 
@@ -815,6 +818,7 @@ maintenance:
     evss: PZKWB6Y
     global: PLPSIB0
     idme: PVWB4R8
+    logingov: P2SHMM9
     mvi: PCIPVGJ
     mhv: PP2ZZ2V
     search: PRG8HJI
@@ -834,6 +838,7 @@ maintenance:
 betamocks:
   enabled: true
   recording: false
+  cache_dir: ~
   services_config: config/betamocks/services_config.yml
 
 # Settings for search
@@ -1034,7 +1039,8 @@ flipper:
     - florence.mccafferty@agile6.com # Florence McCafferty - Agile 6 - Authenticated Experience
     - berni.xiong@agile6.com # Berni Xiong - Agile 6 - Authenticated Experience
     - liz.lantz@adhocteam.us # Liz Lantz - Ad Hoc - Authenticated Experience
-
+    - john.woolschlager@va.gov # John Woolschlager - CivicActions - Check In Experience
+    
 bgs:
   application: ~
   client_station_id: ~
@@ -1255,6 +1261,7 @@ vanotify:
         form686c_reminder_email: fake_template_id
         form1010ez_reminder_email: fake_template_id
         in_progress_reminder_email_generic: fake_template_id
+        in_progress_1880_reminder_email: in_progress_1880_reminder_email_template_id
         covid_vaccine_registration: fake_template_id
         covid_vaccine_expanded_registration: fake_template_id
         direct_deposit_edu: edu_template_id
@@ -1271,6 +1278,7 @@ vanotify:
         vha_fsr_confirmation_email: fake_template_id
     check_in:
       api_key: fake_secret
+      sms_sender_id: fake_secret
       template_id:
         claim_submission_success_text: fake_template_id
         claim_submission_duplicate_text: fake_template_id

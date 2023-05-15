@@ -119,7 +119,9 @@ module VBADocuments
         errors = result.errors
 
         if errors.grep(/#{PDFValidator::FILE_SIZE_LIMIT_EXCEEDED_MSG}/).any?
-          raise VBADocuments::UploadError.new(code: 'DOC106', pdf_validator_options:)
+          code = 'DOC106'
+          detail = CentralMail::UploadError.default_message(code, pdf_validator_options)
+          raise VBADocuments::UploadError.new(code:, detail:, pdf_validator_options:)
         end
 
         if errors.grep(/#{PDFValidator::USER_PASSWORD_MSG}|#{PDFValidator::INVALID_PDF_MSG}/).any?
@@ -129,7 +131,9 @@ module VBADocuments
         end
 
         if errors.grep(/#{PDFValidator::PAGE_SIZE_LIMIT_EXCEEDED_MSG}/).any?
-          raise VBADocuments::UploadError.new(code: 'DOC108', pdf_validator_options:)
+          code = 'DOC108'
+          detail = CentralMail::UploadError.default_message(code, pdf_validator_options)
+          raise VBADocuments::UploadError.new(code:, detail:, pdf_validator_options:)
         end
       end
     end

@@ -21,7 +21,8 @@ module V0
 
       intent_to_file_service = ApiProviderFactory.intent_to_file_service_provider(@current_user)
       type = params['itf_type'] || 'compensation'
-      response = intent_to_file_service.get_intent_to_file(type, settings.access_token.client_id, settings.access_token.rsa_key)
+      response = intent_to_file_service.get_intent_to_file(type, settings.access_token.client_id,
+                                                           settings.access_token.rsa_key)
       render json: response,
              serializer: IntentToFileSerializer
     end
