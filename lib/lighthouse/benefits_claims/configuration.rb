@@ -112,7 +112,7 @@ module BenefitsClaims
     def token_service(lighthouse_client_id, lighthouse_rsa_key_path, aud_claim_url = nil, host = nil)
       host ||= base_path(host)
       url = "#{host}/#{TOKEN_PATH}"
-      aud_claim_url ||= settings.aud_claim_url
+      aud_claim_url ||= settings.access_token.aud_claim_url
 
       @token_service ||= Auth::ClientCredentials::Service.new(
         url, API_SCOPES, lighthouse_client_id, aud_claim_url, lighthouse_rsa_key_path
