@@ -18,8 +18,9 @@ module V0
 
     private
 
+    # TODO: Double check here, does the controller need a post abstraction?
     def service
-      @service ||= BenefitsClaims::Service.new(@current_user.icn)
+      @service ||= BenefitsClaims::Service.new(@current_user.icn) # , @current_user.ssn)
     end
 
     def settings
