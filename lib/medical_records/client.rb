@@ -47,13 +47,23 @@ module MedicalRecords
       fhir_client.search(FHIR::AllergyIntolerance, search: { parameters: { patient: patient_id } }).resource
     end
 
-    def get_clinical_note(note_id)
-      fhir_client.read(FHIR::DocumentReference, note_id).resource
-    end
-
     def list_clinical_notes(patient_id)
       fhir_client.search(FHIR::DocumentReference,
                          search: { parameters: { patient: patient_id, type: '83320-2,18842-5,11505-5' } }).resource
+    end
+
+    ##
+    # Return a DocumentReference, e.g.
+    # - a radiology report
+    # - a clinical note
+    #
+    def get_document_reference(diagnostic_report_id)
+      fhir_client.read(FHIR::DiagnosticReport, diagnostic_report_id).resource
+    end
+
+    def list_radiology(patient_id)
+      fhir_client.search(FHIR::DocumentReference,
+                         search: { parameters: { patient: patient_id, type: '18748-4' } }).resource
     end
   end
 end

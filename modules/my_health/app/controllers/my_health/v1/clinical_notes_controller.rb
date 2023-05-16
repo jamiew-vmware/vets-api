@@ -13,7 +13,7 @@ module MyHealth
 
       def show
         note_id = params[:id].try(:to_i)
-        resource = client.get_clinical_note(note_id)
+        resource = client.get_document_reference(note_id)
         raise Common::Exceptions::InternalServerError if resource.blank?
 
         render json: resource.to_json
