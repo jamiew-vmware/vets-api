@@ -9,6 +9,7 @@ require 'debt_management_center/workers/va_notify_email_job'
 require 'debt_management_center/vbs/request'
 require 'debt_management_center/sharepoint/request'
 require 'pdf_fill/filler'
+require 'sidekiq'
 require 'json'
 
 module DebtManagementCenter
@@ -48,11 +49,7 @@ module DebtManagementCenter
       with_monitoring_and_error_handling do
         form = add_personal_identification(form)
         validate_form_schema(form)
-        if Flipper.enabled?(:combined_financial_status_report, @user)
-          submit_combined_fsr(form)
-        else
-          submit_vba_fsr(form)
-        end
+        submit_combined_fsr(form)
       end
     end
 
@@ -79,6 +76,8 @@ module DebtManagementCenter
       end
       create_vha_fsr(form) if selected_vha_copays(form['selectedDebtsAndCopays']).present?
 
+      aggregate_fsr_reasons(form, form['selectedDebtsAndCopays'])
+
       {
         content: Base64.encode64(
           File.read(
@@ -95,10 +94,8 @@ module DebtManagementCenter
     def create_vba_fsr(form)
       debts = selected_vba_debts(form['selectedDebtsAndCopays'])
       if debts.present?
-        form['personalIdentification']['fsrReason'] = debts.map do |debt|
-          debt['resolutionOption']
-        end.uniq.join(', ')
         add_compromise_amounts(form, debts)
+        aggregate_fsr_reasons(form, debts)
       end
       submission = persist_form_submission(form, debts)
       submission.submit_to_vba
@@ -110,9 +107,7 @@ module DebtManagementCenter
       end
       submissions = []
       facility_copays.each do |facility_num, copays|
-        fsr_reason = copays.map { |copay| copay['resolutionOption'] }.uniq.join(', ')
         facility_form = form.deep_dup
-        facility_form['personalIdentification']['fsrReason'] = fsr_reason
         facility_form['facilityNum'] = facility_num
         facility_form['personalIdentification']['fileNumber'] = @user.ssn
         add_compromise_amounts(facility_form, copays)
@@ -180,6 +175,8 @@ module DebtManagementCenter
     end
 
     def submit_vha_batch_job(vha_submissions)
+      return unless defined?(Sidekiq::Batch)
+
       submission_batch = Sidekiq::Batch.new
       submission_batch.on(
         :success,
@@ -222,6 +219,14 @@ module DebtManagementCenter
       form['personalIdentification']['fileNumber'] = @file_number
       set_certification_date(form)
       form
+    end
+
+    def aggregate_fsr_reasons(form, debts)
+      return if debts.blank?
+
+      form['personalIdentification']['fsrReason'] = debts.map do |debt|
+        debt['resolutionOption']
+      end.uniq.join(', ')
     end
 
     def add_compromise_amounts(form, debts)

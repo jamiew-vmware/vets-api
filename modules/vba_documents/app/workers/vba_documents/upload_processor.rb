@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
-require_dependency 'vba_documents/upload_validator'
-require_dependency 'vba_documents/payload_manager'
-require_dependency 'vba_documents/multipart_parser'
-
 require 'sidekiq'
 require 'vba_documents/object_store'
+require 'vba_documents/payload_manager'
 require 'vba_documents/upload_error'
 require 'central_mail/utilities'
 
@@ -70,7 +67,8 @@ module VBADocuments
         validate_metadata(parts[META_PART_NAME], submission_version: @upload.metadata['version'].to_i)
         metadata = perfect_metadata(@upload, parts, timestamp)
 
-        pdf_validator_options = metadata['skipDimensionCheck'] ? { check_page_dimensions: false } : {}
+        pdf_validator_options = VBADocuments::DocumentRequestValidator.pdf_validator_options
+        pdf_validator_options[:check_page_dimensions] = false if metadata['skipDimensionCheck'].present?
         validate_documents(parts, pdf_validator_options)
 
         response = submit(metadata, parts)

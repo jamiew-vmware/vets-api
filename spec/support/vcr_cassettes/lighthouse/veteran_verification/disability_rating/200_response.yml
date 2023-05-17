@@ -90,12 +90,12 @@ http_interactions:
       "legal_effective_date": "2018-03-27",
       "individual_ratings": [
         {
-          "description": "Test Disability",
+          "description": "Service Connected",
           "decision": "Service Connected",
           "effective_date": "2018-03-27",
           "rating_percentage": 50,
-          "diagnostic_type_code": "0200",
-          "diagnostic_type_name": "somename"
+          "diagnostic_type_code": "5238",
+          "diagnostic_type_name": "Diabetes mellitus0"
         }
       ]
     }
