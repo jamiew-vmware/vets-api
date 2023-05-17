@@ -27,12 +27,13 @@ RSpec.describe 'vaos v2 appointments', type: :request do
   end
 
   let(:mock_facility) do
-    known_ids = %w[983 984 442 508 983GC 983GB 688 516 984GA 983GD 984GD 438 620GB 984GB 442GB 442GC 442GD 983QA 984GC 983QE 983HK 999AA]
+    known_ids = %w[983 984 442 508 983GC 983GB 688 516 984GA 983GD 984GD 438 620GB 984GB 442GB 442GC 442GD 983QA 984GC
+                   983QE 983HK 999AA]
     mock_facility = { id: '983',
                       name: 'Cheyenne VA Medical Center',
                       timezone: {
                         zoneId: 'America/Denver',
-                        abbreviation: "MDT"
+                        abbreviation: 'MDT'
                       },
                       physical_address: { type: 'physical',
                                           line: ['2360 East Pershing Boulevard'],
@@ -48,7 +49,10 @@ RSpec.describe 'vaos v2 appointments', type: :request do
     allow_any_instance_of(Mobile::V2::Appointments::Proxy).to receive(:get_facility).and_return(mock_facility)
 
     known_ids.each do |facility_id|
-      allow(Rails.cache).to receive(:fetch).with("vaos_facility_#{facility_id}", { :expires_in => 12.hours }).and_return(mock_facility.merge(id: facility_id))
+      allow(Rails.cache).to receive(:fetch).with("vaos_facility_#{facility_id}",
+                                                 {
+                                                   expires_in: 12.hours
+                                                 }).and_return(mock_facility.merge(id: facility_id))
     end
   end
 
@@ -81,15 +85,15 @@ RSpec.describe 'vaos v2 appointments', type: :request do
         expect(location).to eq({ 'id' => '983',
                                  'name' => 'Cheyenne VA Medical Center',
                                  'address' =>
-                                 { 'street' => '2360 East Pershing Boulevard',
-                                   'city' => 'Cheyenne',
-                                   'state' => 'WY',
-                                   'zipCode' => '82001-5356' },
+                                   { 'street' => '2360 East Pershing Boulevard',
+                                     'city' => 'Cheyenne',
+                                     'state' => 'WY',
+                                     'zipCode' => '82001-5356' },
                                  'lat' => 39.744507,
                                  'long' => -104.830956,
                                  'phone' =>
-                                 { 'areaCode' => '307', 'number' => '778-7550',
-                                   'extension' => nil },
+                                   { 'areaCode' => '307', 'number' => '778-7550',
+                                     'extension' => nil },
                                  'url' => nil,
                                  'code' => nil })
       end
