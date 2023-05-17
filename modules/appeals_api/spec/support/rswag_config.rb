@@ -70,6 +70,14 @@ class AppealsApi::RswagConfig
         name: 'appeals_status',
         tags: [{ name: 'Appeals Status', description: '' }]
       ),
+      "modules/appeals_api/app/swagger/higher_level_reviews/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Higher-Level Reviews',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/higher_level_reviews/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/higher-level-reviews/{version}',
+        name: 'higher_level_reviews',
+        tags: [{ name: 'Higher-Level Reviews', description: '' }]
+      ),
       "modules/appeals_api/app/swagger/legacy_appeals/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
         title: 'Legacy Appeals',
         version: 'v0',
@@ -77,6 +85,22 @@ class AppealsApi::RswagConfig
         base_path_template: '/services/appeals/legacy-appeals/{version}',
         name: 'legacy_appeals',
         tags: [{ name: 'Legacy Appeals', description: '' }]
+      ),
+      "modules/appeals_api/app/swagger/notice_of_disagreements/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Notice of Disagreements',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/notice_of_disagreements/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/notice-of-disagreements/{version}',
+        name: 'notice_of_disagreements',
+        tags: [{ name: 'Notice of Disagreements', description: '' }]
+      ),
+      "modules/appeals_api/app/swagger/supplemental_claims/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Supplemental Claims',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/supplemental_claims/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/supplemental-claims/{version}',
+        name: 'supplemental_claims',
+        tags: [{ name: 'Supplemental Claims', description: '' }]
       )
     }
   end
@@ -226,8 +250,7 @@ class AppealsApi::RswagConfig
       )
       a << shared_schemas.slice(*%W[address phone timezone #{nbs_key}])
     when 'appealable_issues'
-      # TODO: still need to rename contestable issues v0 at the schema level
-      a << contestable_issues_schema('#/components/schemas')
+      a << appealable_issues_schema('#/components/schemas')
       a << generic_schemas('#/components/schemas').slice(*%i[errorModel X-VA-SSN X-VA-File-Number X-VA-ICN])
       a << shared_schemas.slice(*%W[#{nbs_key}])
     when 'legacy_appeals'
@@ -382,6 +405,28 @@ class AppealsApi::RswagConfig
     # Add in extra schemas for non-HLR api docs
     schemas['documentUploadMetadata'] = JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'document_upload_metadata.json')))
     schemas
+  end
+
+  def appealable_issues_schema(ref_root)
+    {
+      'appealableIssues': {
+        'type': 'object',
+        'properties': {
+          'data': {
+            'type': 'array',
+            'items': {
+              '$ref': "#{ref_root}/appealableIssue"
+            }
+          }
+        }
+      },
+      'appealableIssue': JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'appealable_issue.json'))),
+      'X-VA-Receipt-Date': {
+        "description": '(yyyy-mm-dd) Date to limit the appealable issues',
+        "type": 'string',
+        "format": 'date'
+      }
+    }
   end
 
   def contestable_issues_schema(ref_root)

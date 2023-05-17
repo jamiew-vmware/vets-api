@@ -369,10 +369,6 @@ features:
   form264555:
     actor_type: user
     description: If enabled shows the digital form experience for form 26-4555
-  form_confirmation_edu_auth_user:
-    actor_type: user
-    description: Skips sending confirmation emails to authenticated users
-    enable_in_development: true
   fsr_confirmation_email:
     actor_type: user
     description: Enables notifications to be sent via email upon FSR submission
@@ -396,6 +392,10 @@ features:
   in_progress_form_reminder_age_param:
     actor_type: user
     description: Enable/disable in progress form reminder age param
+    enable_in_development: true
+  clear_stale_in_progress_reminders_sent:
+    actor_type: user
+    description: Enable/disable clearing of one-time in progress reminders after 60 days
     enable_in_development: true
   in_progress_1880_form_cron:
     actor_type: user
@@ -885,3 +885,6 @@ features:
   income_limits_new:
     actor_type: user
     description: If enabled, shows the newly designed income limits application
+  drupal_footer:
+    actor_type: user
+    description: If enabled, pulls Drupal data to populate most of the global footer
