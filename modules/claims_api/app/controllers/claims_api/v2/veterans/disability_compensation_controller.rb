@@ -16,7 +16,6 @@ module ClaimsApi
         def submit
           validate_json_schema
           validate_form_526_submission_values!
-
           auto_claim = ClaimsApi::AutoEstablishedClaim.create(
             status: ClaimsApi::AutoEstablishedClaim::PENDING,
             auth_headers:,
@@ -37,7 +36,7 @@ module ClaimsApi
         private
 
         def pdf_mapper_service(auto_claim, pdf_data)
-          ClaimsApi::V2::DisabilitiyCompensationPdfMapper.new(auto_claim, pdf_data)
+          ClaimsApi::V2::DisabilityCompensationPdfMapper.new(auto_claim, pdf_data)
         end
 
         def get_pdf_data
