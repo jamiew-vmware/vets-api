@@ -17,10 +17,7 @@ RSpec.describe BenefitsClaims::Service do
       describe 'when requesting intent_to_file' do
         it 'retrieves a intent to file from the Lighthouse API' do
           VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
-            auth_params = {
-              launch: Base64.encode64(JSON.generate({ patient: '123498767V234859' }, space: ' '))
-            }
-            response = @service.get_intent_to_file('compensation', '', { auth_params: })
+            response = @service.get_intent_to_file('compensation', '', '')
             expect(response['data']['id']).to eq('193685')
           end
         end

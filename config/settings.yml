@@ -179,6 +179,12 @@ edu:
     emails:
       - noah.stern@va.gov
       - gregg.puhala@dbitpro.com
+      - kara.ciprich@va.gov
+      - napoleon.kernessant@govcio.com
+      - vishnhav.ashok@va.gov
+      - jarred.simon@vetsez.com
+      - ariana.adili@govcio.com
+
 dependents:
   prefill: true
 
@@ -361,6 +367,9 @@ adapted_housing:
   prefill: true
 
 medical_release:
+  prefill: true
+
+lay_witness:
   prefill: true
 
 # Settings for Expiry Scanner
@@ -1004,7 +1013,9 @@ flipper:
     - matt.long@adhocteam.us # Matt Long - Staff Software Engineer - Ad Hoc
     - trent.mcdole@gcio.com
     - simi.adebowale@adhocteam.us
-    - tom.harrison@adhocteam.us
+    - berni.xiong@agile6.com # Bernie Xiong - Agile 6
+    - mcahill@gwu.edu # Travis Cahill - Agile 6
+    - tom.harrison@adhocteam.us # Tom Harrison - Ad Hoc
     - angela.agosto@adhocteam.us # Angela Agosto - Ad Hoc
     - ryan.koch@agile6.com
     - wesley.rowe@agile6.com
@@ -1039,8 +1050,14 @@ flipper:
     - florence.mccafferty@agile6.com # Florence McCafferty - Agile 6 - Authenticated Experience
     - berni.xiong@agile6.com # Berni Xiong - Agile 6 - Authenticated Experience
     - liz.lantz@adhocteam.us # Liz Lantz - Ad Hoc - Authenticated Experience
+    - seth.darr@agile6.com # Seth Darr - Engineer - Agile 6 - Benefits Delivery Experience Team 1
+    - aurora.hampton@agile6.com # Aurora Hampton - Engineer - Agile 6 - Benefits Delivery Experience Team 1
+    - christinec.fftc@gmail.com # Christine Cereca - Engineer - Friends From The City - Benefits Delivery Experience Team 1
+    - markchae@navapbc.com # Mark Chae - Engineer - Nava - Benefits Delivery Experience Team 1
+    - eddieglenn@navapbc.com # Eddie Glenn - Engineer - Nava - Benefits Delivery Experience Team 1
     - john.woolschlager@va.gov # John Woolschlager - CivicActions - Check In Experience
-    
+    - kevin.duensing@adhocteam.us # Kevin Duensing - Ad Hoc - Benefits Team 1, Management Tools
+
 bgs:
   application: ~
   client_station_id: ~
@@ -1260,8 +1277,8 @@ vanotify:
         form686c_confirmation_email: fake_template_id
         form686c_reminder_email: fake_template_id
         form1010ez_reminder_email: fake_template_id
+        form1880_reminder_email: form1880_reminder_email_template_id
         in_progress_reminder_email_generic: fake_template_id
-        in_progress_1880_reminder_email: in_progress_1880_reminder_email_template_id
         covid_vaccine_registration: fake_template_id
         covid_vaccine_expanded_registration: fake_template_id
         direct_deposit_edu: edu_template_id
@@ -1544,6 +1561,10 @@ form526_backup:
     region: ~
     access_key_id: ~
     secret_access_key: ~
+
+forms_api_benefits_intake:
+  api_key: ~
+  url: https://sandbox-api.va.gov/services/vba_documents/v1/
 
 form1095_b:
   s3:

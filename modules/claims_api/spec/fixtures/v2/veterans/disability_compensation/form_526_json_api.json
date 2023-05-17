@@ -5,24 +5,24 @@
             "veteranIdentification": {
                 "currentlyVaEmployee": false,
                 "mailingAddress": {
-                    "numberAndStreet": ",a#'",
-                    "apartmentOrUnitNumber": "ABCD",
-                    "city": "#j2'w",
-                    "country": "ABCDEFGHIJKLMNOPQRSTUVW",
+                    "numberAndStreet": "1234 Couch Street",
+                    "apartmentOrUnitNumber": "22",
+                    "city": "Portland",
+                    "country": "USA",
                     "zipFirstFive": "41726",
-                    "zipLastFour": "",
-                    "state": "z,"
+                    "zipLastFour": "1234",
+                    "state": "OR"
                 },
-                "serviceNumber": "ABCDEFGH",
+                "serviceNumber": "123456789",
                 "emailAddress": {
-                    "email": "ABCDEFGHIJKLMNOPQRSTU",
+                    "email": "valid@somedomain.com",
                     "agreeToEmailRelatedToClaim": true
                 },
                 "veteranNumber": {
-                    "telephone": "1234567",
-                    "internationalTelephone": "1234567"
+                    "telephone": "1234567890",
+                    "internationalTelephone": "1234567890"
                 },
-                "vaFileNumber": "ABCDEF"
+                "vaFileNumber": "AB123CDEF"
             },
             "serviceInformation": {
                 "servicePeriods": [
@@ -39,8 +39,10 @@
                     "approximateEndDate": "2884-12-09"
                 },
                 "reservesNationalGuardService": {
-                    "obligationTermOfServiceFromDate": "3995-11-24",
-                    "obligationTermOfServiceToDate": "8502-11-17",
+                    "obligationTermsOfService": {
+                        "startDate":"3995-11-24",
+                        "endDate":"8502-11-17"
+                    },
                     "unitName": "''c'5'l'#l#2z",
                     "component": "Active",
                     "title10Activation": {
@@ -90,8 +92,8 @@
             "claimDate": "2023-02-18",
             "changeOfAddress": {
                 "dates": {
-                    "beginningDate": "7455-11-31",
-                    "endingDate": "9963-10-11"
+                    "beginningDate": "2012-11-31",
+                    "endingDate": "2013-10-11"
                   },
                   "typeOfAddressChange": "TEMPORARY",
                   "numberAndStreet": "10 Peach St",
@@ -103,8 +105,11 @@
                   "country": "USA"
             },
             "homeless": {
-                "pointOfContact": "hw86h63-v",
-                "pointOfContactNumber": 0,
+                "pointOfContact": "john stewart",
+                "pointOfContactNumber": {
+                    "telephone": "7028901212",
+                    "internationalTelephone": "1234567890"
+                },
                 "currentlyHomeless": {
                     "homelessSituationOptions": "FLEEING_CURRENT_RESIDENCE",
                     "otherDescription": "ABCDEFGHIJKLM"
@@ -131,7 +136,7 @@
                     }
                 },
                 "additionalHazardExposures": {
-                    "additionalExposures": "ASBESTOS",
+                    "additionalExposures": ["ASBESTOS", "SHAD"],
                     "specifiyOtherExposures": "ABCD",
                     "exposureDates": {
                         "startDate": "4520-07-30",
@@ -194,4 +199,4 @@
             }
         }
     }
-  }
+}

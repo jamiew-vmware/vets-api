@@ -44,11 +44,15 @@ module DocHelpers
     end
   end
 
-  def self.security_config(oauth_scopes = [])
-    if oauth_scopes.any?
-      [{ productionOauth: oauth_scopes }, { sandboxOauth: oauth_scopes }, { bearer_token: [] }]
-    else
+  def self.oauth_security_config(scopes = [])
+    [{ productionOauth: scopes }, { sandboxOauth: scopes }, { bearer_token: [] }]
+  end
+
+  def self.decision_reviews_security_config(oauth_scopes = [])
+    if DocHelpers.api_name == 'decision_reviews'
       [{ apikey: [] }]
+    else
+      DocHelpers.oauth_security_config(oauth_scopes)
     end
   end
 
@@ -153,6 +157,7 @@ module DocHelpers
 
   ALL_DOC_TITLES = DECISION_REVIEWS_DOC_TITLES.merge(
     {
+      appealable_issues: 'Appealable Issues',
       appeals_status: 'Appeals Status',
       decision_reviews: 'Decision Reviews'
     }

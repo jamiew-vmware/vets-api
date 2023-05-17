@@ -29,8 +29,8 @@ RSpec.describe Lighthouse::LettersGenerator::Service do
       response = client.get_eligible_letter_types('DOLLYPARTON')
 
       # Assert
-      expect(response[:letters][0]).to have_key('letterType')
-      expect(response[:letters][0]).to have_key('letterName')
+      expect(response[:letters][0]).to have_key(:letterType)
+      expect(response[:letters][0]).to have_key(:name)
       expect(response).to have_key(:letter_destination)
     end
 
@@ -51,8 +51,8 @@ RSpec.describe Lighthouse::LettersGenerator::Service do
 
         expect { client.get_eligible_letter_types('BADREQUEST') }.to raise_error do |error|
           expect(error).to be_an_instance_of(Lighthouse::LettersGenerator::ServiceError)
-          expect(error.status).to be(fake_response_body['status'])
-          expect(error.message).to be(fake_response_body['detail'])
+          expect(error.errors.first.status).to eq(fake_response_body['status'].to_s)
+          expect(error.errors.first.meta[:message]).to eq(fake_response_body['detail'])
         end
       end
 
@@ -95,6 +95,29 @@ RSpec.describe Lighthouse::LettersGenerator::Service do
       # Assert
       expect(response).to have_key(:benefitInformation)
       expect(response[:benefitInformation]).not_to be_nil
+    end
+
+    context 'Transformation' do
+      it 'performs transformation on benefit info' do
+        fake_response_json = File.read("#{FAKE_RESPONSES_PATH}/fakeResponse.json")
+        fake_response_body = JSON.parse(fake_response_json)
+
+        @stubs.get('/eligible-letters?icn=DOLLYPARTON') do
+          [200, {}, fake_response_body]
+        end
+
+        client = Lighthouse::LettersGenerator::Service.new
+        response = client.get_benefit_information('DOLLYPARTON')
+
+        expect(response).to have_key(:benefitInformation)
+        expect(response[:benefitInformation]).not_to be_nil
+        # Ensures the tranform works
+        expect(response[:benefitInformation]).to have_key(:awardEffectiveDate)
+        # Ensures the non-transformable data is present
+        expect(response[:benefitInformation]).to have_key(:serviceConnectedPercentage)
+        # Ensure (has)chapter35EligibilityDateTime is not present
+        expect(response[:benefitInformation]).not_to have_key(:chapter35EligibilityDateTime)
+      end
     end
   end
 

@@ -57,10 +57,10 @@ GIT
 
 GIT
   remote: https://github.com/department-of-veterans-affairs/vets-json-schema
-  revision: e00332ee678c5209f3ef7fee699cc76a92e1a2bf
+  revision: 5f1a5943ac7771e21469e2fd14c0d0b72e5c5cab
   branch: master
   specs:
-    vets_json_schema (21.26.8)
+    vets_json_schema (20.26.9)
       multi_json (~> 1.0)
       script_utils (= 0.0.4)
 
@@ -319,9 +319,9 @@ GEM
       no_proxy_fix
       octokit (~> 4.7)
       terminal-table (>= 1, < 4)
-    database_cleaner (2.0.1)
-      database_cleaner-active_record (~> 2.0.0)
-    database_cleaner-active_record (2.0.1)
+    database_cleaner (2.0.2)
+      database_cleaner-active_record (>= 2, < 3)
+    database_cleaner-active_record (2.1.0)
       activerecord (>= 5.a)
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
@@ -731,7 +731,7 @@ GEM
     rack (2.2.6.4)
     rack-attack (6.6.1)
       rack (>= 1.0, < 3)
-    rack-cors (2.0.0)
+    rack-cors (2.0.1)
       rack (>= 2.0.0)
     rack-protection (2.1.0)
       rack
@@ -842,7 +842,7 @@ GEM
     rswag-ui (2.8.0)
       actionpack (>= 3.1, < 7.1)
       railties (>= 3.1, < 7.1)
-    rubocop (1.44.1)
+    rubocop (1.45.1)
       json (~> 2.3)
       parallel (~> 1.10)
       parser (>= 3.2.0.0)
