@@ -27,10 +27,12 @@ RSpec.describe 'vaos v2 appointments', type: :request do
   end
 
   let(:mock_facility) do
+    known_ids = %w[983 984 442 508 983GC 983GB 688 516 984GA 983GD 984GD 438 620GB 984GB 442GB 442GC 442GD 983QA 984GC 983QE 983HK 999AA]
     mock_facility = { id: '983',
                       name: 'Cheyenne VA Medical Center',
-                      time_zone: {
-                        time_zone_id: 'America/Denver'
+                      timezone: {
+                        zoneId: 'America/Denver',
+                        abbreviation: "MDT"
                       },
                       physical_address: { type: 'physical',
                                           line: ['2360 East Pershing Boulevard'],
@@ -44,6 +46,10 @@ RSpec.describe 'vaos v2 appointments', type: :request do
                       code: nil }
 
     allow_any_instance_of(Mobile::V2::Appointments::Proxy).to receive(:get_facility).and_return(mock_facility)
+
+    known_ids.each do |facility_id|
+      allow(Rails.cache).to receive(:fetch).with("vaos_facility_#{facility_id}", { :expires_in => 12.hours }).and_return(mock_facility.merge(id: facility_id))
+    end
   end
 
   after(:all) { VCR.configure { |c| c.cassette_library_dir = @original_cassette_dir } }
@@ -90,7 +96,10 @@ RSpec.describe 'vaos v2 appointments', type: :request do
     end
 
     context 'backfill facility service returns in error' do
-      before { mock_clinic }
+      before do
+        mock_clinic
+        mock_facility
+      end
 
       it 'location is nil' do
         VCR.use_cassette('appointments/VAOS_v2/get_facility_500', match_requests_on: %i[method uri]) do
