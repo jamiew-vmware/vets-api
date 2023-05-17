@@ -2,6 +2,21 @@
 
 module FlipperExtensions
   module ActionPatch
+    DSVA_SRCS = ['https://design.va.gov'].freeze
+
+    # https://github.com/jnunemaker/flipper/blob/09d216f234c6e0349bc88f247135125d1d76de71/lib/flipper/ui/action.rb#L48-L58
+    SCRIPT_SRCS = Flipper::UI::Action::SCRIPT_SRCS
+    STYLE_SRCS = Flipper::UI::Action::STYLE_SRCS + DSVA_SRCS
+    CONTENT_SECURITY_POLICY = <<-CSP.delete("\n")
+      default-src 'none';
+      img-src 'self';
+      font-src 'self' #{DSVA_SRCS.join(' ')};
+      script-src 'report-sample' 'self' #{SCRIPT_SRCS.join(' ')};
+      style-src 'self' 'unsafe-inline' #{STYLE_SRCS.join(' ')};
+      style-src-attr 'unsafe-inline' ;
+      style-src-elem 'self' #{STYLE_SRCS.join(' ')};
+    CSP
+
     def view(name)
       # Use custom views if enabled in configuration.
       path = custom_views_path.join("#{name}.erb") unless custom_views_path.nil?
@@ -15,6 +30,15 @@ module FlipperExtensions
       # rubocop:disable Security/Eval
       eval(Erubi::Engine.new(path.read, escape: true).src)
       # rubocop:enable Security/Eval
+    end
+
+    # Flipper UI's CSP needs overriding
+    # https://github.com/jnunemaker/flipper/blob/09d216f234c6e0349bc88f247135125d1d76de71/lib/flipper/ui/action.rb#L162-L166
+    def view_response(name)
+      header 'Content-Type', 'text/html'
+      header 'Content-Security-Policy', CONTENT_SECURITY_POLICY
+      body = view_with_layout { view_without_layout name }
+      halt [@code, @headers, [body]]
     end
 
     def custom_views_path
