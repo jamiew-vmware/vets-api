@@ -1131,7 +1131,7 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
         end
       end
 
-      it 'supports creating an active compensation intent to file (EVSS)' do
+      it 'supports creating an active compensation intent to file' do
         expect(subject).to validate(:post, '/v0/intent_to_file/{type}', 401, 'type' => 'compensation')
         VCR.use_cassette('evss/intent_to_file/create_compensation') do
           expect(subject).to validate(
@@ -1143,20 +1143,6 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
         end
       end
     end
-
-    # TODO:
-    # it 'supports creating an active compensation intent to file (Lighthouse)' do
-    #   expect(subject).to validate(:get, '/v0/intent_to_file/{type}/active', 401, 'type' => 'compensation')
-    #   VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
-    #     expect(subject).to validate(
-    #       :get,
-    #       '/v0/intent_to_file/{type}/active',
-    #       # GET https://sandbox-api.va.gov/services/claims/v2/veterans/fake_icn/intent-to-file/compensation
-    #       200,
-    #       headers.update('type' => 'compensation')
-    #     )
-    #   end
-    # end
 
     describe 'MVI Users' do
       context 'when user is correct' do
