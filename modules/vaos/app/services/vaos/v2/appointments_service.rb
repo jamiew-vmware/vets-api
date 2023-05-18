@@ -10,6 +10,7 @@ module VAOS
       DIRECT_SCHEDULE_ERROR_KEY = 'DirectScheduleError'
       VAOS_SERVICE_DATA_KEY = 'VAOSServiceTypesAndCategory'
       VAOS_TELEHEALTH_DATA_KEY = 'VAOSTelehealthData'
+      FACILITY_ERROR_MSG = 'Error fetching facility details'
 
       def get_appointments(start_date, end_date, statuses = nil, pagination_params = {})
         params = date_params(start_date, end_date)
@@ -106,8 +107,6 @@ module VAOS
 
         date.to_time.utc.in_time_zone(tz).to_datetime
       end
-
-      FACILITY_ERROR_MSG = 'Error fetching facility details'
 
       # Returns the facility timezone id (eg. 'America/New_York') associated with facility id (location_id)
       def get_facility_timezone(facility_location_id)
