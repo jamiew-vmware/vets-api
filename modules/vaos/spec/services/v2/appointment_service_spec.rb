@@ -161,8 +161,21 @@ describe VAOS::V2::AppointmentsService do
         VCR.use_cassette('vaos/v2/appointments/get_appointments_single_status_200',
                          allow_playback_repeats: true, match_requests_on: %i[method path query], tag: :force_utf8) do
           response = subject.get_appointments(start_date2, end_date2, 'proposed')
-          expect(response[:data].size).to eq(4)
+          expect(response[:data].size).to eq(5)
           expect(response[:data][0][:status]).to eq('proposed')
+        end
+      end
+    end
+
+    context 'when there are CnP appointments in the list' do
+      it 'changes the cancellable status to false for CnP appointments only' do
+        VCR.use_cassette('vaos/v2/appointments/get_appointments_single_status_200',
+                         match_requests_on: %i[method path query], tag: :force_utf8) do
+          response = subject.get_appointments(start_date2, end_date2, 'proposed')
+          # non CnP appointment, cancellable left as is
+          expect(response[:data][0][:cancellable]).to eq(true)
+          # CnP appointment, cancellable changed to false
+          expect(response[:data][4][:cancellable]).to eq(false)
         end
       end
     end
@@ -231,6 +244,16 @@ describe VAOS::V2::AppointmentsService do
             expect(response[:kind]).to eq('clinic')
             expect(response[:status]).to eq('proposed')
           end
+
+    context 'when requesting a CnP appointment' do
+      let(:user) { build(:user, :vaos) }
+
+      it 'sets the cancellable attribute to false' do
+        VCR.use_cassette('vaos/v2/appointments/get_appointment_200_CnP',
+                         match_requests_on: %i[method path query]) do
+          response = subject.get_appointment('159472')
+          expect(response[:cancellable]).to eq(false)
+
         end
       end
     end
