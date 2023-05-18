@@ -143,30 +143,47 @@ module VSPDanger
 
   class MigrationIsolator
     def run
-      if files.any? { |file| file.include? 'db/' } && !files.all? { |file| file.include? 'db/' }
-        # one of the changed files was in 'db/' but not all of them
-        return Result.error(error_message)
-      end
+      return Result.error(error_message) if partial_db_change?
 
       Result.success('All set.')
     end
 
     private
 
+    def partial_db_change?
+      db_files.any? && files.any? { |file| !db_file?(file) }
+    end
+
+    def db_file?(file)
+      file.start_with?('db/') && !file.start_with?('db/seeds/')
+    end
+
+    def db_files
+      @db_files ||= files.select { |file| db_file?(file) }
+    end
+
+    def app_files
+      @app_files ||= files - db_files
+    end
+
+    def files
+      @files ||= `git diff #{BASE_SHA}...#{HEAD_SHA} --name-only`.split("\n")
+    end
+
     def error_message
       <<~EMSG
-        Modified files in `db/` should be the only files checked into this PR.
+        Modified files in `db/` (excluding `db/seeds/`) should be the only files checked into this PR.
 
         <details>
           <summary>File Summary</summary>
 
           #### DB File(s)
 
-          - #{db_files.join "\n- "}
+          #{list_files(db_files)}
 
           #### App File(s)
 
-          - #{app_files.join "\n- "}
+          #{list_files(app_files)}
         </details>
 
         Database migrations do not run automatically with vets-api deployments. Application code must always be
@@ -177,16 +194,8 @@ module VSPDanger
       EMSG
     end
 
-    def app_files
-      files - db_files
-    end
-
-    def db_files
-      files.select { |file| file.include? 'db/' }
-    end
-
-    def files
-      @files ||= `git diff #{BASE_SHA}...#{HEAD_SHA} --name-only`.split("\n")
+    def list_files(files)
+      files.map { |file| "- #{file}" }.join("\n")
     end
   end
 
