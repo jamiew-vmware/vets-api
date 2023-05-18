@@ -18,7 +18,6 @@ class LighthouseIntentToFileProvider
     transform(data)
   end
 
-  # TODO: return 401 response if something is missing?
   def create_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path)
     data = @service.create_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path)['data']
     transform(data)
