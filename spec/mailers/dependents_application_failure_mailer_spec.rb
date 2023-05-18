@@ -11,7 +11,9 @@ RSpec.describe DependentsApplicationFailureMailer, type: [:mailer] do
 
   describe '#build' do
     it 'includes all info' do
-      mailer = described_class.build(user).deliver_now
+      mailer = described_class.build(email: user.email,
+                                     first_name: user.first_name,
+                                     last_name: user.last_name).deliver_now
 
       expect(mailer.subject).to eq(t('dependency_claim_failure_mailer.subject'))
       expect(mailer.to).to eq(recipients)

@@ -4,22 +4,25 @@ require_relative 'service'
 
 module BGS
   class DependentHigherEdAttendance
-    def initialize(proc_id:, payload:, user:)
+    attr_reader :proc_id, :dependents_application, :icn, :ssn, :common_name
+
+    def initialize(proc_id:, dependents_application:, icn:, ssn:, common_name:)
       @proc_id = proc_id
-      @payload = payload
-      @dependents = {}
-      @user = user
+      @dependents_application = dependents_application
+      @icn = icn
+      @ssn = ssn
+      @common_name = common_name
     end
 
     def create
-      adult_attending_school = BGSDependents::AdultChildAttendingSchool.new(@payload['dependents_application'])
+      adult_attending_school = BGSDependents::AdultChildAttendingSchool.new(dependents_application)
       formatted_info = adult_attending_school.format_info
-      participant = bgs_service.create_participant(@proc_id)
+      participant = bgs_service.create_participant(proc_id:, ssn:)
 
-      bgs_service.create_person(person_params(adult_attending_school, participant, formatted_info))
+      bgs_service.create_person(person_params: person_params(adult_attending_school, participant, formatted_info))
       send_address(adult_attending_school, participant, adult_attending_school.address)
 
-      @dependents = adult_attending_school.serialize_dependent_result(
+      adult_attending_school.serialize_dependent_result(
         participant,
         'Child',
         'Biological',
@@ -31,18 +34,18 @@ module BGS
     end
 
     def person_params(calling_object, participant, dependent_info)
-      calling_object.create_person_params(@proc_id, participant[:vnp_ptcpnt_id], dependent_info)
+      calling_object.create_person_params(proc_id, participant[:vnp_ptcpnt_id], dependent_info)
     end
 
     def send_address(calling_object, participant, address_info)
       address = calling_object.generate_address(address_info)
-      address_params = calling_object.create_address_params(@proc_id, participant[:vnp_ptcpnt_id], address)
+      address_params = calling_object.create_address_params(proc_id, participant[:vnp_ptcpnt_id], address)
 
-      bgs_service.create_address(address_params)
+      bgs_service.create_address(address_params:)
     end
 
     def bgs_service
-      @bgs_service ||= BGS::Service.new(@user)
+      @bgs_service ||= BGS::Service.new(icn:, common_name:)
     end
   end
 end

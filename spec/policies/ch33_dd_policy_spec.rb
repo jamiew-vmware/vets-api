@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe Ch33DdPolicy do
-  let(:user) { FactoryBot.build(:ch33_dd_user) }
+  let(:user) { FactoryBot.build(:user, :loa3) }
 
   permissions :access? do
     context 'with an idme user' do

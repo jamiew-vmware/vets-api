@@ -13,9 +13,10 @@ module V0
 
       def update
         res = service.update_ch33_dd_eft(
-          params[:financial_institution_routing_number],
-          params[:account_number],
-          params[:account_type] == 'Checking'
+          routing_number: params[:financial_institution_routing_number],
+          account_number: params[:account_number],
+          checking_account: params[:account_type] == 'Checking',
+          ssn: current_user.ssn
         ).body
 
         unless res[:update_ch33_dd_eft_response][:return][:return_code] == 'S'
@@ -32,7 +33,7 @@ module V0
       private
 
       def render_find_ch33_dd_eft
-        get_ch33_dd_eft_info = service.get_ch33_dd_eft_info
+        get_ch33_dd_eft_info = service.get_ch33_dd_eft_info(ssn: current_user.ssn)
         render(
           json: get_ch33_dd_eft_info,
           serializer: Ch33BankAccountSerializer
@@ -40,7 +41,7 @@ module V0
       end
 
       def service
-        BGS::Service.new(current_user)
+        BGS::Service.new(icn: current_user.icn, common_name: current_user.common_name)
       end
     end
   end

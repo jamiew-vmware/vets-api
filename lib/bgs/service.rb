@@ -1,15 +1,16 @@
 # frozen_string_literal: true
 
-require_relative 'exceptions/bgs_errors'
 require 'common/client/concerns/monitoring'
+require 'bgs/exceptions/service_exception'
 
 module BGS
   class Service
     STATSD_KEY_PREFIX = 'api.bgs'
 
-    include BGS::Exceptions::BGSErrors
     include SentryLogging
     include Common::Client::Concerns::Monitoring
+
+    MAX_ATTEMPTS = 3
 
     # Journal Status Type Code
     # The alphabetic character representing the last action taken on the record
@@ -20,8 +21,11 @@ module BGS
     # will set the routing number field to '0' instead of 'nil', at least in certain cases
     EMPTY_ROUTING_NUMBER = '0'
 
-    def initialize(user)
-      @user = user
+    attr_reader :ssn, :participant_id, :icn, :common_name
+
+    def initialize(icn:, common_name:)
+      @icn = icn
+      @common_name = common_name
     end
 
     def create_proc(proc_state: 'Started')
@@ -38,11 +42,11 @@ module BGS
       end
     end
 
-    def find_rating_data
-      service.rating.find_rating_data(@user.ssn)
+    def find_rating_data(ssn:)
+      service.rating.find_rating_data(ssn)
     end
 
-    def create_proc_form(vnp_proc_id, form_type_code)
+    def create_proc_form(vnp_proc_id:, form_type_code:)
       # Temporary log proc_id to sentry
       log_message_to_sentry(vnp_proc_id, :warn, '', { team: 'vfs-ebenefits' })
       with_multiple_attempts_enabled do
@@ -52,7 +56,7 @@ module BGS
       end
     end
 
-    def update_proc(proc_id, proc_state: 'Ready')
+    def update_proc(proc_id:, proc_state: 'Ready')
       with_multiple_attempts_enabled do
         service.vnp_proc_v2.vnp_proc_update(
           {
@@ -67,26 +71,26 @@ module BGS
       end
     end
 
-    def create_participant(proc_id, corp_ptcpnt_id = nil)
+    def create_participant(proc_id:, ssn:, corp_ptcpnt_id: nil)
       with_multiple_attempts_enabled do
         service.vnp_ptcpnt.vnp_ptcpnt_create(
           {
             vnp_proc_id: proc_id,
             ptcpnt_type_nm: 'Person',
             corp_ptcpnt_id:,
-            ssn: @user.ssn
+            ssn:
           }.merge(bgs_auth)
         )
       end
     end
 
-    def create_person(person_params)
+    def create_person(person_params:)
       with_multiple_attempts_enabled do
         service.vnp_person.vnp_person_create(person_params.merge(bgs_auth))
       end
     end
 
-    def create_address(address_params)
+    def create_address(address_params:)
       with_multiple_attempts_enabled do
         service.vnp_ptcpnt_addrs.vnp_ptcpnt_addrs_create(
           address_params.merge(bgs_auth)
@@ -94,95 +98,72 @@ module BGS
       end
     end
 
-    def create_phone(proc_id, participant_id, payload)
+    def create_phone(proc_id:, participant_id:, phone_number:)
       with_multiple_attempts_enabled do
         service.vnp_ptcpnt_phone.vnp_ptcpnt_phone_create(
           {
             vnp_proc_id: proc_id,
             vnp_ptcpnt_id: participant_id,
             phone_type_nm: 'Daytime',
-            phone_nbr: payload['phone_number'],
+            phone_nbr: phone_number,
             efctv_dt: Time.current.iso8601
           }.merge(bgs_auth)
         )
       end
     end
 
-    def create_child_school(child_school_params)
+    def create_child_school(child_school_params:)
       with_multiple_attempts_enabled do
         service.vnp_child_school.child_school_create(child_school_params.merge(bgs_auth))
       end
     end
 
-    def create_child_student(child_student_params)
+    def create_child_student(child_student_params:)
       with_multiple_attempts_enabled do
         service.vnp_child_student.child_student_create(child_student_params.merge(bgs_auth))
       end
     end
 
-    def create_relationship(relationship_params)
+    def create_relationship(relationship_params:)
       with_multiple_attempts_enabled do
         service.vnp_ptcpnt_rlnshp.vnp_ptcpnt_rlnshp_create(relationship_params.merge(bgs_auth))
       end
     end
 
-    def find_benefit_claim_type_increment(claim_type_cd)
-      increment_params = {
-        ptcpnt_id: @user.participant_id,
-        bnft_claim_type_cd: claim_type_cd,
-        pgm_type_cd: 'CPL'
-      }
-
-      increment_params.merge!(user_ssn) if Settings.bgs.mock_response == true
+    def find_benefit_claim_type_increment(claim_type_cd:, participant_id:)
       with_multiple_attempts_enabled do
-        service.share_data.find_benefit_claim_type_increment(**increment_params)
+        service.share_data.find_benefit_claim_type_increment(ptcpnt_id: participant_id,
+                                                             bnft_claim_type_cd: claim_type_cd,
+                                                             pgm_type_cd: 'CPL')
       end
     end
 
-    def vnp_create_benefit_claim(vnp_benefit_params)
+    def vnp_create_benefit_claim(vnp_benefit_params:)
       with_multiple_attempts_enabled do
         service.vnp_bnft_claim.vnp_bnft_claim_create(vnp_benefit_params.merge(bgs_auth))
       end
     end
 
-    def vnp_benefit_claim_update(vnp_benefit_params)
+    def vnp_benefit_claim_update(vnp_benefit_params:)
       with_multiple_attempts_enabled do
         service.vnp_bnft_claim.vnp_bnft_claim_update(vnp_benefit_params.merge(bgs_auth))
       end
     end
 
-    def update_manual_proc(proc_id)
+    def update_manual_proc(proc_id:)
       service.vnp_proc_v2.vnp_proc_update(
         { vnp_proc_id: proc_id, vnp_proc_state_type_cd: 'MANUAL_VAGOV', vnp_proc_type_cd: 'DEPCHG' }.merge(bgs_auth)
       )
     rescue => e
-      notify_of_service_exception(e, __method__)
+      notify_of_service_exception(e, __method__, nil, :error)
     end
 
-    def insert_benefit_claim(benefit_claim_params)
+    def insert_benefit_claim(benefit_claim_params:)
       service.claims.insert_benefit_claim(benefit_claim_params)
     end
 
-    def bgs_auth
-      auth_params = {
-        jrn_dt: Time.current.iso8601,
-        jrn_lctn_id: Settings.bgs.client_station_id,
-        jrn_status_type_cd: 'U',
-        jrn_user_id: Settings.bgs.client_username,
-        jrn_obj_id: Settings.bgs.application
-      }
-
-      auth_params.merge!(user_ssn) if Settings.bgs.mock_response == true
-
-      auth_params
-    end
-
-    def user_ssn
-      { ssn: @user.ssn }
-    end
-
-    def get_ch33_dd_eft_info
-      find_ch33_dd_eft_res = find_ch33_dd_eft.body[:find_ch33_dd_eft_response][:return]
+    def get_ch33_dd_eft_info(ssn:)
+      find_ch33_dd_eft_res = find_ch33_dd_eft(ssn:).body[:find_ch33_dd_eft_response][:return]
       routing_number = find_ch33_dd_eft_res[:routng_trnsit_nbr]
 
       find_ch33_dd_eft_res.slice(
@@ -191,7 +172,7 @@ module BGS
         :routng_trnsit_nbr
       ).merge(
         financial_institution_name: lambda do
-          BankName.get_bank_name(@user, routing_number)
+          get_bank_name(routing_number:)
         rescue => e
           log_exception_to_sentry(e, { routing_number: }, { error: 'ch33_dd' })
           nil
@@ -199,7 +180,7 @@ module BGS
       )
     end
 
-    def find_bank_name_by_routng_trnsit_nbr(routing_number)
+    def find_bank_name_by_routng_trnsit_nbr(routing_number:)
       return if routing_number.blank? || routing_number == EMPTY_ROUTING_NUMBER
 
       with_monitoring do
@@ -210,24 +191,24 @@ module BGS
       end
     end
 
-    def find_ch33_dd_eft
+    def find_ch33_dd_eft(ssn:)
       with_monitoring do
         StatsD.measure("#{self.class::STATSD_KEY_PREFIX}.find_ch33_dd_eft.duration") do
-          service.claims.send(:request, :find_ch33_dd_eft, fileNumber: @user.ssn)
+          service.claims.send(:request, :find_ch33_dd_eft, fileNumber: ssn)
         end
       end
     end
 
-    def update_ch33_dd_eft(routing_number, acct_number, checking_acct)
+    def update_ch33_dd_eft(routing_number:, account_number:, checking_account:, ssn:)
       with_monitoring do
         StatsD.measure("#{self.class::STATSD_KEY_PREFIX}.update_ch33_dd_eft.duration") do
           service.claims.send(
             :request,
             :update_ch33_dd_eft,
             ch33DdEftInput: {
-              dpositAcntNbr: acct_number,
-              dpositAcntTypeNm: checking_acct ? 'C' : 'S',
-              fileNumber: @user.ssn,
+              dpositAcntNbr: account_number,
+              dpositAcntTypeNm: checking_account ? 'C' : 'S',
+              fileNumber: ssn,
               routngTrnsitNbr: routing_number,
               tranCode: '2'
             }
@@ -236,7 +217,7 @@ module BGS
       end
     end
 
-    def get_regional_office_by_zip_code(zip_code, country, province, lob, ssn)
+    def get_regional_office_by_zip_code(zip_code:, country:, province:, lob:, ssn:)
       regional_office_response = service.routing.get_regional_office_by_zip_code(
         zip_code, country, province, lob, ssn
       )
@@ -252,13 +233,13 @@ module BGS
       notify_of_service_exception(e, __method__, 1, :warn)
     end
 
-    def create_note(claim_id, note_text)
+    def create_note(claim_id:, note_text:, participant_id:)
       option_hash = {
         jrn_stt_tc: 'I',
         name: 'Claim rejected by VA.gov',
         bnft_clm_note_tc: 'CLMDVLNOTE',
         clm_id: claim_id,
-        ptcpnt_id: @user.participant_id,
+        ptcpnt_id: participant_id,
         txt: note_text
       }.merge!(bgs_auth).except!(:jrn_status_type_cd)
 
@@ -268,7 +249,7 @@ module BGS
                 else
                   response
                 end
-      log_message_to_sentry(message, :info, {}, { team: 'vfs-ebenefits' })
+      log_message_to_sentry(message, :info, {}, { team: Constants::SENTRY_REPORTING_TEAM })
       response
     rescue => e
       notify_of_service_exception(e, __method__, 1, :warn)
@@ -276,11 +257,59 @@ module BGS
 
     private
 
+    def get_bank_name(routing_number:)
+      return if routing_number.blank? || routing_number == BGS::Service::EMPTY_ROUTING_NUMBER
+
+      bank_name = BankName.find(routing_number)
+
+      if bank_name.blank?
+        bank_name = BankName.new(routing_number:)
+        bank_name.bank_name = find_bank_name_by_routng_trnsit_nbr(routing_number:)
+        bank_name.save!
+      end
+
+      bank_name.bank_name
+    end
+
     def service
       @service ||= BGS::Services.new(
-        external_uid: @user.icn || @user.uuid,
-        external_key: @user.common_name || @user.email
+        external_uid: icn,
+        external_key: common_name
       )
+    end
+
+    def bgs_auth
+      {
+        jrn_dt: Time.current.iso8601,
+        jrn_lctn_id: Settings.bgs.client_station_id,
+        jrn_status_type_cd: 'U',
+        jrn_user_id: Settings.bgs.client_username,
+        jrn_obj_id: Settings.bgs.application
+      }
+    end
+
+    def with_multiple_attempts_enabled
+      attempt ||= 0
+      yield
+    rescue => e
+      attempt += 1
+      if attempt < MAX_ATTEMPTS
+        notify_of_service_exception(e, __method__.to_s, attempt, :warn)
+        retry
+      end
+
+      notify_of_service_exception(e, __method__.to_s)
+    end
+
+    def notify_of_service_exception(error, method, attempt = nil, status = :error)
+      msg = "Unable to #{method}: #{error.message}: try #{attempt} of #{MAX_ATTEMPTS}"
+      context = { icn: }
+      tags = { team: Constants::SENTRY_REPORTING_TEAM }
+
+      return log_message_to_sentry(msg, :warn, context, tags) if status == :warn
+
+      log_exception_to_sentry(error, context, tags)
+      raise BGS::ServiceException.new('BGS_686c_SERVICE_403', { source: self.class }, 403, error.message)
     end
   end
 end

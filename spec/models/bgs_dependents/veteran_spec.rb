@@ -15,7 +15,10 @@ RSpec.describe BGSDependents::Veteran do
     }
   end
   let(:user) { FactoryBot.create(:evss_user, :loa3) }
-  let(:vet) { described_class.new('12345', user) }
+  let(:first_name) { user.first_name }
+  let(:middle_name) { user.middle_name }
+  let(:last_name) { user.last_name }
+  let(:vet) { described_class.new(proc_id: '12345', first_name:, middle_name:, last_name:) }
   let(:formatted_params_result) do
     {
       'first' => 'WESLEY',

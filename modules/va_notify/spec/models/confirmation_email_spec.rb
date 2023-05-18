@@ -6,10 +6,12 @@ RSpec.describe VANotify::ConfirmationEmail, type: :model do
   describe '.send' do
     it 'returns early if already sent' do
       allow(VANotify::EmailJob).to receive(:perform_async).and_return('email_notification')
-      described_class.create(user_uuid_and_form_id: 'user-id_form_id')
+      described_class.create(user_account_uuid_and_form_id: 'user_account-id_form_id')
 
-      subject = described_class.send(template_id: 'template_id', first_name: 'first_name',
-                                     user_uuid_and_form_id: 'user-id_form_id', email_address: 'email_address')
+      subject = described_class.send(template_id: 'template_id',
+                                     first_name: 'first_name',
+                                     user_account_uuid_and_form_id: 'user_account-id_form_id',
+                                     email_address: 'email_address')
       expect(subject).to be nil
 
       expect(VANotify::EmailJob).not_to have_received(:perform_async)
@@ -18,8 +20,10 @@ RSpec.describe VANotify::ConfirmationEmail, type: :model do
     it 'delegates to the EmailJob to send email' do
       allow(VANotify::EmailJob).to receive(:perform_async).and_return('email_notification')
 
-      subject = described_class.send(template_id: 'template_id', first_name: 'first_name',
-                                     user_uuid_and_form_id: 'user-id_form_id', email_address: 'email_address')
+      subject = described_class.send(template_id: 'template_id',
+                                     first_name: 'first_name',
+                                     user_account_uuid_and_form_id: 'user_account-id_form_id',
+                                     email_address: 'email_address')
       expect(subject).to eq('email_notification')
 
       expect(VANotify::EmailJob).to have_received(:perform_async).with('email_address', 'template_id', {

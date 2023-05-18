@@ -5,7 +5,16 @@ require 'bgs/form686c'
 
 RSpec.describe BGS::Form686c do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
-  let(:form686c) { BGS::Form686c.new(user_object) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
+  let(:participant_id) { user_object.participant_id }
+  let(:ssn) { user_object.ssn }
+  let(:first_name) { user_object.first_name }
+  let(:middle_name) { user_object.middle_name }
+  let(:last_name) { user_object.last_name }
+  let(:form686c) do
+    BGS::Form686c.new(icn:, common_name:, participant_id:, ssn:, first_name:, middle_name:, last_name:)
+  end
 
   describe '#submit' do
     subject { form686c.submit(payload) }
@@ -42,13 +51,14 @@ RSpec.describe BGS::Form686c do
             expect_any_instance_of(BGS::VnpBenefitClaim).to receive(:create).and_call_original
             expect_any_instance_of(BGS::BenefitClaim).to receive(:create).and_call_original
             expect_any_instance_of(BGS::VnpBenefitClaim).to receive(:update).and_call_original
-            expect_any_instance_of(BGS::Service).to receive(:update_proc).with('3831475',
-                                                                               { proc_state: 'MANUAL_VAGOV' })
+            expect_any_instance_of(BGS::Service).to receive(:update_proc).with(proc_id: '3831475',
+                                                                               proc_state: 'MANUAL_VAGOV')
             expect_any_instance_of(BID::Awards::Service).to receive(:get_awards_pension).and_call_original
             expect_any_instance_of(BGS::Service).to receive(:create_note).with(
-              '600210032',
-              'Claim set to manual by VA.gov: This application needs manual review because a 686 was submitted '\
-              'for removal of a step-child that has left household.'
+              claim_id: '600210032',
+              note_text: 'Claim set to manual by VA.gov: This application needs manual review because a 686 was '\
+                         'submitted for removal of a step-child that has left household.',
+              participant_id:
             )
 
             subject
@@ -61,7 +71,7 @@ RSpec.describe BGS::Form686c do
           expect(form686c).to receive(:get_state_type).and_return 'Started'
           expect(Flipper).to receive(:enabled?).with(:dependents_removal_check).and_return(false)
           expect(Flipper).to receive(:enabled?).with(:dependents_pension_check).and_return(false)
-          expect_any_instance_of(BGS::Service).to receive(:update_proc).with('3831475', { proc_state: 'Ready' })
+          expect_any_instance_of(BGS::Service).to receive(:update_proc).with(proc_id: '3831475', proc_state: 'Ready')
           subject
         end
       end
@@ -86,7 +96,13 @@ RSpec.describe BGS::Form686c do
               expect(Flipper).to receive(:enabled?).with(:dependents_pension_check).and_return(true)
               expect_any_instance_of(BID::Awards::Service).to receive(:get_awards_pension).and_call_original
 
-              BGS::Form686c.new(user_object).submit(payload)
+              BGS::Form686c.new(icn:,
+                                common_name:,
+                                participant_id:,
+                                ssn:,
+                                first_name:,
+                                middle_name:,
+                                last_name:).submit(payload)
             end
           end
         end
@@ -100,12 +116,13 @@ RSpec.describe BGS::Form686c do
         VCR.use_cassette('bgs/form686c/submit') do
           VCR.use_cassette('bid/awards/get_awards_pension') do
             VCR.use_cassette('bgs/service/create_note') do
-              expect_any_instance_of(BGS::Service).to receive(:update_proc).with('3831475',
-                                                                                 { proc_state: 'MANUAL_VAGOV' })
+              expect_any_instance_of(BGS::Service).to receive(:update_proc).with(proc_id: '3831475',
+                                                                                 proc_state: 'MANUAL_VAGOV')
               expect_any_instance_of(BGS::Service).to receive(:create_note).with(
-                '600210032',
-                'Claim set to manual by VA.gov: This application needs manual review because a 686 was submitted '\
-                'along with a 674.'
+                claim_id: '600210032',
+                note_text: 'Claim set to manual by VA.gov: This application needs manual review because a 686 was '\
+                           'submitted along with a 674.',
+                participant_id:
               )
 
               subject

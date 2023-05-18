@@ -8,6 +8,8 @@ RSpec.describe BGS::VnpRelationships do
   let(:participant_id) { '146189' }
   let(:veteran_hash) { { vnp_participant_id: '146189' } }
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
   let(:dependent_relationships) { FactoryBot.build(:dependent_relationships) }
   let(:step_children_relationships) { FactoryBot.build(:step_children_relationships) }
 
@@ -38,50 +40,13 @@ RSpec.describe BGS::VnpRelationships do
             veteran: veteran_hash,
             dependents: dependent_array,
             step_children: [],
-            user: user_object
+            icn:,
+            common_name:
           ).create_all
 
           expect(dependents.first).to include(
             participant_relationship_type_name: 'Child',
             family_relationship_type_name: 'Biological'
-          )
-        end
-      end
-    end
-
-    xcontext 'reporting a divorce' do
-      it 'returns a relationship hash with correct :ptcpnt_rlnshp_type_nm and :family_rlnshp_type_nm' do
-        VCR.use_cassette('bgs/vnp_relationships/create/divorce') do
-          divorce = {
-            vnp_participant_id: participant_id,
-            participant_relationship_type_name: 'Spouse',
-            family_relationship_type_name: 'Ex-Spouse',
-            begin_date: nil,
-            end_date: nil,
-            event_date: '2001-02-03',
-            marriage_state: nil,
-            marriage_city: nil,
-            divorce_state: 'FL',
-            divorce_city: 'Tampa',
-            marriage_termination_type_code: 'Divorce',
-            living_expenses_paid_amount: nil
-          }
-
-          dependent_array = [divorce]
-          dependents = BGS::VnpRelationships.new(
-            proc_id:,
-            veteran: veteran_hash,
-            dependents: dependent_array,
-            step_children: [],
-            user:
-          ).create_all
-
-          expect(dependents.first).to include(
-            ptcpnt_rlnshp_type_nm: 'Spouse',
-            family_rlnshp_type_nm: 'Ex-Spouse',
-            marage_trmntn_type_cd: 'Divorce',
-            marage_trmntn_city_nm: 'Tampa',
-            marage_trmntn_state_cd: 'FL'
           )
         end
       end
@@ -111,7 +76,8 @@ RSpec.describe BGS::VnpRelationships do
             veteran: veteran_hash,
             dependents: dependent_array,
             step_children: [],
-            user: user_object
+            icn:,
+            common_name:
           ).create_all
 
           expect(dependents.first).to include(
@@ -148,7 +114,8 @@ RSpec.describe BGS::VnpRelationships do
             veteran: veteran_hash,
             dependents: dependent_array,
             step_children: [],
-            user: user_object
+            icn:,
+            common_name:
           ).create_all
           expect(dependents.first).to include(
             participant_relationship_type_name: 'Spouse',
@@ -183,7 +150,8 @@ RSpec.describe BGS::VnpRelationships do
                                                  veteran: veteran_hash,
                                                  dependents: dependent_array,
                                                  step_children: [],
-                                                 user: user_object).create_all
+                                                 icn:,
+                                                 common_name:).create_all
           expect(dependents.first).to include(
             participant_relationship_type_name: 'Spouse',
             family_relationship_type_name: 'Spouse',
@@ -202,7 +170,8 @@ RSpec.describe BGS::VnpRelationships do
             veteran: veteran_hash,
             dependents: dependent_relationships,
             step_children: [],
-            user: user_object
+            icn:,
+            common_name:
           )
 
           expect(bgs_relationship).to receive(:send_spouse_marriage_history_relationships).with(
@@ -242,7 +211,8 @@ RSpec.describe BGS::VnpRelationships do
             veteran: veteran_hash,
             dependents: [],
             step_children: step_children_relationships,
-            user: user_object
+            icn:,
+            common_name:
           )
 
           expect(bgs_relationship).to receive(:send_step_children_relationships)

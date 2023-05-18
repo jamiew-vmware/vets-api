@@ -13,10 +13,18 @@ RSpec.describe 'Health Care Application Integration', type: %i[request serialize
   end
 
   describe 'GET rating_info' do
-    let(:current_user) { build(:ch33_dd_user) }
+    let(:user) { build(:evss_user, :loa3, first_name:, middle_name:, last_name:, icn:, ssn:, suffix:) }
+    let(:first_name) { 'abraham.lincoln@vets.gov' }
+    let(:middle_name) { nil }
+    let(:last_name) { nil }
+    let(:suffix) { nil }
+    let(:icn) { '82836359962678900' }
+    let(:ssn) { '796104437' }
 
     before do
-      sign_in_as(current_user)
+      sign_in_as(user)
+      allow(BGS.configuration).to receive(:env).and_return('prepbepbenefits')
+      allow(BGS.configuration).to receive(:client_ip).and_return('10.247.35.119')
     end
 
     it 'returns the users rating info' do

@@ -2,16 +2,13 @@
 
 module BGSDependents
   class Veteran < Base
-    attribute :participant_id, String
-    attribute :ssn, String
-    attribute :first_name, String
-    attribute :middle_name, String
-    attribute :last_name, String
+    attr_reader :proc_id, :first_name, :middle_name, :last_name
 
-    def initialize(proc_id, user)
+    def initialize(proc_id:, first_name:, middle_name:, last_name:)
       @proc_id = proc_id
-      @user = user
-      self.attributes = user_veteran_attributes
+      @first_name = first_name
+      @middle_name = middle_name
+      @last_name = last_name
     end
 
     def formatted_params(payload)
@@ -63,16 +60,6 @@ module BGSDependents
     # rubocop:enable Metrics/MethodLength
 
     private
-
-    def user_veteran_attributes
-      {
-        participant_id: @user.participant_id,
-        ssn: @user.ssn,
-        first_name: @user.first_name,
-        middle_name: @user.middle_name,
-        last_name: @user.last_name
-      }
-    end
 
     def marital_status(dependents_application)
       spouse_lives_with_vet = dependents_application.dig('does_live_with_spouse', 'spouse_does_live_with_veteran')

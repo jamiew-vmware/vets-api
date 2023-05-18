@@ -18,6 +18,7 @@ RSpec.describe BGS::DependentService do
       }
     }
   end
+  let(:file_number) { '796043735' }
 
   before { allow(claim).to receive(:id).and_return('1234') }
 
@@ -41,7 +42,7 @@ RSpec.describe BGS::DependentService do
         VCR.use_cassette('bgs/dependent_service/submit_686c_form') do
           service = BGS::DependentService.new(user)
           expect(service).not_to receive(:log_exception_to_sentry)
-          expect(BGS::SubmitForm686cJob).to receive(:perform_async).with(user.uuid, claim.id, vet_info)
+          expect(BGS::SubmitForm686cJob).to receive(:perform_async).with(user.uuid, claim.id, file_number)
           expect(VBMS::SubmitDependentsPdfJob).to receive(:perform_async).with(claim.id, vet_info, true, true)
           service.submit_686c_form(claim)
         end
@@ -55,7 +56,7 @@ RSpec.describe BGS::DependentService do
           vet_info['veteran_information']['va_file_number'] = '12345678'
           service = BGS::DependentService.new(user)
           expect(service).not_to receive(:log_exception_to_sentry)
-          expect(BGS::SubmitForm686cJob).to receive(:perform_async).with(user.uuid, claim.id, vet_info)
+          expect(BGS::SubmitForm686cJob).to receive(:perform_async).with(user.uuid, claim.id, '12345678')
           expect(VBMS::SubmitDependentsPdfJob).to receive(:perform_async).with(claim.id, vet_info, true, true)
           service.submit_686c_form(claim)
         end
@@ -67,7 +68,7 @@ RSpec.describe BGS::DependentService do
         expect_any_instance_of(BGS::PersonWebService).to receive(:find_person_by_ptcpnt_id).and_return({ file_nbr: '796-04-3735' }) # rubocop:disable Layout/LineLength
         service = BGS::DependentService.new(user)
         expect(service).not_to receive(:log_exception_to_sentry)
-        expect(BGS::SubmitForm686cJob).to receive(:perform_async).with(user.uuid, claim.id, vet_info)
+        expect(BGS::SubmitForm686cJob).to receive(:perform_async).with(user.uuid, claim.id, '796043735')
         expect(VBMS::SubmitDependentsPdfJob).to receive(:perform_async).with(claim.id, vet_info, true, true)
         service.submit_686c_form(claim)
       end

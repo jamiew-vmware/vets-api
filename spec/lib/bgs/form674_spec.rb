@@ -5,6 +5,13 @@ require 'bgs/form674'
 
 RSpec.describe BGS::Form674 do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:ssn) { user_object.ssn }
+  let(:common_name) { user_object.common_name }
+  let(:first_name) { user_object.first_name }
+  let(:middle_name) { user_object.middle_name }
+  let(:last_name) { user_object.last_name }
+  let(:participant_id) { user_object.participant_id }
   let(:all_flows_payload) { FactoryBot.build(:form_686c_674_kitchen_sink) }
 
   # @TODO: may want to return something else
@@ -12,7 +19,13 @@ RSpec.describe BGS::Form674 do
     VCR.use_cassette('bgs/form674/submit') do
       VCR.use_cassette('bid/awards/get_awards_pension') do
         VCR.use_cassette('bgs/service/create_note') do
-          modify_dependents = BGS::Form674.new(user_object).submit(all_flows_payload)
+          modify_dependents = BGS::Form674.new(icn:,
+                                               ssn:,
+                                               common_name:,
+                                               first_name:,
+                                               middle_name:,
+                                               last_name:,
+                                               participant_id:).submit(all_flows_payload)
 
           expect(modify_dependents).to include(
             :jrn_dt,
@@ -40,11 +53,18 @@ RSpec.describe BGS::Form674 do
         expect_any_instance_of(BGS::VnpRelationships).to receive(:create_all).and_call_original
         expect_any_instance_of(BID::Awards::Service).to receive(:get_awards_pension).and_call_original
         expect_any_instance_of(BGS::Service).to receive(:create_note).with(
-          '600209223',
-          'Claim set to manual by VA.gov: This application needs manual review because a 674 was submitted.'
+          claim_id: '600209223',
+          note_text: 'Claim set to manual by VA.gov: This application needs manual review because a 674 was submitted.',
+          participant_id:
         )
 
-        BGS::Form674.new(user_object).submit(all_flows_payload)
+        BGS::Form674.new(icn:,
+                         ssn:,
+                         common_name:,
+                         first_name:,
+                         middle_name:,
+                         last_name:,
+                         participant_id:).submit(all_flows_payload)
       end
     end
   end
@@ -54,7 +74,13 @@ RSpec.describe BGS::Form674 do
       VCR.use_cassette('bgs/service/create_note') do
         expect(Flipper).to receive(:enabled?).with(:dependents_pension_check).and_return(false)
 
-        BGS::Form674.new(user_object).submit(all_flows_payload)
+        BGS::Form674.new(icn:,
+                         ssn:,
+                         common_name:,
+                         first_name:,
+                         middle_name:,
+                         last_name:,
+                         participant_id:).submit(all_flows_payload)
       end
     end
   end
@@ -66,7 +92,13 @@ RSpec.describe BGS::Form674 do
           expect(Flipper).to receive(:enabled?).with(:dependents_pension_check).and_return(true)
           expect_any_instance_of(BID::Awards::Service).to receive(:get_awards_pension).and_call_original
 
-          BGS::Form674.new(user_object).submit(all_flows_payload)
+          BGS::Form674.new(icn:,
+                           ssn:,
+                           common_name:,
+                           first_name:,
+                           middle_name:,
+                           last_name:,
+                           participant_id:).submit(all_flows_payload)
         end
       end
     end

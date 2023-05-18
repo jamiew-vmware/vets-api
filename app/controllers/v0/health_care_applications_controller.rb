@@ -13,8 +13,9 @@ module V0
     before_action :load_user, only: %i[create enrollment_status]
 
     def rating_info
-      service = BGS::Service.new(current_user)
-      disability_rating = service.find_rating_data[:disability_rating_record][:service_connected_combined_degree]
+      service = BGS::Service.new(icn: current_user.icn, common_name: current_user.common_name)
+      rating_data = service.find_rating_data(ssn: current_user.ssn)
+      disability_rating = rating_data[:disability_rating_record][:service_connected_combined_degree]
 
       render(
         json: {

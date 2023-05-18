@@ -5,8 +5,15 @@ require 'bgs/children'
 
 RSpec.describe BGS::Children do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
+  let(:ssn) { user_object.ssn }
   let(:proc_id) { '3828033' }
   let(:all_flows_payload) { FactoryBot.build(:form_686c_674_kitchen_sink) }
+
+  before { Timecop.freeze }
+
+  after { Timecop.return }
 
   context 'adding children' do
     let(:adopted_payload) { FactoryBot.build(:adopted_child_lives_with_veteran) }
@@ -17,7 +24,9 @@ RSpec.describe BGS::Children do
         children = BGS::Children.new(
           proc_id:,
           payload: all_flows_payload,
-          user: user_object
+          icn:,
+          common_name:,
+          ssn:
         ).create_all
 
         expect(children[:dependents]).to include(
@@ -32,32 +41,39 @@ RSpec.describe BGS::Children do
 
     it 'returns a hash for adopted child that does live with veteran' do
       veteran_address_info = {
-        addrs_one_txt: '8200 Doby LN',
-        addrs_three_txt: nil,
-        addrs_two_txt: nil,
-        city_nm: 'Pasadena',
-        cntry_nm: 'USA',
-        email_addrs_txt: nil,
-        mlty_post_office_type_cd: nil,
-        mlty_postal_type_cd: nil,
-        postal_cd: 'CA',
-        prvnc_nm: 'CA',
-        ptcpnt_addrs_type_nm: 'Mailing',
-        shared_addrs_ind: 'N',
-        vnp_proc_id: '3828033',
-        vnp_ptcpnt_id: '149600',
-        zip_prefix_nbr: '21122'
+        address_params:
+        {
+          addrs_one_txt: '8200 Doby LN',
+          addrs_three_txt: nil,
+          addrs_two_txt: nil,
+          city_nm: 'Pasadena',
+          cntry_nm: 'USA',
+          efctv_dt: Time.current.iso8601,
+          email_addrs_txt: nil,
+          frgn_postal_cd: nil,
+          mlty_post_office_type_cd: nil,
+          mlty_postal_type_cd: nil,
+          postal_cd: 'CA',
+          prvnc_nm: 'CA',
+          ptcpnt_addrs_type_nm: 'Mailing',
+          shared_addrs_ind: 'N',
+          vnp_proc_id: '3828033',
+          vnp_ptcpnt_id: '149600',
+          zip_prefix_nbr: '21122'
+        }
       }
 
       VCR.use_cassette('bgs/children/apdopted_child_lives_with_veteran') do
         expect_any_instance_of(BGS::Service).to receive(:create_address)
-          .with(a_hash_including(veteran_address_info)).at_most(4).times
+          .with(veteran_address_info).at_most(4).times
           .and_call_original
 
         children = BGS::Children.new(
           proc_id:,
           payload: adopted_payload,
-          user: user_object
+          icn:,
+          common_name:,
+          ssn:
         ).create_all
 
         expect(children[:dependents]).to include(
@@ -75,7 +91,9 @@ RSpec.describe BGS::Children do
         children = BGS::Children.new(
           proc_id:,
           payload: add_step_child_payload,
-          user: user_object
+          icn:,
+          common_name:,
+          ssn:
         ).create_all
 
         expect(children[:dependents]).to include(
@@ -105,7 +123,9 @@ RSpec.describe BGS::Children do
         children = BGS::Children.new(
           proc_id:,
           payload: all_flows_payload,
-          user: user_object
+          icn:,
+          common_name:,
+          ssn:
         ).create_all
 
         expect(children[:step_children]).to include(
@@ -125,7 +145,9 @@ RSpec.describe BGS::Children do
         children = BGS::Children.new(
           proc_id:,
           payload: all_flows_payload,
-          user: user_object
+          icn:,
+          common_name:,
+          ssn:
         ).create_all
 
         expect(children[:dependents]).to include(
@@ -146,7 +168,9 @@ RSpec.describe BGS::Children do
         children = BGS::Children.new(
           proc_id:,
           payload: all_flows_payload,
-          user: user_object
+          icn:,
+          common_name:,
+          ssn:
         ).create_all
 
         expect(children[:dependents]).to include(

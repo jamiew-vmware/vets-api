@@ -337,16 +337,6 @@ FactoryBot.define do
       end
     end
 
-    factory :ch33_dd_user, traits: [:loa3] do
-      ssn { '796104437' }
-      icn { '82836359962678900' }
-
-      after(:build) do
-        allow(BGS.configuration).to receive(:env).and_return('prepbepbenefits')
-        allow(BGS.configuration).to receive(:client_ip).and_return('10.247.35.119')
-      end
-    end
-
     trait :api_auth do
       sign_in do
         {

@@ -5,6 +5,8 @@ require 'bgs/vnp_benefit_claim'
 
 RSpec.describe BGS::VnpBenefitClaim do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
   let(:proc_id) { '3828033' }
   let(:participant_id) { '146189' }
   let(:veteran_hash) do
@@ -40,7 +42,8 @@ RSpec.describe BGS::VnpBenefitClaim do
         vnp_benefit_claim = BGS::VnpBenefitClaim.new(
           proc_id:,
           veteran: veteran_hash,
-          user: user_object
+          icn:,
+          common_name:
         ).create
 
         expect(vnp_benefit_claim).to include(
@@ -71,7 +74,8 @@ RSpec.describe BGS::VnpBenefitClaim do
         BGS::VnpBenefitClaim.new(
           proc_id:,
           veteran: veteran_hash,
-          user: user_object
+          icn:,
+          common_name:
         ).create
       end
     end
@@ -83,7 +87,8 @@ RSpec.describe BGS::VnpBenefitClaim do
         existing_record = BGS::VnpBenefitClaim.new(
           proc_id:,
           veteran: veteran_hash,
-          user: user_object
+          icn:,
+          common_name:
         ).update(benefit_claim, vnp_benefit_claim)
 
         expect(existing_record).to include(
@@ -113,7 +118,8 @@ RSpec.describe BGS::VnpBenefitClaim do
         BGS::VnpBenefitClaim.new(
           proc_id:,
           veteran: veteran_hash,
-          user: user_object
+          icn:,
+          common_name:
         ).update(benefit_claim, vnp_benefit_claim)
       end
     end

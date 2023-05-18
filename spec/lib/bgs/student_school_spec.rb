@@ -5,6 +5,8 @@ require 'bgs/student_school'
 
 RSpec.describe BGS::StudentSchool do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
   let(:proc_id) { '3829729' }
   let(:vnp_participant_id) { '149471' }
   let(:all_flows_payload) { FactoryBot.build(:form_686c_674_kitchen_sink) }
@@ -61,8 +63,9 @@ RSpec.describe BGS::StudentSchool do
         BGS::StudentSchool.new(
           proc_id:,
           vnp_participant_id:,
-          payload: all_flows_payload,
-          user: user_object
+          dependents_application: all_flows_payload['dependents_application'],
+          icn:,
+          common_name:
         ).create
       end
     end

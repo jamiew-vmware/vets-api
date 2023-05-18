@@ -117,7 +117,7 @@ http_interactions:
             <vaws:STN_ID>281</vaws:STN_ID>
             <vaws:applicationName>VAgovAPI</vaws:applicationName>
             <vaws:ExternalUid>82836359962678900</vaws:ExternalUid>
-            <vaws:ExternalKey>abraham lincoln Jr</vaws:ExternalKey>
+            <vaws:ExternalKey>abraham.lincoln@vets.gov</vaws:ExternalKey>
           </vaws:VaServiceHeaders>
         </wsse:Security>
         </env:Header><env:Body><tns:findRatingData><fileNumber>796104437</fileNumber></tns:findRatingData></env:Body></env:Envelope>
@@ -129,7 +129,7 @@ http_interactions:
       Content-Type:
       - text/xml;charset=UTF-8
       Content-Length:
-      - '993'
+      - '999'
       Accept-Encoding:
       - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
       Accept:

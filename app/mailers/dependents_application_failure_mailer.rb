@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 class DependentsApplicationFailureMailer < ApplicationMailer
-  def build(user)
+  def build(email:, first_name:, last_name:)
     opt = {}
 
     opt[:to] = [
-      user.email
+      email
     ]
 
     template = File.read('app/mailers/views/dependents_application_failure.erb')

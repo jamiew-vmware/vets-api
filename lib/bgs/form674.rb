@@ -14,20 +14,36 @@ module BGS
   class Form674
     include SentryLogging
 
-    def initialize(user)
-      @user = user
+    attr_reader :icn, :common_name, :participant_id, :ssn, :first_name, :middle_name, :last_name
+
+    def initialize(icn:, ssn:, common_name:, first_name:, middle_name:, last_name:, participant_id:) # rubocop:disable Metrics/ParameterLists
+      @icn = icn
+      @ssn = ssn
+      @common_name = common_name
+      @first_name = first_name
+      @middle_name = middle_name
+      @last_name = last_name
+      @participant_id = participant_id
       @end_product_name = '130 - Automated School Attendance 674'
       @end_product_code = '130SCHATTEBN'
     end
 
-    # rubocop:disable Metrics/MethodLength
-    def submit(payload)
+    def submit(payload) # rubocop:disable Metrics/MethodLength
       proc_id = create_proc_id_and_form
-      veteran = VnpVeteran.new(proc_id:, payload:, user: @user, claim_type: '130SCHATTEBN').create
+      veteran = VnpVeteran.new(proc_id:,
+                               payload:,
+                               icn:,
+                               common_name:,
+                               first_name:,
+                               middle_name:,
+                               last_name:,
+                               participant_id:,
+                               ssn:,
+                               claim_type: '130SCHATTEBN').create
 
-      process_relationships(proc_id, veteran, payload)
+      process_relationships(proc_id, veteran, payload['dependents_application'])
 
-      vnp_benefit_claim = VnpBenefitClaim.new(proc_id:, veteran:, user: @user)
+      vnp_benefit_claim = VnpBenefitClaim.new(proc_id:, veteran:, icn:, common_name:)
       vnp_benefit_claim_record = vnp_benefit_claim.create
 
       set_claim_type('MANUAL_VAGOV') # we are TEMPORARILY always setting to MANUAL_VAGOV for 674
@@ -36,14 +52,17 @@ module BGS
       log_message_to_sentry("#{proc_id} - #{@end_product_code}", :warn, '', { team: 'vfs-ebenefits' })
 
       benefit_claim_record = BenefitClaim.new(
-        args: {
-          vnp_benefit_claim: vnp_benefit_claim_record,
-          veteran:,
-          user: @user,
-          proc_id:,
-          end_product_name: @end_product_name,
-          end_product_code: @end_product_code
-        }
+        vnp_benefit_claim: vnp_benefit_claim_record,
+        veteran:,
+        proc_id:,
+        end_product_name: @end_product_name,
+        end_product_code: @end_product_code,
+        icn:,
+        common_name:,
+        ssn:,
+        participant_id:,
+        first_name:,
+        last_name:
       ).create
 
       vnp_benefit_claim.update(benefit_claim_record, vnp_benefit_claim_record)
@@ -52,42 +71,37 @@ module BGS
       # but for now we are temporarily always setting to MANUAL_VAGOV for 674
       # when that changes, we need to surround this block of code in an IF statement
       note_text = 'Claim set to manual by VA.gov: This application needs manual review because a 674 was submitted.'
-      bgs_service.create_note(benefit_claim_record[:benefit_claim_id], note_text)
+      bgs_service.create_note(claim_id: benefit_claim_record[:benefit_claim_id], note_text:, participant_id:)
 
-      bgs_service.update_proc(proc_id, proc_state: 'MANUAL_VAGOV')
+      bgs_service.update_proc(proc_id:, proc_state: 'MANUAL_VAGOV')
     end
-    # rubocop:enable Metrics/MethodLength
 
     private
 
-    def process_relationships(proc_id, veteran, payload)
-      dependent = DependentHigherEdAttendance.new(proc_id:, payload:, user: @user).create
+    def process_relationships(proc_id, veteran, dependents_application)
+      dependent = DependentHigherEdAttendance.new(proc_id:, dependents_application:, icn:, ssn:, common_name:).create
 
       VnpRelationships.new(
         proc_id:,
         veteran:,
         dependents: [dependent],
         step_children: [],
-        user: @user
+        icn:,
+        common_name:
       ).create_all
 
-      process_674(proc_id, dependent, payload)
+      process_674(proc_id, dependent[:vnp_participant_id], dependents_application)
     end
 
-    def process_674(proc_id, dependent, payload)
-      StudentSchool.new(
-        proc_id:,
-        vnp_participant_id: dependent[:vnp_participant_id],
-        payload:,
-        user: @user
-      ).create
+    def process_674(proc_id, vnp_participant_id, dependents_application)
+      StudentSchool.new(proc_id:, vnp_participant_id:, dependents_application:, icn:, common_name:).create
     end
 
     def create_proc_id_and_form
       vnp_response = bgs_service.create_proc(proc_state: 'MANUAL_VAGOV')
       bgs_service.create_proc_form(
-        vnp_response[:vnp_proc_id],
-        '21-674'
+        vnp_proc_id: vnp_response[:vnp_proc_id],
+        form_type_code: '21-674'
       )
 
       vnp_response[:vnp_proc_id]
@@ -103,7 +117,7 @@ module BGS
         receiving_pension = false
 
         if Flipper.enabled?(:dependents_pension_check)
-          pension_response = bid_service.get_awards_pension
+          pension_response = bid_service.get_awards_pension(participant_id:)
           receiving_pension = pension_response.body['awards_pension']['is_in_receipt_of_pension']
         end
 
@@ -118,11 +132,11 @@ module BGS
     end
 
     def bgs_service
-      BGS::Service.new(@user)
+      BGS::Service.new(icn:, common_name:)
     end
 
     def bid_service
-      BID::Awards::Service.new(@user)
+      BID::Awards::Service.new
     end
   end
 end

@@ -21,56 +21,85 @@ module BGS
     MARRIAGE_TYPES = %w[COMMON-LAW TRIBAL PROXY OTHER].freeze
     RELATIONSHIPS = %w[CHILD DEPENDENT_PARENT].freeze
 
-    def initialize(user)
-      @user = user
+    attr_reader :icn,
+                :common_name,
+                :participant_id,
+                :ssn,
+                :first_name,
+                :middle_name,
+                :last_name,
+                :end_product_name,
+                :end_product_code,
+                :proc_state,
+                :note_text
+
+    def initialize(icn:, common_name:, participant_id:, ssn:, first_name:, middle_name:, last_name:) # rubocop:disable Metrics/ParameterLists
+      @icn = icn
+      @common_name = common_name
+      @participant_id = participant_id
+      @ssn = ssn
+      @first_name = first_name
+      @middle_name = middle_name
+      @last_name = last_name
       @end_product_name = '130 - Automated Dependency 686c'
       @end_product_code = '130DPNEBNADJ'
       @proc_state = 'Ready'
       @note_text = nil
     end
 
-    # rubocop:disable Metrics/MethodLength
-    def submit(payload)
+    def submit(payload) # rubocop:disable Metrics/MethodLength
       vnp_proc_state_type_cd = get_state_type(payload)
       proc_id = create_proc_id_and_form(vnp_proc_state_type_cd)
-      veteran = VnpVeteran.new(proc_id:, payload:, user: @user, claim_type: '130DPNEBNADJ').create
+      veteran = VnpVeteran.new(proc_id:,
+                               payload:,
+                               icn:,
+                               common_name:,
+                               first_name:,
+                               middle_name:,
+                               last_name:,
+                               participant_id:,
+                               ssn:,
+                               claim_type: '130DPNEBNADJ').create
 
       process_relationships(proc_id, veteran, payload)
 
-      vnp_benefit_claim = VnpBenefitClaim.new(proc_id:, veteran:, user: @user)
+      vnp_benefit_claim = VnpBenefitClaim.new(proc_id:, veteran:, icn:, common_name:)
       vnp_benefit_claim_record = vnp_benefit_claim.create
 
       set_claim_type(vnp_proc_state_type_cd, payload['view:selectable686_options'])
 
       # temporary logging to troubleshoot
-      log_message_to_sentry("#{proc_id} - #{@end_product_code}", :warn, '', { team: 'vfs-ebenefits' })
+      log_message_to_sentry("#{proc_id} - #{end_product_code}", :warn, '', { team: 'vfs-ebenefits' })
 
       benefit_claim_record = BenefitClaim.new(
-        args: {
-          vnp_benefit_claim: vnp_benefit_claim_record,
-          veteran:,
-          user: @user,
-          proc_id:,
-          end_product_name: @end_product_name,
-          end_product_code: @end_product_code
-        }
+        vnp_benefit_claim: vnp_benefit_claim_record,
+        veteran:,
+        proc_id:,
+        end_product_name:,
+        end_product_code:,
+        icn:,
+        common_name:,
+        ssn:,
+        participant_id:,
+        first_name:,
+        last_name:
       ).create
+
       benefit_claim_id = benefit_claim_record[:benefit_claim_id]
       # temporary logging to troubleshoot
       log_message_to_sentry("#{proc_id} - #{benefit_claim_id}", :warn, '', { team: 'vfs-ebenefits' })
 
       vnp_benefit_claim.update(benefit_claim_record, vnp_benefit_claim_record)
       prep_manual_claim(benefit_claim_id) if vnp_proc_state_type_cd == 'MANUAL_VAGOV'
-      bgs_service.update_proc(proc_id, proc_state: @proc_state)
+      bgs_service.update_proc(proc_id:, proc_state:)
     end
-    # rubocop:enable Metrics/MethodLength
 
     private
 
     def process_relationships(proc_id, veteran, payload)
-      dependents = Dependents.new(proc_id:, payload:, user: @user).create_all
-      marriages = Marriages.new(proc_id:, payload:, user: @user).create_all
-      children = Children.new(proc_id:, payload:, user: @user).create_all
+      dependents = Dependents.new(proc_id:, payload:, icn:, common_name:, ssn:).create_all
+      marriages = Marriages.new(proc_id:, payload:, icn:, common_name:, ssn:).create_all
+      children = Children.new(proc_id:, payload:, icn:, common_name:, ssn:).create_all
 
       veteran_dependents = dependents + marriages + children[:dependents]
 
@@ -79,15 +108,16 @@ module BGS
         veteran:,
         dependents: veteran_dependents,
         step_children: children[:step_children],
-        user: @user
+        icn:,
+        common_name:
       ).create_all
     end
 
     def create_proc_id_and_form(vnp_proc_state_type_cd)
       vnp_response = bgs_service.create_proc(proc_state: vnp_proc_state_type_cd)
       bgs_service.create_proc_form(
-        vnp_response[:vnp_proc_id],
-        '21-686c'
+        vnp_proc_id: vnp_response[:vnp_proc_id],
+        form_type_code: '21-686c'
       )
 
       vnp_response[:vnp_proc_id]
@@ -126,7 +156,7 @@ module BGS
 
     # rubocop:disable Metrics/MethodLength
     # the default claim type is 130DPNEBNADJ (eBenefits Dependency Adjustment)
-    def set_claim_type(proc_state, selectable_options)
+    def set_claim_type(vnp_proc_state, selectable_options)
       # selectable_options is a hash of boolean values (ex. 'report_divorce' => false)
       # if any of the dependent_removal_options in selectable_options is set to true, we are removing a dependent
       removing_dependent = false
@@ -137,13 +167,13 @@ module BGS
 
       # we only need to do a pension check if we are removing a dependent or we have set the status to manual
       receiving_pension = false
-      if Flipper.enabled?(:dependents_pension_check) && (removing_dependent || proc_state == 'MANUAL_VAGOV')
-        pension_response = bid_service.get_awards_pension
+      if Flipper.enabled?(:dependents_pension_check) && (removing_dependent || vnp_proc_state == 'MANUAL_VAGOV')
+        pension_response = bid_service.get_awards_pension(participant_id:)
         receiving_pension = pension_response.body['awards_pension']['is_in_receipt_of_pension']
       end
 
       # if we are setting the claim to be manually reviewed, then exception/rejection labels should be used
-      if proc_state == 'MANUAL_VAGOV'
+      if vnp_proc_state == 'MANUAL_VAGOV'
         if removing_dependent && receiving_pension
           @end_product_name = 'PMC - Self Service - Removal of Dependent Exceptn'
           @end_product_code = '130SSRDPMCE'
@@ -170,17 +200,17 @@ module BGS
     # rubocop:enable Metrics/MethodLength
 
     def bgs_service
-      BGS::Service.new(@user)
+      BGS::Service.new(icn:, common_name:)
     end
 
     def bid_service
-      BID::Awards::Service.new(@user)
+      BID::Awards::Service.new
     end
 
-    def prep_manual_claim(benefit_claim_id)
+    def prep_manual_claim(claim_id)
       @proc_state = 'MANUAL_VAGOV'
 
-      bgs_service.create_note(benefit_claim_id, @note_text)
+      bgs_service.create_note(claim_id:, note_text:, participant_id:)
     end
 
     def set_to_manual_vagov(reason_code)

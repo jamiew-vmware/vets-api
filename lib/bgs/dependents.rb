@@ -4,26 +4,30 @@ require_relative 'service'
 
 module BGS
   class Dependents
-    def initialize(proc_id:, payload:, user:)
+    attr_reader :proc_id, :payload, :icn, :ssn, :common_name, :dependents, :dependents_application, :views
+
+    def initialize(proc_id:, payload:, icn:, ssn:, common_name:)
       @proc_id = proc_id
       @payload = payload
       @dependents = []
       @dependents_application = @payload['dependents_application']
-      @user = user
+      @icn = icn
+      @ssn = ssn
+      @common_name = common_name
       @views = payload['view:selectable686_options']
     end
 
     def create_all
-      report_deaths if @views['report_death']
-      report_divorce if @dependents_application['report_divorce']
+      report_deaths if views['report_death']
+      report_divorce if dependents_application['report_divorce']
 
-      @dependents
+      dependents
     end
 
     private
 
     def report_deaths
-      @dependents_application['deaths'].each do |death_info|
+      dependents_application['deaths'].each do |death_info|
         death = BGSDependents::Death.new(death_info)
         relationship_types = death.relationship_type(death_info)
 
@@ -31,8 +35,8 @@ module BGS
 
         formatted_info = death.format_info
         death_info['location']['state_code'] = death_info['location'].delete('state')
-        participant = bgs_service.create_participant(@proc_id)
-        bgs_service.create_person(person_params(death, participant, formatted_info))
+        participant = bgs_service.create_participant(proc_id:, ssn:)
+        bgs_service.create_person(person_params: person_params(death, participant, formatted_info))
         # Need to add death location once BGS adds support for this functionality
 
         @dependents << death.serialize_dependent_result(
@@ -49,10 +53,10 @@ module BGS
     end
 
     def report_divorce
-      divorce = BGSDependents::Divorce.new(@dependents_application['report_divorce'])
+      divorce = BGSDependents::Divorce.new(dependents_application['report_divorce'])
       formatted_info = divorce.format_info
-      participant = bgs_service.create_participant(@proc_id)
-      bgs_service.create_person(person_params(divorce, participant, formatted_info))
+      participant = bgs_service.create_participant(proc_id:, ssn:)
+      bgs_service.create_person(person_params: person_params(divorce, participant, formatted_info))
 
       @dependents << divorce.serialize_dependent_result(
         participant,
@@ -71,18 +75,18 @@ module BGS
     end
 
     def person_params(calling_object, participant, dependent_info)
-      calling_object.create_person_params(@proc_id, participant[:vnp_ptcpnt_id], dependent_info)
+      calling_object.create_person_params(proc_id, participant[:vnp_ptcpnt_id], dependent_info)
     end
 
     def send_address(calling_object, participant, address_info)
       address = calling_object.generate_address(address_info)
-      address_params = calling_object.create_address_params(@proc_id, participant[:vnp_ptcpnt_id], address)
+      address_params = calling_object.create_address_params(proc_id, participant[:vnp_ptcpnt_id], address)
 
-      bgs_service.create_address(address_params)
+      bgs_service.create_address(address_params:)
     end
 
     def bgs_service
-      @bgs_service ||= BGS::Service.new(@user)
+      @bgs_service ||= BGS::Service.new(icn:, common_name:)
     end
   end
 end

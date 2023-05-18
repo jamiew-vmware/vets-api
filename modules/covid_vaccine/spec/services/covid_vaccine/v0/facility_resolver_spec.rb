@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'lighthouse/facilities/client'
 
 describe CovidVaccine::V0::FacilityResolver do
   subject { described_class.new }

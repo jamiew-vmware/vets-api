@@ -517,13 +517,20 @@ namespace :form526 do
         end
         user = OpenStruct.new(participant_id: fs.auth_headers['va_eauth_pid'], icn:, common_name: vname,
                               ssn:)
-        award_response = BGS::AwardsService.new(user).get_awards
+        award_response = BGS::AwardsService.new(participant_id: user.participant_id,
+                                                ssn: user.ssn,
+                                                common_name: user.common_name,
+                                                icn: user.icn).get_awards
         if award_response
           soj = award_response[:award_stn_nbr]
         else
           addr = fs.form.dig('form526', 'form526', 'veteran', 'currentMailingAddress')
-          soj = BGS::Service.new(user).get_regional_office_by_zip_code(addr['zipFirstFive'], addr['country'],
-                                                                       addr['state'], 'CP', ssn)
+          bgs_service = BGS::Service.new(icn: user.icn, common_name: user.common_name)
+          soj = bgs_service.get_regional_office_by_zip_code(zip_code: addr['zipFirstFive'],
+                                                            country: addr['country'],
+                                                            province: addr['state'],
+                                                            lob: 'CP',
+                                                            ssn:)
         end
         row = [vname, ssn, soj]
         csv << row

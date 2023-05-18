@@ -5,8 +5,11 @@ require 'bgs/dependent_higher_ed_attendance'
 
 RSpec.describe BGS::DependentHigherEdAttendance do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:ssn) { user_object.ssn }
+  let(:common_name) { user_object.common_name }
   let(:proc_id) { '3831414' }
-  let(:form_674_only) { FactoryBot.build(:form_674_only) }
+  let(:dependents_application) { FactoryBot.build(:form_674_only)['dependents_application'] }
 
   describe '#create' do
     context 'reporting a child 18 to 23 years old attending school' do
@@ -14,8 +17,10 @@ RSpec.describe BGS::DependentHigherEdAttendance do
         VCR.use_cassette('bgs/dependent_higher_ed_attendance/create') do
           dependents = BGS::DependentHigherEdAttendance.new(
             proc_id:,
-            payload: form_674_only,
-            user: user_object
+            dependents_application:,
+            icn:,
+            ssn:,
+            common_name:
           ).create
 
           expect(dependents).to include(

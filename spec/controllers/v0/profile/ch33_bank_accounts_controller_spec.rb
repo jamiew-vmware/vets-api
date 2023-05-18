@@ -3,11 +3,18 @@
 require 'rails_helper'
 
 RSpec.describe V0::Profile::Ch33BankAccountsController, type: :controller do
-  let(:user) { FactoryBot.build(:ch33_dd_user) }
+  let(:user) { FactoryBot.build(:user, :loa3, first_name:, middle_name:, last_name:, suffix:, ssn:, icn:) }
+  let(:suffix) { nil }
+  let(:first_name) { 'abraham.lincoln@vets.gov' }
+  let(:middle_name) { nil }
+  let(:last_name) { nil }
+  let(:ssn) { '796104437' }
+  let(:icn) { '82836359962678900' }
 
   before do
     sign_in_as(user)
-    allow_any_instance_of(User).to receive(:common_name).and_return('abraham.lincoln@vets.gov')
+    allow(BGS.configuration).to receive(:env).and_return('prepbepbenefits')
+    allow(BGS.configuration).to receive(:client_ip).and_return('10.247.35.119')
   end
 
   context 'unauthorized user' do
@@ -33,22 +40,6 @@ RSpec.describe V0::Profile::Ch33BankAccountsController, type: :controller do
     end
   end
 
-  def expect_find_ch33_dd_eft_res
-    expect(JSON.parse(response.body)).to eq(
-      {
-        'data' => {
-          'id' => '', 'type' => 'hashes',
-          'attributes' => {
-            'account_type' => 'Checking',
-            'account_number' => '123',
-            'financial_institution_name' => 'BANK OF AMERICA, N.A.',
-            'financial_institution_routing_number' => '*****0724'
-          }
-        }
-      }
-    )
-  end
-
   describe '#index' do
     it 'returns the right data' do
       VCR.use_cassette('bgs/service/find_ch33_dd_eft', VCR::MATCH_EVERYTHING) do
@@ -57,7 +48,19 @@ RSpec.describe V0::Profile::Ch33BankAccountsController, type: :controller do
         end
       end
 
-      expect_find_ch33_dd_eft_res
+      expect(JSON.parse(response.body)).to eq(
+        {
+          'data' => {
+            'id' => '', 'type' => 'hashes',
+            'attributes' => {
+              'account_type' => 'Checking',
+              'account_number' => '123',
+              'financial_institution_name' => 'BANK OF AMERICA, N.A.',
+              'financial_institution_routing_number' => '*****0724'
+            }
+          }
+        }
+      )
     end
   end
 
@@ -95,7 +98,19 @@ RSpec.describe V0::Profile::Ch33BankAccountsController, type: :controller do
       it 'submits the update req and rerenders index' do
         send_successful_update
 
-        # expect_find_ch33_dd_eft_res
+        expect(JSON.parse(response.body)).to eq(
+          {
+            'data' => {
+              'id' => '', 'type' => 'hashes',
+              'attributes' => {
+                'account_type' => 'Checking',
+                'account_number' => '123',
+                'financial_institution_name' => 'BANK OF AMERICA, N.A.',
+                'financial_institution_routing_number' => '*****0724'
+              }
+            }
+          }
+        )
       end
     end
 
@@ -113,9 +128,10 @@ RSpec.describe V0::Profile::Ch33BankAccountsController, type: :controller do
         }
 
         expect_any_instance_of(BGS::Service).to receive(:update_ch33_dd_eft).with(
-          '122239982',
-          '444',
-          true
+          routing_number: '122239982',
+          account_number: '444',
+          checking_account: true,
+          ssn: user.ssn
         ).and_return(
           OpenStruct.new(
             body: res

@@ -3,38 +3,26 @@
 require 'rails_helper'
 
 RSpec.describe BankName, type: :model do
-  let(:user) { FactoryBot.create(:ch33_dd_user) }
+  let(:bank_name_redis) { described_class.new(routing_number:, bank_name:) }
+  let(:routing_number) { 'some-routing-number' }
+  let(:bank_name) { 'some-bank-name' }
 
-  before { allow_any_instance_of(User).to receive(:common_name).and_return('abraham.lincoln@vets.gov') }
+  describe 'validations' do
+    context 'when routing number is nil' do
+      let(:routing_number) { nil }
+      let(:expected_error) { Common::Exceptions::ValidationErrors }
 
-  describe '.get_bank_name' do
-    context 'with blank routing number' do
-      it 'returns nil' do
-        expect(described_class.get_bank_name(user, '')).to eq(nil)
+      it 'returns validation error' do
+        expect { bank_name_redis.save! }.to raise_exception(expected_error)
       end
     end
 
-    context 'with cached bank name' do
-      let(:bank_name) { create(:bank_name) }
+    context 'when bank name is nil' do
+      let(:bank_name) { nil }
+      let(:expected_error) { Common::Exceptions::ValidationErrors }
 
-      it 'returns the cached name' do
-        expect(described_class.get_bank_name(user, bank_name.routing_number)).to eq(
-          bank_name.bank_name
-        )
-      end
-    end
-
-    context 'with cache miss' do
-      def get_bank_name
-        described_class.get_bank_name(user, '122400724')
-      end
-
-      it 'returns the bank name and saves it in cache' do
-        VCR.use_cassette('bgs/ddeft/find_bank_name_valid', VCR::MATCH_EVERYTHING) do
-          expect(get_bank_name).to eq('BANK OF AMERICA, N.A.')
-        end
-
-        expect(get_bank_name).to eq('BANK OF AMERICA, N.A.')
+      it 'returns validation error' do
+        expect { bank_name_redis.save! }.to raise_exception(expected_error)
       end
     end
   end

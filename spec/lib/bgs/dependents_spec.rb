@@ -5,6 +5,9 @@ require 'bgs/dependents'
 
 RSpec.describe BGS::Dependents do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
+  let(:ssn) { user_object.ssn }
   let(:proc_id) { '3828033' }
   let(:all_flows_payload) { FactoryBot.build(:form_686c_674_kitchen_sink) }
 
@@ -15,7 +18,9 @@ RSpec.describe BGS::Dependents do
           dependents = BGS::Dependents.new(
             proc_id:,
             payload: all_flows_payload,
-            user: user_object
+            icn:,
+            ssn:,
+            common_name:
           ).create_all
 
           expect(dependents).to include(
@@ -36,7 +41,9 @@ RSpec.describe BGS::Dependents do
           dependents = BGS::Dependents.new(
             proc_id:,
             payload: all_flows_payload,
-            user: user_object
+            icn:,
+            ssn:,
+            common_name:
           ).create_all
 
           # TODO: this expectation will change when we get the new data keys from the FE

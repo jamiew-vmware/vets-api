@@ -5,34 +5,18 @@ require 'bgs/vnp_veteran'
 
 RSpec.describe BGS::VnpVeteran do
   let(:user_object) { FactoryBot.create(:evss_user, :loa3) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
+  let(:participant_id) { user_object.participant_id }
+  let(:ssn) { user_object.ssn }
+  let(:first_name) { user_object.first_name }
+  let(:middle_name) { user_object.middle_name }
+  let(:last_name) { user_object.last_name }
   let(:all_flows_payload) { FactoryBot.build(:form_686c_674_kitchen_sink) }
-  let(:formatted_payload) do
-    {
-      'first' => 'WESLEY',
-      'middle' => nil,
-      'last' => 'FORD',
-      'phone_number' => '1112223333',
-      'email_address' => 'foo@foo.com',
-      'country_name' => 'USA',
-      'address_line1' => '2037400 twenty',
-      'address_line2' => 'ninth St apt 2222',
-      'address_line3' => 'Bldg 33333',
-      'city' => 'Pasadena',
-      'state_code' => 'CA',
-      'zip_code' => '21122',
-      'vet_ind' => 'Y',
-      'martl_status_type_cd' => 'Separated',
-      'veteran_address' => {
-        'country_name' => 'USA',
-        'address_line1' => '2037400 twenty',
-        'address_line2' => 'ninth St apt 2222',
-        'address_line3' => 'Bldg 33333',
-        'city' => 'Pasadena',
-        'state_code' => 'CA',
-        'zip_code' => '21122'
-      }
-    }
-  end
+
+  before { Timecop.freeze }
+
+  after { Timecop.return }
 
   describe '#create' do
     context 'married veteran' do
@@ -41,8 +25,14 @@ RSpec.describe BGS::VnpVeteran do
           vnp_veteran = BGS::VnpVeteran.new(
             proc_id: '3828241',
             payload: all_flows_payload,
-            user: user_object,
-            claim_type: '130DPNEBNADJ'
+            claim_type: '130DPNEBNADJ',
+            icn:,
+            common_name:,
+            participant_id:,
+            ssn:,
+            first_name:,
+            middle_name:,
+            last_name:
           ).create
 
           expect(vnp_veteran).to eq(
@@ -80,8 +70,14 @@ RSpec.describe BGS::VnpVeteran do
           vnp_veteran = BGS::VnpVeteran.new(
             proc_id: '3828241',
             payload: all_flows_payload,
-            user: user_object,
-            claim_type: '130DPNEBNADJ'
+            claim_type: '130DPNEBNADJ',
+            icn:,
+            common_name:,
+            participant_id:,
+            ssn:,
+            first_name:,
+            middle_name:,
+            last_name:
           ).create
 
           expect(vnp_veteran).to include(location_id: '347')
@@ -96,8 +92,14 @@ RSpec.describe BGS::VnpVeteran do
           vnp_veteran = BGS::VnpVeteran.new(
             proc_id: '3828241',
             payload: all_flows_payload,
-            user: user_object,
-            claim_type: '130DPNEBNADJ'
+            claim_type: '130DPNEBNADJ',
+            icn:,
+            common_name:,
+            participant_id:,
+            ssn:,
+            first_name:,
+            middle_name:,
+            last_name:
           ).create
 
           expect(vnp_veteran).to include(location_id: '347')
@@ -107,38 +109,47 @@ RSpec.describe BGS::VnpVeteran do
 
     it 'calls BGS::Service: #create_person, #create_phone, and #create_address' do
       vet_person_hash = {
-        vnp_proc_id: '12345',
-        vnp_ptcpnt_id: '151031',
-        first_nm: 'WESLEY',
-        middle_nm: nil,
-        last_nm: 'FORD',
-        suffix_nm: nil,
-        birth_state_cd: nil,
-        birth_city_nm: nil,
-        file_nbr: '796043735',
-        ssn_nbr: '796043735',
-        death_dt: nil,
-        ever_maried_ind: nil,
-        vet_ind: 'Y',
-        martl_status_type_cd: 'Separated'
+        person_params: {
+          vnp_proc_id: '12345',
+          vnp_ptcpnt_id: '151031',
+          first_nm: 'WESLEY',
+          middle_nm: nil,
+          last_nm: 'FORD',
+          suffix_nm: nil,
+          birth_state_cd: nil,
+          birth_city_nm: nil,
+          birth_cntry_nm: nil,
+          vnp_srusly_dsabld_ind: nil,
+          brthdy_dt: '1809-02-12T12:00:00+00:00',
+          file_nbr: '796043735',
+          ssn_nbr: '796043735',
+          death_dt: nil,
+          ever_maried_ind: nil,
+          vet_ind: 'Y',
+          martl_status_type_cd: 'Separated'
+        }
       }
 
       expected_address = {
-        addrs_one_txt: '2037400 twenty',
-        addrs_two_txt: 'ninth St apt 2222',
-        addrs_three_txt: 'Bldg 33333',
-        city_nm: 'Pasadena',
-        cntry_nm: 'USA',
-        email_addrs_txt: 'foo@foo.com',
-        mlty_post_office_type_cd: nil,
-        mlty_postal_type_cd: nil,
-        postal_cd: 'CA',
-        prvnc_nm: 'CA',
-        ptcpnt_addrs_type_nm: 'Mailing',
-        shared_addrs_ind: 'N',
-        vnp_proc_id: '12345',
-        vnp_ptcpnt_id: '151031',
-        zip_prefix_nbr: '21122'
+        address_params: {
+          addrs_one_txt: '2037400 twenty',
+          addrs_two_txt: 'ninth St apt 2222',
+          addrs_three_txt: 'Bldg 33333',
+          city_nm: 'Pasadena',
+          cntry_nm: 'USA',
+          efctv_dt: Time.current.iso8601,
+          email_addrs_txt: 'foo@foo.com',
+          frgn_postal_cd: nil,
+          mlty_post_office_type_cd: nil,
+          mlty_postal_type_cd: nil,
+          postal_cd: 'CA',
+          prvnc_nm: 'CA',
+          ptcpnt_addrs_type_nm: 'Mailing',
+          shared_addrs_ind: 'N',
+          vnp_proc_id: '12345',
+          vnp_ptcpnt_id: '151031',
+          zip_prefix_nbr: '21122'
+        }
       }
       VCR.use_cassette('bgs/vnp_veteran/create') do
         expect_any_instance_of(BGS::Service).to receive(:create_person)
@@ -146,7 +157,7 @@ RSpec.describe BGS::VnpVeteran do
           .and_call_original
 
         expect_any_instance_of(BGS::Service).to receive(:create_phone)
-          .with(anything, anything, a_hash_including(formatted_payload))
+          .with(proc_id: '12345', participant_id: '151031', phone_number: '1112223333')
           .and_call_original
 
         expect_any_instance_of(BGS::Service).to receive(:create_address)
@@ -156,40 +167,109 @@ RSpec.describe BGS::VnpVeteran do
         BGS::VnpVeteran.new(
           proc_id: '12345',
           payload: all_flows_payload,
-          user: user_object,
-          claim_type: '130DPNEBNADJ'
+          claim_type: '130DPNEBNADJ',
+          icn:,
+          common_name:,
+          participant_id:,
+          ssn:,
+          first_name:,
+          middle_name:,
+          last_name:
         ).create
       end
     end
 
     context 'SSN is not 9 digits' do
+      let(:user_object) { FactoryBot.create(:evss_user, :loa3, ssn:) }
+      let(:ssn) { '123456789' }
+      let(:vet_person_hash) do
+        {
+          person_params: {
+            vnp_proc_id: '3828241',
+            vnp_ptcpnt_id: '151031',
+            first_nm: 'WESLEY',
+            middle_nm: nil,
+            last_nm: 'FORD',
+            suffix_nm: nil,
+            birth_state_cd: nil,
+            birth_city_nm: nil,
+            birth_cntry_nm: nil,
+            vnp_srusly_dsabld_ind: nil,
+            brthdy_dt: '1809-02-12T12:00:00+00:00',
+            file_nbr: '796043735',
+            ssn_nbr: ssn,
+            death_dt: nil,
+            ever_maried_ind: nil,
+            vet_ind: 'Y',
+            martl_status_type_cd: 'Separated'
+          }
+        }
+      end
+
       before { all_flows_payload['veteran_information']['ssn'] = '12345678' }
 
       it 'sets ssn to User#ssn' do
         VCR.use_cassette('bgs/vnp_veteran/create') do
-          user_object = FactoryBot.create(:evss_user, :loa3, ssn: '123456789')
           vnp_veteran = BGS::VnpVeteran.new(
             proc_id: '3828241',
             payload: all_flows_payload,
-            user: user_object,
-            claim_type: '130DPNEBNADJ'
+            claim_type: '130DPNEBNADJ',
+            icn:,
+            common_name:,
+            participant_id:,
+            ssn:,
+            first_name:,
+            middle_name:,
+            last_name:
           )
           expect(vnp_veteran).not_to receive(:log_message_to_sentry)
           expect(Rails.logger).to receive(:info).with('Malformed SSN! Reassigning to User#ssn.')
-          expect_any_instance_of(BGS::Service).to receive(:create_person).with(hash_including(ssn_nbr: '123456789'))
+          expect_any_instance_of(BGS::Service).to receive(:create_person).with(vet_person_hash)
           vnp_veteran.create
         end
       end
 
       context 'User#ssn returns the same invalid ssn' do
+        let(:malformed_ssn) { '12345678' }
+        let(:vet_person_hash) do
+          {
+            person_params: {
+              vnp_proc_id: '3828241',
+              vnp_ptcpnt_id: '151031',
+              first_nm: 'WESLEY',
+              middle_nm: nil,
+              last_nm: 'FORD',
+              suffix_nm: nil,
+              birth_state_cd: nil,
+              birth_city_nm: nil,
+              birth_cntry_nm: nil,
+              vnp_srusly_dsabld_ind: nil,
+              brthdy_dt: '1809-02-12T12:00:00+00:00',
+              file_nbr: '796043735',
+              ssn_nbr: malformed_ssn,
+              death_dt: nil,
+              ever_maried_ind: nil,
+              vet_ind: 'Y',
+              martl_status_type_cd: 'Separated'
+            }
+          }
+        end
+
+        before { allow_any_instance_of(User).to receive(:ssn).and_return(malformed_ssn) }
+
         it 'logs an error to Sentry' do
           VCR.use_cassette('bgs/vnp_veteran/create') do
-            allow_any_instance_of(User).to receive(:ssn).and_return('12345678')
             vnp_veteran = BGS::VnpVeteran.new(
               proc_id: '3828241',
               payload: all_flows_payload,
-              user: user_object,
-              claim_type: '130DPNEBNADJ'
+              claim_type: '130DPNEBNADJ',
+              icn:,
+              common_name:,
+              participant_id:,
+              ssn: malformed_ssn,
+              first_name:,
+              middle_name:,
+              last_name:
             )
             expect(Rails.logger).to receive(:info).with('Malformed SSN! Reassigning to User#ssn.')
             expect(vnp_veteran).to receive(:log_message_to_sentry).with(
@@ -198,21 +278,53 @@ RSpec.describe BGS::VnpVeteran do
               {},
               { team: 'vfs-ebenefits' }
             )
-            expect_any_instance_of(BGS::Service).to receive(:create_person).with(hash_including(ssn_nbr: '12345678'))
+            expect_any_instance_of(BGS::Service).to receive(:create_person).with(vet_person_hash)
             vnp_veteran.create
           end
         end
       end
 
       context 'User#ssn returns ********' do
+        let(:malformed_ssn) { '********' }
+        let(:vet_person_hash) do
+          {
+            person_params: {
+              vnp_proc_id: '3828241',
+              vnp_ptcpnt_id: '151031',
+              first_nm: 'WESLEY',
+              middle_nm: nil,
+              last_nm: 'FORD',
+              suffix_nm: nil,
+              birth_state_cd: nil,
+              birth_city_nm: nil,
+              birth_cntry_nm: nil,
+              vnp_srusly_dsabld_ind: nil,
+              brthdy_dt: '1809-02-12T12:00:00+00:00',
+              file_nbr: '796043735',
+              ssn_nbr: malformed_ssn,
+              death_dt: nil,
+              ever_maried_ind: nil,
+              vet_ind: 'Y',
+              martl_status_type_cd: 'Separated'
+            }
+          }
+        end
+
+        before { allow_any_instance_of(User).to receive(:ssn).and_return(malformed_ssn) }
+
         it 'logs an error to Sentry' do
           VCR.use_cassette('bgs/vnp_veteran/create') do
-            allow_any_instance_of(User).to receive(:ssn).and_return('********')
             vnp_veteran = BGS::VnpVeteran.new(
               proc_id: '3828241',
               payload: all_flows_payload,
-              user: user_object,
-              claim_type: '130DPNEBNADJ'
+              claim_type: '130DPNEBNADJ',
+              icn:,
+              common_name:,
+              participant_id:,
+              ssn: malformed_ssn,
+              first_name:,
+              middle_name:,
+              last_name:
             )
             expect(Rails.logger).to receive(:info).with('Malformed SSN! Reassigning to User#ssn.')
             expect(vnp_veteran).to receive(:log_message_to_sentry).with(
@@ -221,7 +333,7 @@ RSpec.describe BGS::VnpVeteran do
               {},
               { team: 'vfs-ebenefits' }
             )
-            expect_any_instance_of(BGS::Service).to receive(:create_person).with(hash_including(ssn_nbr: '********'))
+            expect_any_instance_of(BGS::Service).to receive(:create_person).with(vet_person_hash)
             vnp_veteran.create
           end
         end

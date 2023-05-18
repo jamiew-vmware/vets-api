@@ -51,7 +51,7 @@ module MebApi
       end
 
       def submit_claim
-        dd_response = payment_service.get_ch33_dd_eft_info
+        dd_response = payment_service.get_ch33_dd_eft_info(ssn: current_user.ssn)
         response = submission_service.submit_claim(params, dd_response, 'toe')
 
         clear_saved_form(params[:form_id]) if params[:form_id]
@@ -82,7 +82,7 @@ module MebApi
       end
 
       def payment_service
-        BGS::Service.new(@current_user)
+        BGS::Service.new(icn: current_user.icn, common_name: current_user.common_name)
       end
     end
   end

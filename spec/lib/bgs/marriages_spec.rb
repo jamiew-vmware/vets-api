@@ -8,6 +8,9 @@ RSpec.describe BGS::Marriages do
   let(:proc_id) { '3828033' }
   let(:all_flows_payload) { FactoryBot.build(:form_686c_674_kitchen_sink) }
   let(:spouse_payload) { FactoryBot.build(:spouse) }
+  let(:icn) { user_object.icn }
+  let(:common_name) { user_object.common_name }
+  let(:ssn) { user_object.ssn }
 
   describe '#create' do
     context 'adding a spouse' do
@@ -16,7 +19,9 @@ RSpec.describe BGS::Marriages do
           dependents = BGS::Marriages.new(
             proc_id:,
             payload: spouse_payload,
-            user: user_object
+            icn:,
+            common_name:,
+            ssn:
           ).create_all
 
           expect(dependents).to include(
@@ -37,7 +42,9 @@ RSpec.describe BGS::Marriages do
           dependents = BGS::Marriages.new(
             proc_id:,
             payload: all_flows_payload,
-            user: user_object
+            icn:,
+            common_name:,
+            ssn:
           ).create_all
 
           expect(dependents).to include(
@@ -55,20 +62,25 @@ RSpec.describe BGS::Marriages do
 
       it 'marks spouse as veteran' do
         spouse_vet_hash = {
-          birth_city_nm: nil,
-          birth_state_cd: nil,
-          death_dt: nil,
-          ever_maried_ind: 'Y',
-          file_nbr: '00000000',
-          first_nm: 'Jenny',
-          last_nm: 'McCarthy',
-          martl_status_type_cd: 'Married',
-          middle_nm: 'Lauren',
-          ssn_nbr: '323454323',
-          suffix_nm: 'Sr.',
-          vet_ind: 'Y',
-          vnp_proc_id: '3828033',
-          vnp_ptcpnt_id: '149487'
+          person_params: {
+            birth_city_nm: nil,
+            birth_state_cd: nil,
+            death_dt: nil,
+            ever_maried_ind: 'Y',
+            file_nbr: '00000000',
+            first_nm: 'Jenny',
+            last_nm: 'McCarthy',
+            martl_status_type_cd: 'Married',
+            middle_nm: 'Lauren',
+            ssn_nbr: '323454323',
+            suffix_nm: 'Sr.',
+            vet_ind: 'Y',
+            vnp_proc_id: '3828033',
+            vnp_ptcpnt_id: '149487',
+            brthdy_dt: '1981-04-04T12:00:00+00:00',
+            birth_cntry_nm: nil,
+            vnp_srusly_dsabld_ind: nil
+          }
         }
 
         VCR.use_cassette('bgs/dependents/create/spouse/is_veteran') do
@@ -79,7 +91,9 @@ RSpec.describe BGS::Marriages do
           BGS::Marriages.new(
             proc_id:,
             payload: spouse_payload,
-            user: user_object
+            icn:,
+            common_name:,
+            ssn:
           ).create_all
         end
       end

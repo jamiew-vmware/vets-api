@@ -42,7 +42,6 @@ module BGS
       # (e.g. XXX-XX-XXXX). In this case specifically, we can simply strip out
       # the dashes and proceed with form submission.
       file_number = file_number.delete('-') if file_number =~ /\A\d{3}-\d{2}-\d{4}\z/
-      form_hash_686c = get_form_hash_686c(file_number:)
       # The `validate_*!` calls below will raise errors if we have an invalid
       # file number, or if the file number and SSN don't match. Even if this is
       # the case, we still want to submit a PDF to the veteran's VBMS eFolder.
@@ -51,7 +50,7 @@ module BGS
       # submission failed.
       VBMS::SubmitDependentsPdfJob.perform_async(
         claim.id,
-        form_hash_686c,
+        get_form_hash_686c(file_number:),
         claim.submittable_686?,
         claim.submittable_674?
       )
@@ -65,7 +64,7 @@ module BGS
         # why I am deliberately raising these errors here.
         validate_file_number_format!(file_number:)
         validate_file_number_matches_ssn!(file_number:)
-        BGS::SubmitForm686cJob.perform_async(uuid, claim.id, form_hash_686c)
+        BGS::SubmitForm686cJob.perform_async(uuid, claim.id, file_number)
         Rails.logger.info('BGS::DependentService succeeded!', { user_uuid: uuid, saved_claim_id: claim.id, icn: })
       end
     rescue => e
