@@ -21,6 +21,21 @@ RSpec.describe BenefitsClaims::Service do
             expect(response['data']['id']).to eq('193685')
           end
         end
+
+        # TODO-BDEX: Find a suitable matching condition
+        it 'creates intent to file using the Lighthouse API' do
+          VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
+            response = @service.create_intent_to_file('compensation', '', '')
+            expect(response['data']['id']).to eq(1)
+          end
+        end
+
+        it 'creates intent to file with the survivor type' do
+          VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
+            response = @service.create_intent_to_file('survivor', '', '')
+            expect(response['data']['id']).to eq(1)
+          end
+        end
       end
     end
   end

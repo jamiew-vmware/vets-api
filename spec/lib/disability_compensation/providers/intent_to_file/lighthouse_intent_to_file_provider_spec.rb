@@ -26,6 +26,21 @@ RSpec.describe LighthouseIntentToFileProvider do
     end
   end
 
+  # TODO-BDEX: Test this after fixing docker
+  it 'creates intent to file using the Lighthouse API' do
+    VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
+      response = provider.create_intent_to_file('compensation', '', '')
+      expect(response['intent_to_file'].length).to eq(1)
+    end
+  end
+
+  it 'creates intent to file with the survivor type' do
+    VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
+      response = provider.create_intent_to_file('survivor', '', '')
+      expect(response['intent_to_file'].length).to eq(1)
+    end
+  end
+
   Lighthouse::ServiceException::ERROR_MAP.each do |status, error_class|
     it "throws a #{status} error if Lighthouse sends it back" do
       expect do

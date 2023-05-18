@@ -33,6 +33,15 @@ RSpec.describe EvssIntentToFileProvider do
     end
   end
 
+  # TODO-BDEX: Test this after fixing docker
+  it 'creates intent to file from the EVSS API' do
+    VCR.use_cassette('evss/intent_to_file/intent_to_file') do
+      provider = EvssIntentToFileProvider.new(nil, auth_headers)
+      response = provider.create_intent_to_file('compensation', '', '')
+      expect(response['intent_to_file'].length).to eq(5)
+    end
+  end
+
   it 'raises an exception if there is an error from EVSS' do
     allow_any_instance_of(Common::Client::Base).to(
       receive(:perform).and_raise(Common::Client::Errors::ClientError)
