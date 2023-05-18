@@ -170,7 +170,7 @@ describe VAOS::V2::AppointmentsService do
     context 'when there are CnP appointments in the list' do
       it 'changes the cancellable status to false for CnP appointments only' do
         VCR.use_cassette('vaos/v2/appointments/get_appointments_single_status_200',
-                         match_requests_on: %i[method path query], tag: :force_utf8) do
+                         allow_playback_repeats: true, match_requests_on: %i[method path query], tag: :force_utf8) do
           response = subject.get_appointments(start_date2, end_date2, 'proposed')
           # non CnP appointment, cancellable left as is
           expect(response[:data][0][:cancellable]).to eq(true)
