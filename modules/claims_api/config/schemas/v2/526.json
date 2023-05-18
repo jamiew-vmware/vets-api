@@ -277,16 +277,20 @@
                     "example": "Jane Doe"
                 },
                 "pointOfContactNumber": {
+                    "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "telephone": {
                             "description": "Primary phone of Point of Contact.",
                             "type": "string",
+                            "pattern": "^\\d{10}?$",
                             "example": "1231234",
                             "maxLength": 10
-                        },
+                            },
                         "internationalTelephone": {
                             "description": "international phone of Point of Contact.",
                             "type": "string",
+                            "pattern": "^\\d{10}?$",
                             "example": "1231234",
                             "maxLength": 10   
                         }
@@ -339,7 +343,7 @@
         "toxicExposure": {
             "type": "object",
             "properties": {
-                "gulfWarHazard": {
+                "gulfWarHazardService": {
                     "type": "object",
                     "description": "Toxic exposure related to the Gulf war.",
                     "properties": {
@@ -378,6 +382,7 @@
                         },
                         "otherLocationsServed": {
                             "type": "string",
+                            "pattern": "^([-a-zA-Z0-9'.,&#]([-a-zA-Z0-9'.,&# ])?)+$",
                             "description": "Other location(s) where Veteran served."
                         },
                         "serviceDates": {
@@ -422,8 +427,9 @@
                                 ]
                             }
                         },
-                        "specifiyOtherExposures": {
+                        "specifyOtherExposures": {
                             "type": "string",
+                            "pattern": "^([-a-zA-Z0-9'.,&#]([-a-zA-Z0-9'.,&# ])?)+$",
                             "description": "Other exposure incidents."
                         },
                         "exposureDates": {
@@ -469,11 +475,13 @@
                             }
                         },
                         "exposureLocation": {
-                            "type": "string",
+                            "type": "string",              
+                            "pattern": "^([-a-zA-Z0-9'.,&#]([-a-zA-Z0-9'.,&# ])?)+$",
                             "description": ""
                         },
                         "hazardExposedTo": {
                             "type": "string",
+                            "pattern": "^([-a-zA-Z0-9'.,&#]([-a-zA-Z0-9'.,&# ])?)+$",
                             "description": ""
                         }
                     }
