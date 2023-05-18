@@ -244,6 +244,9 @@ describe VAOS::V2::AppointmentsService do
             expect(response[:kind]).to eq('clinic')
             expect(response[:status]).to eq('proposed')
           end
+        end
+      end
+    end
 
     context 'when requesting a CnP appointment' do
       let(:user) { build(:user, :vaos) }
@@ -253,7 +256,6 @@ describe VAOS::V2::AppointmentsService do
                          match_requests_on: %i[method path query]) do
           response = subject.get_appointment('159472')
           expect(response[:cancellable]).to eq(false)
-
         end
       end
     end
