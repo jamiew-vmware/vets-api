@@ -29,4 +29,18 @@ describe MedicalRecords::Client do
       expect(vaccine_list).to be_a(FHIR::Bundle)
     end
   end
+
+  it 'gets a list of radiology reports', :vcr do
+    VCR.use_cassette 'mr_client/get_a_list_of_radiology_reports' do
+      vaccine_list = client.list_radiology('2934296')
+      expect(vaccine_list).to be_a(FHIR::Bundle)
+    end
+  end
+
+  it 'gets a single document reference', :vcr do
+    VCR.use_cassette 'mr_client/get_a_document_reference' do
+      document_reference = client.get_document_reference('24cabcdf-dc86-0e48-59d9-3c8000a27726')
+      expect(document_reference).to be_a(FHIR::DocumentReference)
+    end
+  end
 end

@@ -57,8 +57,8 @@ module MedicalRecords
     # - a radiology report
     # - a clinical note
     #
-    def get_document_reference(diagnostic_report_id)
-      fhir_client.read(FHIR::DiagnosticReport, diagnostic_report_id).resource
+    def get_document_reference(document_reference_id)
+      fhir_client.read(FHIR::DocumentReference, document_reference_id).resource
     end
 
     def list_radiology(patient_id)

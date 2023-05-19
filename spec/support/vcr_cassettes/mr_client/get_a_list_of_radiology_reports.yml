@@ -1,0 +1,254 @@
+---
+http_interactions:
+  - request:
+      method: get
+      uri: "<MHV_MR_HOST>/baseR4/DocumentReference?patient=2934296&type=18748-4"
+      body:
+        encoding: US-ASCII
+        string: ""
+      headers:
+        Accept:
+          - application/fhir+json
+        User-Agent:
+          - Ruby FHIR Client
+        Accept-Charset:
+          - utf-8
+        Accept-Encoding:
+          - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+        Host:
+          - hapi.fhir.org
+    response:
+      status:
+        code: 200
+        message: OK
+      headers:
+        Server:
+          - nginx/1.18.0 (Ubuntu)
+        Date:
+          - Fri, 19 May 2023 19:36:21 GMT
+        Content-Type:
+          - application/fhir+json;charset=utf-8
+        Transfer-Encoding:
+          - chunked
+        Connection:
+          - keep-alive
+        X-Powered-By:
+          - HAPI FHIR 6.7.3-SNAPSHOT/d94627c382/2023-05-18 REST Server (FHIR Server; FHIR
+            4.0.1/R4)
+        X-Request-Id:
+          - FqMOnPQredPguFBH
+        Last-Modified:
+          - Fri, 19 May 2023 19:36:21 GMT
+      body:
+        encoding: UTF-8
+        string: |-
+          {
+            "resourceType": "Bundle",
+            "id": "b83f4608-daa2-41e5-8a7f-caab2da673b6",
+            "meta": {
+              "lastUpdated": "2023-05-19T19:36:21.409+00:00"
+            },
+            "type": "searchset",
+            "total": 1,
+            "link": [ {
+              "relation": "self",
+              "url": "https://hapi.fhir.org/baseR4/DocumentReference?patient=2934296&type=18748-4"
+            } ],
+            "entry": [ {
+              "fullUrl": "https://hapi.fhir.org/baseR4/DocumentReference/2934300",
+              "resource": {
+                "resourceType": "DocumentReference",
+                "id": "2934300",
+                "meta": {
+                  "versionId": "2",
+                  "lastUpdated": "2022-05-06T13:37:02.973+00:00",
+                  "source": "#Xb3Y50gF7LGUVsSL"
+                },
+                "contained": [ {
+                  "resourceType": "Organization",
+                  "id": "1",
+                  "identifier": [ {
+                    "use": "usual",
+                    "type": {
+                      "coding": [ {
+                        "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+                        "code": "dept",
+                        "display": "Hospital Department"
+                      } ]
+                    },
+                    "system": "urn:local:identifier",
+                    "value": "RX"
+                  } ],
+                  "name": "Medische beeldvorming"
+                }, {
+                  "resourceType": "Encounter",
+                  "id": "2",
+                  "identifier": [ {
+                    "value": "4495960609"
+                  } ],
+                  "status": "finished",
+                  "class": {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "code": "IMP"
+                  },
+                  "subject": {
+                    "reference": "Patient/2934296",
+                    "display": "TEST TEST"
+                  },
+                  "basedOn": [ {
+                    "reference": "#3"
+                  } ],
+                  "period": {
+                    "start": "2022-03-31T13:43:00+02:00",
+                    "end": "2022-04-05T16:35:00+02:00"
+                  }
+                }, {
+                  "resourceType": "ServiceRequest",
+                  "id": "3",
+                  "status": "active",
+                  "intent": "proposal",
+                  "subject": {
+                    "reference": "Patient/2934296"
+                  }
+                }, {
+                  "resourceType": "Practitioner",
+                  "id": "4",
+                  "identifier": [ {
+                    "system": "https://www.ehealth.fgov.be/standards/fhir/NamingSystem/nihdi",
+                    "value": "137526"
+                  } ],
+                  "name": [ {
+                    "family": "Dr. Test",
+                    "given": [ "Test" ]
+                  } ]
+                }, {
+                  "resourceType": "Organization",
+                  "id": "5",
+                  "identifier": [ {
+                    "use": "usual",
+                    "type": {
+                      "coding": [ {
+                        "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+                        "code": "dept",
+                        "display": "Hospital Department"
+                      } ]
+                    },
+                    "system": "urn:local:identifier",
+                    "value": "RX"
+                  } ],
+                  "name": "Medische beeldvorming"
+                }, {
+                  "resourceType": "Practitioner",
+                  "id": "6",
+                  "identifier": [ {
+                    "system": "https://www.ehealth.fgov.be/standards/fhir/NamingSystem/nihdi",
+                    "value": "000455"
+                  } ],
+                  "name": [ {
+                    "family": "TEST",
+                    "given": [ "TEST" ]
+                  } ]
+                }, {
+                  "resourceType": "Encounter",
+                  "id": "7",
+                  "identifier": [ {
+                    "value": "4495960609"
+                  } ],
+                  "status": "finished",
+                  "class": {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "code": "IMP"
+                  },
+                  "subject": {
+                    "reference": "Patient/2934296",
+                    "display": "TEST TEST"
+                  },
+                  "basedOn": [ {
+                    "reference": "#8"
+                  } ],
+                  "period": {
+                    "start": "2022-03-31T13:43:00+02:00",
+                    "end": "2022-04-05T16:35:00+02:00"
+                  }
+                }, {
+                  "resourceType": "ServiceRequest",
+                  "id": "8",
+                  "status": "active",
+                  "intent": "proposal",
+                  "subject": {
+                    "reference": "Patient/2934296"
+                  },
+                  "requester": {
+                    "reference": "#6"
+                  }
+                } ],
+                "masterIdentifier": {
+                  "system": "MBV-FUJI",
+                  "value": "220305759_01"
+                },
+                "identifier": [ {
+                  "system": "MBV-FUJI",
+                  "value": "220305759_01"
+                } ],
+                "status": "current",
+                "docStatus": "final",
+                "type": {
+                  "coding": [ {
+                    "system": "http://loinc.org",
+                    "code": "18748-4",
+                    "display": "Diagnostic imaging study"
+                  } ]
+                },
+                "category": [ {
+                  "coding": [ {
+                    "system": "http://loinc.org",
+                    "code": "85261-6",
+                    "display": "Radiology procedure note"
+                  } ]
+                } ],
+                "subject": {
+                  "reference": "Patient/2934296",
+                  "display": "VANNIEUWENHUYZE NINA"
+                },
+                "date": "2022-03-31T16:05:00.000+02:00",
+                "author": [ {
+                  "reference": "#4"
+                }, {
+                  "reference": "#5"
+                } ],
+                "content": [ {
+                  "attachment": {
+                    "contentType": "text/plain",
+                    "data": "SGllcmJpaiB2aW5kdCBVIGhldCB2ZXJzbGFnIGJldHJlZmZlbmRlIHV3IHBhdGnrbnQoZSkNClZBTk5JRVVXRU5IVVlaRSBOSU5BIGdlYm9yZW4gb3AgMDcvMDIvMjAwMi4NCkRhdHVtIG9uZGVyem9lazogMzEvMDMvMjAyMiAxNTo1Ng0KT3JkZXJudW1tZXI6IDIyMDMwNTc1OQ0KUmVmZXJlbnRpZSBDb2RlOiBKSzg2R1pVWENaMg0KDQoNClJYIFRIT1JBWCBGQUNFL1BST0ZJRUwuS2xpbmlzY2hlIGlubGljaHRpbmdlbjogcG5ldW1vdGhvcmF4IGxpbmtzIG5hIGRyYWluLiANCg0KRGlhZ25vc3Rpc2NoZSB2cmFhZ3N0ZWxsaW5nOiBldm9sdXRpZT8gDQoNClJYIHRob3JheCBmYWNlIHByb2ZpZWw6IA0KDQpQaWd0YWlsIHBsZXVyYWthdGhldGVyIGxpbmtzIG1ldCB0aXAgcGVyaWZlZXIgb3ZlciBoZXQgbGlua2VybG9uZyBvbmRlcnZlbGQuIA0KUmVzaWR1ZWxlIGFwaWNhbGUgcG5ldW1vdGhvcmF4IG1ldCBtYXhpbWFsZSBhcGljYWxlIGRlY29sbGFnZSB2YW4gY2EuIDkgbW0uDQpOb3JtYWxlIGNhcmRpb21lZGlhc3RpbmFsZSBzY2hhZHV3Lg0KTm9ybWFsZSBoaWxpLiANCkdvZWQgYWZsaWpuYmFyZSBkaWFmcmFnbWEuIEdlZW4gYWFudG9vbmJhYXIgcGxldXJhdm9jaHQuIA0KR2VlbiBsb25ndmVyZGljaHRpbmdlbi4gDQpMaWNodGUgYnJlZWRzdHJhbGlnZSBtaWQgdG90IGxhYWdkb3JzYWxlIHNwaW5hbGUgc3ltbWV0cmllIG1ldCB0ZXZlbnMgbGljaHQgb25yZWdlbG1hdGlnZSANCmFmbGlqbmluZyB2YW4gZGUgZWluZHBsYXRlbiBsYWFnZG9yc2FhbC4NCg0KDQpEZSBiZWVsZGVuIHppam4gb29rIGJlc2NoaWtiYWFyIG9wIGh0dHA6Ly9wb3cuc2ludGFuZHJpZXN0aWVsdC5iZSBtZXQgcmVmZXJlbnRpZW51bW1lciBKSzg2R1lVWENaMiANCmVuIGdlYm9vcnRlZGF0dW0gMDcvMDIvMjAwMi4NCg0KTWV0IGNvbGxlZ2lhbGUgZ3JvZXRlbiBlbiBkYW5rIHZvb3IgdXcgdmVyd2lqemluZywNCg0KRHIuIEJpZWJhdSBDaGFybG90dGU="
+                  }
+                } ],
+                "context": {
+                  "encounter": [ {
+                    "reference": "#7"
+                  } ],
+                  "event": [ {
+                    "coding": [ {
+                      "system": "MBV-FUJI",
+                      "code": "2010",
+                      "display": "RX THORAX FACE/PROFIEL."
+                    } ]
+                  } ],
+                  "period": {
+                    "start": "2022-03-31T15:56:00+02:00"
+                  },
+                  "facilityType": {
+                    "coding": [ {
+                      "system": "https://www.ehealth.fgov.be/standards/fhir/CodeSystem/cd-hcparty",
+                      "code": "deptradiology",
+                      "display": "radiology"
+                    } ]
+                  }
+                }
+              },
+              "search": {
+                "mode": "match"
+              }
+            } ]
+          }
+    recorded_at: Fri, 19 May 2023 19:36:21 GMT
+recorded_with: VCR 6.1.0
