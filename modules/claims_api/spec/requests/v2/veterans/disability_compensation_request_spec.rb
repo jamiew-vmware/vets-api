@@ -961,6 +961,239 @@ RSpec.describe 'Disability Claims', type: :request do
           end
         end
       end
+
+      describe "'disabilities.secondaryDisabilities' validations" do
+        context 'when disabilityActionType is NONE with secondaryDisabilities but no diagnosticCode' do
+          it 'raises an exception' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                VCR.use_cassette('brd/disabilities') do
+                  json_data = JSON.parse data
+                  params = json_data
+                  disabilities = [
+                    {
+                      disabilityActionType: 'NONE',
+                      name: 'PTSD (post traumatic stress disorder)',
+                      secondaryDisabilities: [
+                        {
+                          disabilityActionType: 'NEW',
+                          name: 'PTSD',
+                          serviceRelevance: 'Caused by a service-connected disability.'
+                        }
+                      ]
+                    }
+                  ]
+                  params['data']['attributes']['disabilities'] = disabilities
+                  post path, params: params.to_json, headers: headers.merge(auth_header)
+                  expect(response.status).to eq(422)
+                end
+              end
+            end
+          end
+        end
+  
+        context 'when secondaryDisability disabilityActionType is something other than SECONDARY' do
+          it 'raises an exception' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                json_data = JSON.parse data
+                params = json_data
+                disabilities = [
+                  {
+                    disabilityActionType: 'NONE',
+                    name: 'PTSD (post traumatic stress disorder)',
+                    diagnosticCode: 9999,
+                    secondaryDisabilities: [
+                      {
+                        disabilityActionType: 'NEW',
+                        name: 'PTSD',
+                        serviceRelevance: 'Caused by a service-connected disability.'
+                      }
+                    ]
+                  }
+                ]
+                params['data']['attributes']['disabilities'] = disabilities
+                post path, params: params.to_json, headers: headers.merge(auth_header)
+                expect(response.status).to eq(422)
+              end
+            end
+          end
+        end
+  
+        context "when 'disabilites.secondaryDisabilities.classificationCode' is invalid" do
+          it 'raises an exception' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                VCR.use_cassette('brd/disabilities') do
+                  json_data = JSON.parse data
+                  params = json_data
+                  disabilities = [
+                    {
+                      disabilityActionType: 'NONE',
+                      name: 'PTSD (post traumatic stress disorder)',
+                      diagnosticCode: 9999,
+                      secondaryDisabilities: [
+                        {
+                          disabilityActionType: 'SECONDARY',
+                          name: 'PTSD',
+                          serviceRelevance: 'Caused by a service-connected disability.',
+                          classificationCode: '2222'
+                        }
+                      ]
+                    }
+                  ]
+                  params['data']['attributes']['disabilities'] = disabilities
+                  post path, params: params.to_json, headers: headers.merge(auth_header)
+                  expect(response.status).to eq(422)
+                end
+              end
+            end
+          end
+        end
+  
+        context "when 'disabilites.secondaryDisabilities.classificationCode' does not match name" do
+          it 'raises an exception' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                VCR.use_cassette('brd/disabilities') do
+                  json_data = JSON.parse data
+                  params = json_data
+                  disabilities = [
+                    {
+                      disabilityActionType: 'NONE',
+                      name: 'PTSD (post traumatic stress disorder)',
+                      diagnosticCode: 9999,
+                      secondaryDisabilities: [
+                        {
+                          disabilityActionType: 'SECONDARY',
+                          name: 'PTSD',
+                          serviceRelevance: 'Caused by a service-connected disability.',
+                          classificationCode: '1111'
+                        }
+                      ]
+                    }
+                  ]
+                  params['data']['attributes']['disabilities'] = disabilities
+                  post path, params: params.to_json, headers: headers.merge(auth_header)
+                  expect(response.status).to eq(422)
+                end
+              end
+            end
+          end
+        end
+  
+        context "when 'disabilites.secondaryDisabilities.approximateBeginDate' is present" do
+          it 'raises an exception if date is invalid' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                json_data = JSON.parse data
+                params = json_data
+                disabilities = [
+                  {
+                    disabilityActionType: 'NONE',
+                    name: 'PTSD (post traumatic stress disorder)',
+                    diagnosticCode: 9999,
+                    secondaryDisabilities: [
+                      {
+                        disabilityActionType: 'SECONDARY',
+                        name: 'PTSD',
+                        serviceRelevance: 'Caused by a service-connected disability.',
+                        approximateBeginDate: '2019-02-30'
+                      }
+                    ]
+                  }
+                ]
+                params['data']['attributes']['disabilities'] = disabilities
+                post path, params: params.to_json, headers: headers.merge(auth_header)
+                expect(response.status).to eq(422)
+              end
+            end
+          end
+  
+          it 'raises an exception if date is not in the past' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                json_data = JSON.parse data
+                params = json_data
+                disabilities = [
+                  {
+                    disabilityActionType: 'NONE',
+                    name: 'PTSD (post traumatic stress disorder)',
+                    diagnosticCode: 9999,
+                    secondaryDisabilities: [
+                      {
+                        disabilityActionType: 'SECONDARY',
+                        name: 'PTSD',
+                        serviceRelevance: 'Caused by a service-connected disability.',
+                        approximateBeginDate: "#{Time.zone.now.year + 1}-01-01"
+                      }
+                    ]
+                  }
+                ]
+                params['data']['attributes']['disabilities'] = disabilities
+                post path, params: params.to_json, headers: headers.merge(auth_header)
+                expect(response.status).to eq(422)
+              end
+            end
+          end
+        end
+  
+        context "when 'disabilites.secondaryDisabilities.classificationCode' is not present" do
+          it 'raises an exception if name is not valid structure' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                json_data = JSON.parse data
+                params = json_data
+                disabilities = [
+                  {
+                    disabilityActionType: 'NONE',
+                    name: 'PTSD (post traumatic stress disorder)',
+                    diagnosticCode: 9999,
+                    secondaryDisabilities: [
+                      {
+                        disabilityActionType: 'SECONDARY',
+                        name: 'PTSD_;;',
+                        serviceRelevance: 'Caused by a service-connected disability.'
+                      }
+                    ]
+                  }
+                ]
+                params['data']['attributes']['disabilities'] = disabilities
+                post path, params: params.to_json, headers: headers.merge(auth_header)
+                expect(response.status).to eq(400)
+              end
+            end
+          end
+  
+          it 'raises an exception if name is longer than 255 characters' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json_data = JSON.parse data
+                  params = json_data
+                  disabilities = [
+                    {
+                      disabilityActionType: 'NONE',
+                      name: 'PTSD (post traumatic stress disorder)',
+                      diagnosticCode: 9999,
+                      secondaryDisabilities: [
+                        {
+                          disabilityActionType: 'SECONDARY',
+                          name: (0...256).map { rand(65..90).chr }.join,
+                          serviceRelevance: 'Caused by a service-connected disability.'
+                        }
+                      ]
+                    }
+                  ]
+                  params['data']['attributes']['disabilities'] = disabilities
+                  post path, params: params.to_json, headers: headers.merge(auth_header)
+                  expect(response.status).to eq(400)
+                end
+              end
+            end
+          end
+        end
+      end
     end
 
     context 'validate' do
