@@ -45,6 +45,8 @@ module ClaimsApi
 
       def validate_form_526_disabilities!
         validate_form_526_disability_classification_code!
+        validate_form_526_diagnostic_code!
+        validate_form_526_toxic_exposure!
         validate_form_526_disability_approximate_begin_date!
         validate_form_526_disability_secondary_disabilities!
       end
@@ -60,7 +62,7 @@ module ClaimsApi
             raise ::Common::Exceptions::UnprocessableEntity.new(
               detail: "'disabilities.classificationCode' must match the associated id " \
                       "value returned from the /disabilities endpoint of the Benefits " \
-                      "Reference Data API"
+                      "Reference Data API."
             )
           end
         end
@@ -76,7 +78,7 @@ module ClaimsApi
         raise ::Common::Exceptions::UnprocessableEntity.new(
           detail: "'disabilities.name' must match the name value associated " \
                   "with 'disabilities.classificationCode' as returned from the " \
-                  "/disabilities endpoint of the Benefits Reference Data API"
+                  "/disabilities endpoint of the Benefits Reference Data API."
         )
       end
   
@@ -107,6 +109,31 @@ module ClaimsApi
         end
       end
 
+      def validate_form_526_diagnostic_code!
+        form_attributes['disabilities'].each do |disability|
+          next unless disability['disabilityActionType'] == 'NONE' && disability['secondaryDisabilities'].present?
+          if disability['diagnosticCode'].blank?
+            raise ::Common::Exceptions::UnprocessableEntity.new(
+              detail: "'disabilities.diagnosticCode' is required if 'disabilities.disabilityActionType' " \
+                      "is 'NONE' and there are secondary disbilities included with the primary."
+            )
+          end
+        end
+      end
+
+      def validate_form_526_toxic_exposure!
+        form_attributes['disabilities'].each do |disability|
+          byebug
+          next unless disability['isRelatedToToxicExposure'] == true
+          if disability['exposureOrEventOrInjury'].blank?
+            raise ::Common::Exceptions::UnprocessableEntity.new(
+              detail: "If disability is related to toxic exposure a value for 'disabilities.exposureOrEventOrInjury' " \
+                      "is required."
+            )
+          end
+        end
+      end
+
       def validate_form_526_disability_secondary_disabilities!
         form_attributes['disabilities'].each do |disability|
           validate_form_526_disability_secondary_disability_disability_action_type!(disability)
@@ -130,10 +157,13 @@ module ClaimsApi
       end
 
       def validate_form_526_disability_secondary_disability_disability_action_type!(disability)
-        return unless disability['disabilityActionType'] == 'NONE' && disability['secondaryDisabilities'].blank?
-  
-        raise ::Common::Exceptions::InvalidFieldValue.new('disabilities.secondaryDisabilities',
-                                                          disability['secondaryDisabilities'])
+        return unless disability['disabilityActionType'] == 'NONE' && disability['secondaryDisabilities'].present?
+        if disability['diagnosticCode'].blank?
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: "'disabilities.diagnosticCode' is required if 'disabilities.disabilityActionType' " \
+                    "is 'NONE' and there are secondary disbilities included with the primary."
+          )
+        end
       end
   
       def validate_form_526_disability_secondary_disability_classification_code!(secondary_disability)
@@ -142,7 +172,7 @@ module ClaimsApi
         raise ::Common::Exceptions::UnprocessableEntity.new(
           detail: "'disabilities.secondaryDisabilities.classificationCode' must match the associated id " \
                   "value returned from the /disabilities endpoint of the Benefits " \
-                  "Reference Data API"
+                  "Reference Data API."
         )
       end
   
@@ -156,7 +186,7 @@ module ClaimsApi
         raise ::Common::Exceptions::UnprocessableEntity.new(
           detail: "'disabilities.secondaryDisabilities.name' must match the name value associated " \
                   "with 'disabilities.secondaryDisabilities.classificationCode' as returned from the " \
-                  "/disabilities endpoint of the Benefits Reference Data API"
+                  "/disabilities endpoint of the Benefits Reference Data API."
         )
       end
   
