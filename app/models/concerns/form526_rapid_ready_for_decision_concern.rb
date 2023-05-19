@@ -86,7 +86,6 @@ module Form526RapidReadyForDecisionConcern
   end
 
   def send_post_evss_notifications!
-    send_completed_notification if rrd_job_selector.rrd_applicable?
     conditionally_notify_mas
   end
 
@@ -109,9 +108,9 @@ module Form526RapidReadyForDecisionConcern
   # fetch, memoize, and return all of the veteran's rated disabilities from EVSS
   def all_rated_disabilities
     settings = Settings.lighthouse.veteran_verification.form526
+    icn = UserAccount.where(id: user_account_id).first&.icn
     service = ApiProviderFactory.rated_disabilities_service_provider(
-      # TODO: get ICN from job workflow
-      { auth_headers:, icn: '' }
+      { auth_headers:, icn: }
     )
     @all_rated_disabilities ||= begin
       response = service.get_rated_disabilities(settings.access_token.client_id, settings.access_token.rsa_key)
@@ -144,10 +143,6 @@ module Form526RapidReadyForDecisionConcern
     send_rrd_alert_email("Failure: MA claim - #{submitted_claim_id}", e.to_s, nil,
                          Settings.rrd.mas_tracking.recipients)
     StatsD.increment("#{STATSD_KEY_PREFIX}.notify_mas.failure")
-  end
-
-  def send_completed_notification
-    RrdCompletedMailer.build(self).deliver_now
   end
 end
 # rubocop:enable Metrics/ModuleLength

@@ -92,8 +92,8 @@
             "claimDate": "2023-02-18",
             "changeOfAddress": {
                 "dates": {
-                    "beginningDate": "7455-11-31",
-                    "endingDate": "9963-10-11"
+                    "beginningDate": "2012-11-31",
+                    "endingDate": "2013-10-11"
                   },
                   "typeOfAddressChange": "TEMPORARY",
                   "numberAndStreet": "10 Peach St",
@@ -105,19 +105,18 @@
                   "country": "USA"
             },
             "homeless": {
-                "pointOfContact": "hw86h63-v",
-                "pointOfContactNumber": 0,
+                "pointOfContact": "john stewart",
+                "pointOfContactNumber": {
+                    "telephone": "7028901212",
+                    "internationalTelephone": "1234567890"
+                },
                 "currentlyHomeless": {
                     "homelessSituationOptions": "FLEEING_CURRENT_RESIDENCE",
                     "otherDescription": "ABCDEFGHIJKLM"
-                },
-                "riskOfBecomingHomeless": {
-                    "livingSituationOptions": "other",
-                    "otherDescription": "ABCDEFGHIJKLMNOP"
                 }
             },
             "toxicExposure": {
-                "gulfWarHazard": {
+                "gulfWarHazardService": {
                     "servedInGulfWarHazardLocations": true,
                     "serviceDates": {
                         "startDate": "2523-07-21",
@@ -134,7 +133,7 @@
                 },
                 "additionalHazardExposures": {
                     "additionalExposures": ["ASBESTOS", "SHAD"],
-                    "specifiyOtherExposures": "ABCD",
+                    "specifyOtherExposures": "ABCD",
                     "exposureDates": {
                         "startDate": "4520-07-30",
                         "endDate": "3405-10-03"
