@@ -65,6 +65,10 @@ http_interactions:
           "lat" : 39.744507,
           "long" : -104.830956,
           "website" : "https://www.denver.va.gov/locations/directions.asp",
+          "timezone" : {
+            "zoneId" : "America/Los_Angeles",
+              "abbreviation": "PST"
+          },
           "phone" : {
             "main" : "307-778-7550",
             "fax" : "307-778-7381",
