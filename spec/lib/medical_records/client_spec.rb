@@ -39,7 +39,7 @@ describe MedicalRecords::Client do
 
   it 'gets a single document reference', :vcr do
     VCR.use_cassette 'mr_client/get_a_document_reference' do
-      document_reference = client.get_document_reference('24cabcdf-dc86-0e48-59d9-3c8000a27726')
+      document_reference = client.get_document_reference('24')
       expect(document_reference).to be_a(FHIR::DocumentReference)
     end
   end
