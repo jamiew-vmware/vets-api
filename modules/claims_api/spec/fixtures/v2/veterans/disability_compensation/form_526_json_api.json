@@ -67,19 +67,19 @@
             "disabilities": [
                 {
                     "disabilityActionType": "REOPEN",
-                    "name": "ABCDEFGHIJKLMNOPQ",
-                    "classificationCode": "ABCDEFGHIJ",
+                    "name": "Cancer - Musculoskeletal - Elbow",
+                    "classificationCode": "249470",
                     "serviceRelevance": "ABCDEFG",
-                    "approximateDate": "4592-11-04",
+                    "approximateDate": "2018-03-02",
                     "ratedDisabilityId": "ABCDEFGHIJKLMNOPQRSTUVWX",
-                    "diagnosticCode": 0,
+                    "diagnosticCode": 9999,
                     "secondaryDisabilities": [
                         {
-                            "name": "ABCDEF",
+                            "name": "Cancer - Musculoskeletal - Elbow",
                             "disabilityActionType": "SECONDARY",
                             "serviceRelevance": "ABCDEFGHIJKLMNOPQ",
-                            "classificationCode": "ABCDEFGHIJKLMNO",
-                            "approximateDate": "9904-01-03",
+                            "classificationCode": "249470",
+                            "approximateDate": "2018-03-02",
                             "exposureOrEventOrInjury": "EXPOSURE"
                         }
                     ],
