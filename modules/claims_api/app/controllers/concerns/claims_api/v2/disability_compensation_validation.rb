@@ -137,20 +137,26 @@ module ClaimsApi
       end
   
       def validate_form_526_disability_secondary_disability_classification_code!(secondary_disability)
-        return unless brd_classification_ids.exclude?(secondary_disability['classificationCode'].to_i)
+        return if brd_classification_ids.include?(secondary_disability['classificationCode'].to_i)
   
-        raise ::Common::Exceptions::InvalidFieldValue.new(
-          'disabilities.secondaryDisabilities.classificationCode',
-          secondary_disability['classificationCode']
+        raise ::Common::Exceptions::UnprocessableEntity.new(
+          detail: "'disabilities.secondaryDisabilities.classificationCode' must match the associated id " \
+                  "value returned from the /disabilities endpoint of the Benefits " \
+                  "Reference Data API"
         )
       end
   
       def validate_form_526_disability_secondary_disability_classification_code_matches_name!(secondary_disability)
-        return unless secondary_disability['classificationCode'] != secondary_disability['name']
-  
-        raise ::Common::Exceptions::InvalidFieldValue.new(
-          'disabilities.secondaryDisabilities.name',
-          secondary_disability['name']
+        if secondary_disability['name'].blank?
+          raise ::Common::Exceptions::InvalidFieldValue.new('disabilities.secondaryDisabilities.name',
+            secondary_disability['name'])
+        end
+        reference_disability = brd_disabilities.find {|x| x[:id] == secondary_disability['classificationCode'].to_i}
+        return if reference_disability[:name] == secondary_disability['name']
+        raise ::Common::Exceptions::UnprocessableEntity.new(
+          detail: "'disabilities.secondaryDisabilities.name' must match the name value associated " \
+                  "with 'disabilities.secondaryDisabilities.classificationCode' as returned from the " \
+                  "/disabilities endpoint of the Benefits Reference Data API"
         )
       end
   
