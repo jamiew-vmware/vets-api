@@ -169,7 +169,7 @@ RSpec.describe 'Disability Claims', type: :request do
                 VCR.use_cassette('evss/claims/claims') do
                   VCR.use_cassette('brd/countries') do
                     VCR.use_cassette('brd/disabilities') do
-                     post path, params: data, headers: headers.merge(auth_header)
+                      post path, params: data, headers: headers.merge(auth_header)
                       expect(response).to have_http_status(:ok)
                     end
                   end
@@ -725,7 +725,6 @@ RSpec.describe 'Disability Claims', type: :request do
 
       describe "'disabilites' validations" do
         describe "'disabilities.classificationCode' validations" do
-
           context "when 'disabilites.classificationCode' is valid" do
             it 'returns a successful response' do
               with_okta_user(scopes) do |auth_header|
@@ -985,13 +984,13 @@ RSpec.describe 'Disability Claims', type: :request do
                   ]
                   params['data']['attributes']['disabilities'] = disabilities
                   post path, params: params.to_json, headers: headers.merge(auth_header)
-                  expect(response.status).to eq(422)
+                  expect(response).to have_http_status(:unprocessable_entity)
                 end
               end
             end
           end
         end
-  
+
         context 'when secondaryDisability disabilityActionType is something other than SECONDARY' do
           it 'raises an exception' do
             with_okta_user(scopes) do |auth_header|
@@ -1014,12 +1013,12 @@ RSpec.describe 'Disability Claims', type: :request do
                 ]
                 params['data']['attributes']['disabilities'] = disabilities
                 post path, params: params.to_json, headers: headers.merge(auth_header)
-                expect(response.status).to eq(422)
+                expect(response).to have_http_status(:unprocessable_entity)
               end
             end
           end
         end
-  
+
         context "when 'disabilites.secondaryDisabilities.classificationCode' is invalid" do
           it 'raises an exception' do
             with_okta_user(scopes) do |auth_header|
@@ -1044,13 +1043,13 @@ RSpec.describe 'Disability Claims', type: :request do
                   ]
                   params['data']['attributes']['disabilities'] = disabilities
                   post path, params: params.to_json, headers: headers.merge(auth_header)
-                  expect(response.status).to eq(422)
+                  expect(response).to have_http_status(:unprocessable_entity)
                 end
               end
             end
           end
         end
-  
+
         context "when 'disabilites.secondaryDisabilities.classificationCode' does not match name" do
           it 'raises an exception' do
             with_okta_user(scopes) do |auth_header|
@@ -1075,13 +1074,13 @@ RSpec.describe 'Disability Claims', type: :request do
                   ]
                   params['data']['attributes']['disabilities'] = disabilities
                   post path, params: params.to_json, headers: headers.merge(auth_header)
-                  expect(response.status).to eq(422)
+                  expect(response).to have_http_status(:unprocessable_entity)
                 end
               end
             end
           end
         end
-  
+
         context "when 'disabilites.secondaryDisabilities.approximateBeginDate' is present" do
           it 'raises an exception if date is invalid' do
             with_okta_user(scopes) do |auth_header|
@@ -1105,11 +1104,11 @@ RSpec.describe 'Disability Claims', type: :request do
                 ]
                 params['data']['attributes']['disabilities'] = disabilities
                 post path, params: params.to_json, headers: headers.merge(auth_header)
-                expect(response.status).to eq(422)
+                expect(response).to have_http_status(:unprocessable_entity)
               end
             end
           end
-  
+
           it 'raises an exception if date is not in the past' do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('brd/countries') do
@@ -1132,12 +1131,12 @@ RSpec.describe 'Disability Claims', type: :request do
                 ]
                 params['data']['attributes']['disabilities'] = disabilities
                 post path, params: params.to_json, headers: headers.merge(auth_header)
-                expect(response.status).to eq(422)
+                expect(response).to have_http_status(:unprocessable_entity)
               end
             end
           end
         end
-  
+
         context "when 'disabilites.secondaryDisabilities.classificationCode' is not present" do
           it 'raises an exception if name is not valid structure' do
             with_okta_user(scopes) do |auth_header|
@@ -1160,11 +1159,11 @@ RSpec.describe 'Disability Claims', type: :request do
                 ]
                 params['data']['attributes']['disabilities'] = disabilities
                 post path, params: params.to_json, headers: headers.merge(auth_header)
-                expect(response.status).to eq(400)
+                expect(response).to have_http_status(:bad_request)
               end
             end
           end
-  
+
           it 'raises an exception if name is longer than 255 characters' do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('evss/claims/claims') do
@@ -1187,7 +1186,7 @@ RSpec.describe 'Disability Claims', type: :request do
                   ]
                   params['data']['attributes']['disabilities'] = disabilities
                   post path, params: params.to_json, headers: headers.merge(auth_header)
-                  expect(response.status).to eq(400)
+                  expect(response).to have_http_status(:bad_request)
                 end
               end
             end
