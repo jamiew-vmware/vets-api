@@ -14,6 +14,7 @@ module ClaimsApi
         homeless_attributes
         chg_addr_attributes
         veteran_info
+        service_info
 
         @pdf_data
       end
@@ -99,6 +100,67 @@ module ClaimsApi
         # set exposureInformation.hasConditionsRelatedToToxicExposures to true.
         # This will check 'YES' for box 15A.
         # TODO: for disability mapping ticket
+      end
+
+      def service_info
+        service_periods
+        confinements
+        national_guard
+
+        @pdf_data
+      end
+
+      def service_periods
+        @pdf_data[:data][:attributes][:serviceInformation].merge!(
+          @auto_claim["serviceInformation"].deep_symbolize_keys
+        )
+        # what of there are more than one service period?
+        details = @pdf_data[:data][:attributes][:serviceInformation][:servicePeriods].map do |ser_per|
+          act_start = ser_per[:activeDutyBeginDate]
+          act_end = ser_per[:activeDutyEndDate]
+          # TODO: get location name from code
+          location = ser_per[:separationLocationCode]
+          branch = ser_per[:serviceBranch]
+          component = ser_per[:serviceComponent]
+
+          @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService] = {}
+          @pdf_data[:data][:attributes][:serviceInformation][:additionalPeriodsOfService] = {}
+          
+          @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService][:startDate] = act_start
+          @pdf_data[:data][:attributes][:serviceInformation][:additionalPeriodsOfService][:startDate] = act_start
+          @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService][:endDate] = act_end
+          @pdf_data[:data][:attributes][:serviceInformation][:additionalPeriodsOfService][:endDate] = act_end
+          @pdf_data[:data][:attributes][:serviceInformation][:placeOfLastOrAnticipatedSeparation] = location
+          @pdf_data[:data][:attributes][:serviceInformation][:branchOfService] = branch
+          @pdf_data[:data][:attributes][:serviceInformation][:serviceComponent] = component
+          @pdf_data[:data][:attributes][:serviceInformation]
+        end
+        
+        @pdf_data
+      end
+      
+      def confinements
+        si = {}
+        addtl_service_info = @pdf_data[:data][:attributes][:serviceInformation][:confinements].map do |confinement|
+          start = confinement[:confinement][:approximateBeginDate]
+          end_date = confinement[:confinement][:approximateEndDate]
+          si[:prisonerOfWarConfinement] = { confinementDates: {} }
+          si[:prisonerOfWarConfinement][:confinementDates][:startDate] = start
+          si[:prisonerOfWarConfinement][:confinementDates][:endDate] = end_date
+          si[:confinedAsPrisonerOfWar] = true if start
+          si
+        end
+        @pdf_data[:data][:attributes][:serviceInformation].merge!(si)
+        
+        @pdf_data
+      end
+
+      def national_guard
+        si = {}
+        reserves = @pdf_data[:data][:attributes][:serviceInformation][:reservesNationalGuardService]
+        si[:servedInReservesOrNationalGuard] = true if reserves[:obligationTermsOfService][:startDate]
+        @pdf_data[:data][:attributes][:serviceInformation].merge!(si)
+
       end
     end
   end

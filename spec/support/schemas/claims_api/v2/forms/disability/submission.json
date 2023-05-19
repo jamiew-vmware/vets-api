@@ -813,15 +813,29 @@
             "type": "object",
             "description": "",
             "properties": {
-              "approximateBeginDate": {
-                "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
-                "type": "string",
-                "example": "2018-06-04"
-              },
-              "approximateEndDate": {
-                "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
-                "type": "string",
-                "example": "2018-06-04"
+              "confinement": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "approximateBeginDate",
+                    "approximateEndDate"
+                  ],
+                  "properties": {
+                    "approximateBeginDate": {
+                      "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
+                      "type": "string",
+                      "example": "2018-06-04"
+                    },
+                    "approximateEndDate": {
+                      "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
+                      "type": "string",
+                      "example": "2018-08-04"
+                    }
+                  }
+                }
               }
             }
           },

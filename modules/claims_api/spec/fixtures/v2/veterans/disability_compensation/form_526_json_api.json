@@ -34,10 +34,15 @@
                         "separationLocationCode": "ABCDEFGHIJKLMN"
                     }
                 ],
-                "confinements": {
-                    "approximateBeginDate": "8349-11-06",
-                    "approximateEndDate": "2884-12-09"
-                },
+                "confinements": [
+                    {
+                    "confinement":
+                      {
+                        "approximateBeginDate": "8349-11-06",
+                        "approximateEndDate": "2884-12-09"
+                      }
+                    }
+                ],
                 "reservesNationalGuardService": {
                     "obligationTermsOfService": {
                         "startDate":"3995-11-24",

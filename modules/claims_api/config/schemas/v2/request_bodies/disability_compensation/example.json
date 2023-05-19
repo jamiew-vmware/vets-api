@@ -141,10 +141,15 @@
                 "separationLocationCode": "V01D"
               }
           ],
-          "confinements": {
-              "approximateBeginDate": "2016-11-06",
-              "approximateEndDate": "2016-11-09"
-          },
+          "confinements": [
+            {
+            "confinement":
+              {
+                "approximateBeginDate": "8349-11-06",
+                "approximateEndDate": "2884-12-09"
+              }
+            }
+        ],
           "reservesNationalGuardService": {
               "obligationTermsOfService": {
                 "startDate":"2016-11-24",
