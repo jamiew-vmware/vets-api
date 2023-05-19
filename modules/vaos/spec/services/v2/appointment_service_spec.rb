@@ -18,7 +18,7 @@ describe VAOS::V2::AppointmentsService do
   mock_facility = {
     test: 'test',
     timezone: {
-      zone_id: 'America/New_York'
+      time_zone_id: 'America/New_York'
     }
   }
 

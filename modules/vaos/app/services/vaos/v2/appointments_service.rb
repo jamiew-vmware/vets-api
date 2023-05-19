@@ -26,7 +26,7 @@ module VAOS
 
             find_service_type_and_category(appt)
             log_telehealth_data(appt[:telehealth]&.[](:atlas)) unless appt[:telehealth]&.[](:atlas).nil?
-            convert_appointment_time(appt)
+            convert_appointment_time(appt) if enabled?
           end
           {
             data: deserialized_appointments(response.body[:data]),
@@ -39,7 +39,7 @@ module VAOS
         params = {}
         with_monitoring do
           response = perform(:get, get_appointment_base_url(appointment_id), params, headers)
-          convert_appointment_time(response.body[:data])
+          convert_appointment_time(response.body[:data]) if enabled?
           OpenStruct.new(response.body[:data])
           appt = OpenStruct.new(response.body[:data])
           # set cancellable to false per GH#57824 for CnP appointments
@@ -114,7 +114,7 @@ module VAOS
         if facility_info == FACILITY_ERROR_MSG || facility_info.nil?
           nil # returns nil if unable to fetch facility info, which will be handled by the timezone conversion
         else
-          facility_info[:timezone]&.[](:zone_id)
+          facility_info[:timezone]&.[](:time_zone_id)
         end
       end
 
@@ -251,6 +251,10 @@ module VAOS
 
       def date_format(date)
         date.strftime('%Y-%m-%dT%TZ')
+      end
+
+      def enabled?
+        Flipper.enabled?(:va_online_scheduling_convert_utc_to_local)
       end
     end
   end
