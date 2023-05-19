@@ -56,13 +56,14 @@ module ClaimsApi
 
         form_attributes['disabilities'].each do |disability|
           next if disability['classificationCode'].blank?
+
           if brd_classification_ids.include?(disability['classificationCode'].to_i)
             validate_form_526_disability_name!(disability['classificationCode'].to_i, disability['name'])
-          else 
+          else
             raise ::Common::Exceptions::UnprocessableEntity.new(
               detail: "'disabilities.classificationCode' must match the associated id " \
-                      "value returned from the /disabilities endpoint of the Benefits " \
-                      "Reference Data API."
+                      'value returned from the /disabilities endpoint of the Benefits ' \
+                      'Reference Data API.'
             )
           end
         end
@@ -73,15 +74,16 @@ module ClaimsApi
           raise ::Common::Exceptions::InvalidFieldValue.new('disabilities.name',
                                                             disability['name'])
         end
-        reference_disability = brd_disabilities.find {|x| x[:id] == classification_code}
+        reference_disability = brd_disabilities.find { |x| x[:id] == classification_code }
         return if reference_disability[:name] == disability_name
+
         raise ::Common::Exceptions::UnprocessableEntity.new(
           detail: "'disabilities.name' must match the name value associated " \
                   "with 'disabilities.classificationCode' as returned from the " \
-                  "/disabilities endpoint of the Benefits Reference Data API."
+                  '/disabilities endpoint of the Benefits Reference Data API.'
         )
       end
-  
+
       def brd_classification_ids
         return @brd_classification_ids if @brd_classification_ids.present?
 
@@ -98,13 +100,13 @@ module ClaimsApi
       def validate_form_526_disability_approximate_begin_date!
         disabilities = form_attributes['disabilities']
         return if disabilities.blank?
-  
+
         disabilities.each do |disability|
           approx_begin_date = disability['approximateBeginDate']
           next if approx_begin_date.blank?
-  
+
           next if Date.parse(approx_begin_date) < Time.zone.today
-  
+
           raise ::Common::Exceptions::InvalidFieldValue.new('disability.approximateBeginDate', approx_begin_date)
         end
       end
@@ -112,6 +114,7 @@ module ClaimsApi
       def validate_form_526_diagnostic_code!
         form_attributes['disabilities'].each do |disability|
           next unless disability['disabilityActionType'] == 'NONE' && disability['secondaryDisabilities'].present?
+
           if disability['diagnosticCode'].blank?
             raise ::Common::Exceptions::UnprocessableEntity.new(
               detail: "'disabilities.diagnosticCode' is required if 'disabilities.disabilityActionType' " \
@@ -123,12 +126,12 @@ module ClaimsApi
 
       def validate_form_526_toxic_exposure!
         form_attributes['disabilities'].each do |disability|
-          byebug
           next unless disability['isRelatedToToxicExposure'] == true
+
           if disability['exposureOrEventOrInjury'].blank?
             raise ::Common::Exceptions::UnprocessableEntity.new(
               detail: "If disability is related to toxic exposure a value for 'disabilities.exposureOrEventOrInjury' " \
-                      "is required."
+                      'is required.'
             )
           end
         end
@@ -138,7 +141,7 @@ module ClaimsApi
         form_attributes['disabilities'].each do |disability|
           validate_form_526_disability_secondary_disability_disability_action_type!(disability)
           next if disability['secondaryDisabilities'].blank?
-  
+
           disability['secondaryDisabilities'].each do |secondary_disability|
             if secondary_disability['classificationCode'].present?
               validate_form_526_disability_secondary_disability_classification_code!(secondary_disability)
@@ -148,7 +151,7 @@ module ClaimsApi
             else
               validate_form_526_disability_secondary_disability_name!(secondary_disability)
             end
-  
+
             if secondary_disability['approximateBeginDate'].present?
               validate_form_526_disability_secondary_disability_approximate_begin_date!(secondary_disability)
             end
@@ -158,6 +161,7 @@ module ClaimsApi
 
       def validate_form_526_disability_secondary_disability_disability_action_type!(disability)
         return unless disability['disabilityActionType'] == 'NONE' && disability['secondaryDisabilities'].present?
+
         if disability['diagnosticCode'].blank?
           raise ::Common::Exceptions::UnprocessableEntity.new(
             detail: "'disabilities.diagnosticCode' is required if 'disabilities.disabilityActionType' " \
@@ -165,44 +169,45 @@ module ClaimsApi
           )
         end
       end
-  
+
       def validate_form_526_disability_secondary_disability_classification_code!(secondary_disability)
         return if brd_classification_ids.include?(secondary_disability['classificationCode'].to_i)
-  
+
         raise ::Common::Exceptions::UnprocessableEntity.new(
           detail: "'disabilities.secondaryDisabilities.classificationCode' must match the associated id " \
-                  "value returned from the /disabilities endpoint of the Benefits " \
-                  "Reference Data API."
+                  'value returned from the /disabilities endpoint of the Benefits ' \
+                  'Reference Data API.'
         )
       end
-  
+
       def validate_form_526_disability_secondary_disability_classification_code_matches_name!(secondary_disability)
         if secondary_disability['name'].blank?
           raise ::Common::Exceptions::InvalidFieldValue.new('disabilities.secondaryDisabilities.name',
-            secondary_disability['name'])
+                                                            secondary_disability['name'])
         end
-        reference_disability = brd_disabilities.find {|x| x[:id] == secondary_disability['classificationCode'].to_i}
+        reference_disability = brd_disabilities.find { |x| x[:id] == secondary_disability['classificationCode'].to_i }
         return if reference_disability[:name] == secondary_disability['name']
+
         raise ::Common::Exceptions::UnprocessableEntity.new(
           detail: "'disabilities.secondaryDisabilities.name' must match the name value associated " \
                   "with 'disabilities.secondaryDisabilities.classificationCode' as returned from the " \
-                  "/disabilities endpoint of the Benefits Reference Data API."
+                  '/disabilities endpoint of the Benefits Reference Data API.'
         )
       end
-  
+
       def validate_form_526_disability_secondary_disability_name!(secondary_disability)
         return if %r{([a-zA-Z0-9\-'.,/()]([a-zA-Z0-9\-',. ])?)+$}.match?(secondary_disability['name']) &&
                   secondary_disability['name'].length <= 255
-  
+
         raise ::Common::Exceptions::InvalidFieldValue.new(
           'disabilities.secondaryDisabilities.name',
           secondary_disability['name']
         )
       end
-  
+
       def validate_form_526_disability_secondary_disability_approximate_begin_date!(secondary_disability)
         return if Date.parse(secondary_disability['approximateBeginDate']) < Time.zone.today
-  
+
         raise ::Common::Exceptions::InvalidFieldValue.new(
           'disabilities.secondaryDisabilities.approximateBeginDate',
           secondary_disability['approximateBeginDate']
