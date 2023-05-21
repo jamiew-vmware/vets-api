@@ -2873,19 +2873,23 @@
                                 "example": "Jane Doe"
                               },
                               "pointOfContactNumber": {
+                                "type": "object",
+                                "additionalProperties": false,
                                 "properties": {
-                                  "telephone": {
-                                    "description": "Primary phone of Point of Contact.",
-                                    "type": "string",
-                                    "example": "1231234",
-                                    "maxLength": 10
-                                  },
-                                  "internationalTelephone": {
-                                    "description": "international phone of Point of Contact.",
-                                    "type": "string",
-                                    "example": "1231234",
-                                    "maxLength": 10
-                                  }
+                                    "telephone": {
+                                        "description": "Primary phone of Point of Contact.",
+                                        "type": "string",
+                                        "pattern": "^\\d{10}?$",
+                                        "example": "1231234",
+                                        "maxLength": 10
+                                        },
+                                    "internationalTelephone": {
+                                        "description": "international phone of Point of Contact.",
+                                        "type": "string",
+                                        "pattern": "^\\d{10}?$",
+                                        "example": "1231234",
+                                        "maxLength": 10   
+                                    }
                                 }
                               },
                               "currentlyHomeless": {
@@ -4581,8 +4585,8 @@
                     "id": "1",
                     "type": "intent_to_file",
                     "attributes": {
-                      "creationDate": "2023-05-12",
-                      "expirationDate": "2024-05-12",
+                      "creationDate": "2023-05-17",
+                      "expirationDate": "2024-05-17",
                       "type": "compensation",
                       "status": "active"
                     }

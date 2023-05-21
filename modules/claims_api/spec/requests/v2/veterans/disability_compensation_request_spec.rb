@@ -612,6 +612,227 @@ RSpec.describe 'Disability Claims', type: :request do
           end
         end
       end
+
+      describe 'Validation of claimant homeless elements' do
+        context "when 'currentlyHomeless' and 'riskOfBecomingHomeless' are both provided" do
+          it 'responds with a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json_data = JSON.parse data
+                  params = json_data
+                  params['data']['attributes']['homeless']['currentlyHomeless'] = {
+                    homelessSituationOptions: 'FLEEING_CURRENT_RESIDENCE',
+                    otherDescription: 'community help center'
+                  }
+                  params['data']['attributes']['homeless']['riskOfBecomingHomeless'] = {
+                    livingSituationOptions: 'losingHousing',
+                    otherDescription: 'community help center'
+                  }
+                  post path, params: params.to_json, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                  response_body = JSON.parse(response.body)
+                  expect(response_body['errors'].length).to eq(1)
+                  expect(response_body['errors'][0]['detail']).to eq(
+                    "Must define only one of 'homeless.currentlyHomeless' or " \
+                    "'homeless.riskOfBecomingHomeless'"
+                  )
+                end
+              end
+            end
+          end
+        end
+      end
+
+      context "when neither 'currentlyHomeless' nor 'riskOfBecomingHomeless' is provided" do
+        context "when 'pointOfContact' is provided" do
+          it 'responds with a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json_data = JSON.parse data
+                  params = json_data
+                  params['data']['attributes']['homeless'] = {}
+                  params['data']['attributes']['homeless'] = {
+                    pointOfContact: 'Jane Doe',
+                    pointOfContactNumber: {
+                      telephone: '1234567890'
+                    }
+                  }
+                  post path, params: params.to_json, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                  response_body = JSON.parse(response.body)
+                  expect(response_body['errors'].length).to eq(1)
+                  expect(response_body['errors'][0]['detail']).to eq(
+                    "If 'homeless.pointOfContact' is defined, then one of " \
+                    "'homeless.currentlyHomeless' or 'homeless.riskOfBecomingHomeless'" \
+                    ' is required'
+                  )
+                end
+              end
+            end
+          end
+        end
+
+        context "when 'pointOfContact' is not provided" do
+          it 'responds with a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                json_data = JSON.parse data
+                params = json_data
+                params['data']['attributes']['homeless']['currentlyHomeless'] = {
+                  homelessSituationOptions: 'FLEEING_CURRENT_RESIDENCE',
+                  otherDescription: 'community help center'
+                }
+                params['data']['attributes']['homeless'].delete('pointOfContact')
+                post path, params: params.to_json, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+                response_body = JSON.parse(response.body)
+                expect(response_body['errors'].length).to eq(1)
+                expect(response_body['errors'][0]['detail']).to eq(
+                  "If one of 'homeless.currentlyHomeless' or 'homeless.riskOfBecomingHomeless' is" \
+                  " defined, then 'homeless.pointOfContact' is required"
+                )
+              end
+            end
+          end
+        end
+      end
+
+      context "when either 'currentlyHomeless' or 'riskOfBecomingHomeless' is provided" do
+        context "when 'pointOfContactNumber' 'telephone' contains alphabetic characters" do
+          it 'responds with a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                json_data = JSON.parse data
+                params = json_data
+                params['data']['attributes']['homeless']['currentlyHomeless'] = {
+                  homelessSituationOptions: 'FLEEING_CURRENT_RESIDENCE',
+                  otherDescription: 'community help center'
+                }
+                params['data']['attributes']['homeless']['pointOfContactNumber']['telephone'] = 'xxxyyyzzzz'
+                post path, params: params.to_json, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+              end
+            end
+          end
+        end
+
+        context "when 'pointOfContactNumber' 'internationalTelephone' contains alphabetic characters" do
+          it 'responds with a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('brd/countries') do
+                json_data = JSON.parse data
+                params = json_data
+                params['data']['attributes']['homeless']['currentlyHomeless'] = {
+                  homelessSituationOptions: 'FLEEING_CURRENT_RESIDENCE',
+                  otherDescription: 'community help center'
+                }
+                params['data']['attributes']['homeless']['pointOfContactNumber']['intnernationalTelephone'] =
+                  'xxxyyyzzzz'
+                post path, params: params.to_json, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+              end
+            end
+          end
+        end
+      end
+
+      # toxic exposure validation tests
+      context 'when the other_locations_served does not match the regex' do
+        let(:other_locations_served) { 'some !@#@#$#%$^%$#&$^%&&(*978078)' }
+
+        it 'responds with a bad request' do
+          with_okta_user(scopes) do |auth_header|
+            VCR.use_cassette('evss/claims/claims') do
+              VCR.use_cassette('brd/countries') do
+                json = JSON.parse(data)
+                json['data']['attributes']['toxicExposure']['herbicideHazardService']['otherLocationsServed'] =
+                  other_locations_served
+                data = json.to_json
+                post path, params: data, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+              end
+            end
+          end
+        end
+      end
+
+      context 'when the additional_exposures does not match the regex' do
+        let(:additional_exposures) { 'some !@#@#$#%$^%$#&$^%&&(*978078)' }
+
+        it 'responds with a bad request' do
+          with_okta_user(scopes) do |auth_header|
+            VCR.use_cassette('evss/claims/claims') do
+              VCR.use_cassette('brd/countries') do
+                json = JSON.parse(data)
+                json['data']['attributes']['toxicExposure']['additionalHazardExposures']['additionalExposures'] =
+                  additional_exposures
+                data = json.to_json
+                post path, params: data, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+              end
+            end
+          end
+        end
+      end
+
+      context 'when the specify_other_exposures does not match the regex' do
+        let(:specify_other_exposures) { 'some !@#@#$#%$^%$#&$^%&&(*978078)' }
+
+        it 'responds with a bad request' do
+          with_okta_user(scopes) do |auth_header|
+            VCR.use_cassette('evss/claims/claims') do
+              VCR.use_cassette('brd/countries') do
+                json = JSON.parse(data)
+                json['data']['attributes']['toxicExposure']['additionalHazardExposures']['specifyOtherExposures'] =
+                  specify_other_exposures
+                data = json.to_json
+                post path, params: data, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+              end
+            end
+          end
+        end
+      end
+
+      context 'when the exposure_location does not match the regex' do
+        let(:exposure_location) { 'some !@#@#$#%$^%$#&$^%&&(*978078)' }
+
+        it 'responds with a bad request' do
+          with_okta_user(scopes) do |auth_header|
+            VCR.use_cassette('evss/claims/claims') do
+              VCR.use_cassette('brd/countries') do
+                json = JSON.parse(data)
+                json['data']['attributes']['toxicExposure']['multipleExposures']['exposureLocation'] =
+                  exposure_location
+                data = json.to_json
+                post path, params: data, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+              end
+            end
+          end
+        end
+      end
+
+      context 'when the hazard_exposed_to does not match the regex' do
+        let(:hazard_exposed_to) { 'some !@#@#$#%$^%$#&$^%&&(*978078)' }
+
+        it 'responds with a bad request' do
+          with_okta_user(scopes) do |auth_header|
+            VCR.use_cassette('evss/claims/claims') do
+              VCR.use_cassette('brd/countries') do
+                json = JSON.parse(data)
+                json['data']['attributes']['toxicExposure']['multipleExposures']['hazardExposedTo'] =
+                  hazard_exposed_to
+                data = json.to_json
+                post path, params: data, headers: headers.merge(auth_header)
+                expect(response).to have_http_status(:unprocessable_entity)
+              end
+            end
+          end
+        end
+      end
     end
 
     context 'validate' do
