@@ -669,11 +669,11 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
         end
       end
 
-      context 'medical copays send_new_statements_notifications' do
+      context 'medical copays send_statement_notifications' do
         it 'validates the route' do
           expect(subject).to validate(
             :post,
-            '/v0/medical_copays/send_new_statements_notifications',
+            '/v0/medical_copays/send_statement_notifications',
             200,
             headers
           )
@@ -754,6 +754,21 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
         json = JSON.parse(json_string)
         json.delete('email')
         json.to_json
+      end
+      let(:user) { build(:ch33_dd_user) }
+      let(:headers) do
+        { '_headers' => { 'Cookie' => sign_in(user, nil, true) } }
+      end
+
+      it 'supports getting the disability rating' do
+        VCR.use_cassette('bgs/service/find_rating_data', VCR::MATCH_EVERYTHING) do
+          expect(subject).to validate(
+            :get,
+            '/v0/health_care_applications/rating_info',
+            200,
+            headers
+          )
+        end
       end
 
       it 'supports getting the hca enrollment status' do
@@ -1079,6 +1094,11 @@ RSpec.describe 'the API documentation', type: %i[apivore request], order: :defin
     end
 
     describe 'intent to file' do
+      before do
+        # TODO: remove Flipper feature toggle when lighthouse provider is implemented
+        Flipper.disable('disability_compensation_lighthouse_intent_to_file_provider')
+      end
+
       it 'supports getting all intent to file' do
         expect(subject).to validate(:get, '/v0/intent_to_file', 401)
         VCR.use_cassette('evss/intent_to_file/intent_to_file') do

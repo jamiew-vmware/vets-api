@@ -11,7 +11,7 @@ describe AppealsApi::V2::DecisionReviews::SupplementalClaimsController, type: :r
   end
 
   def new_base_path(path)
-    "/services/appeals/supplemental_claims/v0/#{path}"
+    "/services/appeals/supplemental-claims/v0/#{path}"
   end
 
   let(:minimum_data) { fixture_to_s 'valid_200995.json', version: 'v2' }
@@ -27,7 +27,7 @@ describe AppealsApi::V2::DecisionReviews::SupplementalClaimsController, type: :r
 
     context 'with minimum required headers' do
       it 'returns all SCs for the given Veteran' do
-        uuid_1 = create(:supplemental_claim, veteran_icn: '1013062086V794840', form_data: nil).id
+        uuid_1 = create(:supplemental_claim, veteran_icn: '1013062086V794840').id
         uuid_2 = create(:supplemental_claim, veteran_icn: '1013062086V794840').id
         create(:supplemental_claim, veteran_icn: 'something_else')
 
@@ -85,10 +85,19 @@ describe AppealsApi::V2::DecisionReviews::SupplementalClaimsController, type: :r
         sc = AppealsApi::SupplementalClaim.find(sc_guid)
 
         expect(sc.source).to eq('va.gov')
+        expect(sc.api_version).to eq('V2')
         expect(sc.veteran_icn).to eq('1013062086V794840')
         expect(parsed['data']['type']).to eq('supplementalClaim')
         expect(parsed['data']['attributes']['status']).to eq('pending')
         expect(parsed.dig('data', 'attributes', 'formData')).to be_a Hash
+      end
+
+      it 'stores the evidenceType(s) in metadata' do
+        post(path, params: data, headers:)
+        sc = AppealsApi::SupplementalClaim.find(parsed['data']['id'])
+        data_evidence_type = JSON.parse(data).dig(*%w[data attributes evidenceSubmission evidenceType])
+
+        expect(sc.metadata.dig('form_data', 'evidence_type')).to eq(data_evidence_type)
       end
     end
 
@@ -408,7 +417,7 @@ describe AppealsApi::V2::DecisionReviews::SupplementalClaimsController, type: :r
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::SupplementalClaims::V0::SupplementalClaimsController::OAUTH_SCOPES[:POST]
+        scopes: AppealsApi::SupplementalClaims::V0::SupplementalClaimsController::OAUTH_SCOPES[:POST]
       ) do
         def make_request(auth_header)
           post(oauth_path, params: data, headers: headers.merge(auth_header))
@@ -532,7 +541,7 @@ describe AppealsApi::V2::DecisionReviews::SupplementalClaimsController, type: :r
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::SupplementalClaims::V0::SupplementalClaimsController::OAUTH_SCOPES[:POST]
+        scopes: AppealsApi::SupplementalClaims::V0::SupplementalClaimsController::OAUTH_SCOPES[:POST]
       ) do
         def make_request(auth_header)
           post(oauth_path, params: data, headers: headers.merge(auth_header))
@@ -624,7 +633,7 @@ describe AppealsApi::V2::DecisionReviews::SupplementalClaimsController, type: :r
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::SupplementalClaims::V0::SupplementalClaimsController::OAUTH_SCOPES[:GET]
+        scopes: AppealsApi::SupplementalClaims::V0::SupplementalClaimsController::OAUTH_SCOPES[:GET]
       ) do
         def make_request(auth_header)
           get(oauth_path, headers: auth_header)

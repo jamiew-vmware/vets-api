@@ -2,86 +2,191 @@
 
 require AppealsApi::Engine.root.join('spec', 'spec_helper.rb')
 
-# rubocop:disable Metrics/MethodLength, Layout/LineLength, Metrics/ClassLength
+# rubocop:disable Metrics/MethodLength, Layout/LineLength, Metrics/ClassLength, Metrics/ParameterLists
 class AppealsApi::RswagConfig
   include DocHelpers
+
+  def rswag_doc_config(
+    base_path_template:,
+    description_file_path:,
+    name:,
+    tags:,
+    title:,
+    version:
+  )
+    {
+      # FIXME: The Lighthouse docs UI code does not yet support openapi versions above 3.0.z
+      # This version should be updated to 3.1.0+ once that changes.
+      openapi: '3.0.0',
+      info: {
+        title:,
+        version:,
+        contact: { name: 'developer.va.gov' },
+        termsOfService: 'https://developer.va.gov/terms-of-service',
+        description: File.read(description_file_path)
+      },
+      tags:,
+      paths: {},
+      # basePath helps with rswag runs, but is not valid OAS v3. rswag.rake removes it from the output file.
+      basePath: base_path_template.gsub('{version}', version),
+      components: {
+        securitySchemes: security_schemes(name),
+        schemas: schemas(name)
+      },
+      servers: [
+        {
+          url: "https://sandbox-api.va.gov#{base_path_template}",
+          description: 'VA.gov API sandbox environment',
+          variables: { version: { default: version } }
+        },
+        {
+          url: "https://api.va.gov#{base_path_template}",
+          description: 'VA.gov API production environment',
+          variables: { version: { default: version } }
+        }
+      ]
+    }
+  end
 
   def config
     # Avoid trying to build this config when running a rake task for a non-appeals API (e.g. Claims)
     return {} if DocHelpers.running_rake_task? && ENV['RAILS_MODULE'] != 'appeals_api'
 
     {
-      DocHelpers.output_json_path => {
-        # FIXME: The Lighthouse docs UI code does not yet support openapi versions above 3.0.z
-        # This version should be updated to 3.1.0+ once that changes.
-        openapi: '3.0.0',
-        info: {
-          title: DocHelpers.api_title,
-          version: DocHelpers.api_version,
-          contact: { name: 'developer.va.gov' },
-          termsOfService: 'https://developer.va.gov/terms-of-service',
-          description: File.read(DocHelpers.api_description_file_path)
-        },
-        tags: DocHelpers.api_tags,
-        paths: {},
-        # basePath helps with rswag runs, but is not valid OAS v3. rswag.rake removes it from the output file.
-        basePath: DocHelpers.api_base_path,
-        components: {
-          securitySchemes: security_schemes,
-          schemas: schemas(DocHelpers.api_name)
-        },
-        servers: [
-          {
-            url: "https://sandbox-api.va.gov#{DocHelpers.api_base_path_template}",
-            description: 'VA.gov API sandbox environment',
-            variables: {
-              version: {
-                default: DocHelpers.api_version
-              }
-            }
-          },
-          {
-            url: "https://api.va.gov#{DocHelpers.api_base_path_template}",
-            description: 'VA.gov API production environment',
-            variables: {
-              version: {
-                default: DocHelpers.api_version
-              }
-            }
-          }
-        ]
-      }
+      "modules/appeals_api/app/swagger/appealable_issues/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Appealable Issues',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/appealable_issues/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/appealable-issues/{version}',
+        name: 'appealable_issues',
+        tags: api_tags(:appealable_issues)
+      ),
+      "modules/appeals_api/app/swagger/appeals_status/v1/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Appeals Status',
+        version: 'v1',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/appeals_status/v1/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/appeals-status/{version}',
+        name: 'appeals_status',
+        tags: api_tags(:appeals_status)
+      ),
+      "modules/appeals_api/app/swagger/decision_reviews/v2/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Decision Reviews',
+        version: 'v2',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/decision_reviews/v2/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/{version}/decision_reviews',
+        name: 'decision_reviews',
+        tags: api_tags(*%i[higher_level_reviews notice_of_disagreements supplemental_claims contestable_issues legacy_appeals])
+      ),
+      "modules/appeals_api/app/swagger/higher_level_reviews/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Higher-Level Reviews',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/higher_level_reviews/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/higher-level-reviews/{version}',
+        name: 'higher_level_reviews',
+        tags: api_tags(:higher_level_reviews)
+      ),
+      "modules/appeals_api/app/swagger/legacy_appeals/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Legacy Appeals',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/legacy_appeals/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/legacy-appeals/{version}',
+        name: 'legacy_appeals',
+        tags: api_tags(:legacy_appeals)
+      ),
+      "modules/appeals_api/app/swagger/notice_of_disagreements/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Notice of Disagreements',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/notice_of_disagreements/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/notice-of-disagreements/{version}',
+        name: 'notice_of_disagreements',
+        tags: api_tags(:notice_of_disagreements)
+      ),
+      "modules/appeals_api/app/swagger/supplemental_claims/v0/swagger#{DocHelpers.doc_suffix}.json" => rswag_doc_config(
+        title: 'Supplemental Claims',
+        version: 'v0',
+        description_file_path: AppealsApi::Engine.root.join("app/swagger/supplemental_claims/v0/api_description#{DocHelpers.doc_suffix}.md"),
+        base_path_template: '/services/appeals/supplemental-claims/{version}',
+        name: 'supplemental_claims',
+        tags: api_tags(:supplemental_claims)
+      )
     }
   end
 
   private
 
+  DEFAULT_READ_SCOPE_DESCRIPTIONS = {
+    'veteran/appeals.read': 'Allows a veteran to see all their own decision review or appeal data',
+    'representative/appeals.read': 'Allows a veteran representative to see all decision review or appeal data for a veteran',
+    'system/appeals.read': 'Allows a system to see all decision review or appeal data for a veteran'
+  }.freeze
+
+  DEFAULT_WRITE_SCOPE_DESCRIPTIONS = {
+    'veteran/appeals.write': 'Allows a veteran to submit any type of appeal data for themselves',
+    'representative/appeals.write': 'Allows a veteran representative to submit any type of appeal data for a veteran',
+    'system/appeals.write': 'Allows a system to submit any type of appeal data for a veteran'
+  }.freeze
+
   OAUTH_SCOPE_DESCRIPTIONS = {
     appeals_status: {
-      'appeals/AppealsStatus.read': 'Retrieve appeals status data'
+      'veteran/AppealsStatus.read': 'Allows a veteran to see the status of their own VA decision reviews and appeals',
+      'representative/AppealsStatus.read': "Allows a veteran representative to see the status of a veteran's decision reviews and appeals",
+      'system/AppealsStatus.read': "Allows a system to see the status of a veteran's decision reviews and appeals"
     },
-    contestable_issues: {
-      'appeals/ContestableIssues.read': 'Retrieve contestable issues data'
+    appealable_issues: {
+      'veteran/ContestableIssues.read': 'Allows a veteran to see their own contestable issues',
+      'veteran/AppealableIssues.read': 'Allows a veteran to see their own appealable issues',
+      'representative/ContestableIssues.read': "Allows a veteran representative to see a veteran's contestable issues",
+      'representative/AppealableIssues.read': "Allows a veteran representative to see a veteran's appealable issues",
+      'system/ContestableIssues.read': "Allows a system to see a veteran's contestable issues",
+      'system/AppealableIssues.read': "Allows a system to see a veteran's appealable issues"
     },
     higher_level_reviews: {
-      'appeals/HigherLevelReviews.read': 'Retrieve higher-level review data',
-      'appeals/HigherLevelReviews.write': 'Submit higher-level reviews'
+      'veteran/HigherLevelReviews.read': 'Allows a veteran to see their own Higher-Level Reviews',
+      'representative/HigherLevelReviews.read': "Allows a veteran representative to see a veteran's Higher-Level Reviews",
+      'system/HigherLevelReviews.read': "Allows a system to see a veteran's Higher-Level Reviews",
+      'veteran/HigherLevelReviews.write': 'Allows a veteran to submit Higher-Level Reviews for themselves',
+      'representative/HigherLevelReviews.write': 'Allows a veteran representative to submit Higher-Level Reviews for a veteran',
+      'system/HigherLevelReviews.write': 'Allows a system to submit Higher-Level Reviews for a veteran'
     },
     legacy_appeals: {
-      'appeals/LegacyAppeals.read': 'Retrieve legacy appeals data'
+      'veteran/LegacyAppeals.read': 'Allows a veteran to see their own legacy appeals',
+      'representative/LegacyAppeals.read': "Allows a veteran representative to see a veteran's legacy appeals",
+      'system/LegacyAppeals.read': "Allows a system to see a veteran's legacy appeals"
     },
     notice_of_disagreements: {
-      'appeals/NoticeOfDisagreements.read': 'Retrieve notice of disagreements data',
-      'appeals/NoticeOfDisagreements.write': 'Submit notice of disagreements'
+      'veteran/NoticeOfDisagreements.read': 'Allows a veteran to see their Board Appeals',
+      'representative/NoticeOfDisagreements.read': "Allows a veteran representative to see a veteran's Board Appeals",
+      'system/NoticeOfDisagreements.read': "Allows a system to see a veteran's Board Appeals",
+      'veteran/NoticeOfDisagreements.write': 'Allows a veteran to submit Board Appeals for themselves',
+      'representative/NoticeOfDisagreements.write': 'Allows a veteran representative to submit Board Appeals for a veteran',
+      'system/NoticeOfDisagreements.write': 'Allows a system to submit Board Appeals for a veteran'
     },
     supplemental_claims: {
-      'appeals/SupplementalClaims.read': 'Retrieve supplemental claims data',
-      'appeals/SupplementalClaims.write': 'Submit supplemental claims'
+      'veteran/SupplementalClaims.read': 'Allows a veteran to see their Supplemental Claims',
+      'representative/SupplementalClaims.read': "Allows a veteran representative to see a veteran's Supplemental Claims",
+      'system/SupplementalClaims.read': "Allows a system to see a veteran's Supplemental Claims",
+      'veteran/SupplementalClaims.write': 'Allows a veteran to submit Supplemental Claims for themselves',
+      'representative/SupplementalClaims.write': 'Allows a veteran representative to submit Supplemental Claims for a veteran',
+      'system/SupplementalClaims.write': 'Allows a system to submit Supplemental Claims for a veteran'
     }
   }.freeze
 
-  def security_schemes
-    if DocHelpers.decision_reviews?
+  def api_tags(*api_names)
+    api_names.map { |api_name| { name: DocHelpers::ALL_DOC_TITLES[api_name.to_sym], description: '' } }
+  end
+
+  def decision_reviews_security_schemes
+    {
+      apikey: {
+        type: :apiKey,
+        name: :apikey,
+        in: :header
+      }
+    }
+  end
+
+  def security_schemes(api_name = DocHelpers.api_name)
+    if api_name == 'decision_reviews'
       {
         apikey: {
           type: :apiKey,
@@ -90,11 +195,12 @@ class AppealsApi::RswagConfig
         }
       }
     else
-      api_specific_scopes = OAUTH_SCOPE_DESCRIPTIONS[DocHelpers.api_name.to_sym]
-      scope_descriptions = api_specific_scopes.merge(
-        { 'appeals.read': 'Retrieve any type of appeal data' }
-      )
-      scope_descriptions.merge!({ 'appeals.write': 'Submit any type of appeal' }) if api_specific_scopes.count > 1
+      api_specific_scopes = OAUTH_SCOPE_DESCRIPTIONS[api_name.to_sym]
+      scope_descriptions = api_specific_scopes.merge(DEFAULT_READ_SCOPE_DESCRIPTIONS)
+
+      if api_specific_scopes.keys.any? { |name| name.end_with?('.write') }
+        scope_descriptions.merge!(DEFAULT_WRITE_SCOPE_DESCRIPTIONS)
+      end
 
       {
         bearer_token: {
@@ -164,8 +270,8 @@ class AppealsApi::RswagConfig
         ]
       )
       a << shared_schemas.slice(*%W[address phone timezone #{nbs_key}])
-    when 'contestable_issues'
-      a << contestable_issues_schema('#/components/schemas')
+    when 'appealable_issues'
+      a << appealable_issues_schema('#/components/schemas')
       a << generic_schemas('#/components/schemas').slice(*%i[errorModel X-VA-SSN X-VA-File-Number X-VA-ICN])
       a << shared_schemas.slice(*%W[#{nbs_key}])
     when 'legacy_appeals'
@@ -320,6 +426,28 @@ class AppealsApi::RswagConfig
     # Add in extra schemas for non-HLR api docs
     schemas['documentUploadMetadata'] = JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'document_upload_metadata.json')))
     schemas
+  end
+
+  def appealable_issues_schema(ref_root)
+    {
+      'appealableIssues': {
+        'type': 'object',
+        'properties': {
+          'data': {
+            'type': 'array',
+            'items': {
+              '$ref': "#{ref_root}/appealableIssue"
+            }
+          }
+        }
+      },
+      'appealableIssue': JSON.parse(File.read(AppealsApi::Engine.root.join('spec', 'support', 'schemas', 'appealable_issue.json'))),
+      'X-VA-Receipt-Date': {
+        "description": '(yyyy-mm-dd) Date to limit the appealable issues',
+        "type": 'string',
+        "format": 'date'
+      }
+    }
   end
 
   def contestable_issues_schema(ref_root)
@@ -1056,4 +1184,4 @@ class AppealsApi::RswagConfig
     return_raw ? schema : schema['definitions']
   end
 end
-# rubocop:enable Metrics/MethodLength, Layout/LineLength, Metrics/ClassLength
+# rubocop:enable Metrics/MethodLength, Layout/LineLength, Metrics/ClassLength, Metrics/ParameterLists

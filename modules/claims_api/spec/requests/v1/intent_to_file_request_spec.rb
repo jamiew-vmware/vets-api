@@ -20,7 +20,7 @@ RSpec.describe 'Intent to file', type: :request do
       participant_claimant_id: '123_456_789',
       received_date: '2015-01-05T17:42:12.058Z' }
   end
-  let(:schema) { File.read(Rails.root.join('modules', 'claims_api', 'config', 'schemas', '0966.json')) }
+  let(:schema) { File.read(Rails.root.join('modules', 'claims_api', 'config', 'schemas', 'v1', '0966.json')) }
 
   before do
     stub_poa_verification
@@ -61,12 +61,12 @@ RSpec.describe 'Intent to file', type: :request do
         end
       end
 
-      it 'posts a 422 error with detail when BGS returns a 500 response' do
+      it 'posts a 404 error with detail when BGS returns a 500 response' do
         with_okta_user(scopes) do |auth_header|
           VCR.use_cassette('bgs/intent_to_file_web_service/insert_intent_to_file_500') do
             data[:data][:attributes] = { type: 'pension' }
             post path, params: data.to_json, headers: headers.merge(auth_header)
-            expect(response.status).to eq(422)
+            expect(response.status).to eq(404)
           end
         end
       end
@@ -233,7 +233,7 @@ RSpec.describe 'Intent to file', type: :request do
                   post path, params: data.to_json, headers: headers.merge(auth_header)
                 end.to change(ClaimsApi::IntentToFile, :count).by(1)
                 expect(ClaimsApi::IntentToFile.last.status).to eq(ClaimsApi::IntentToFile::ERRORED)
-                expect(response.status).to eq(422)
+                expect(response.status).to eq(404)
               end
             end
           end

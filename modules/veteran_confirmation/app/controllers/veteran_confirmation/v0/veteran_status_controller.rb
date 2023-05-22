@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_dependency 'veteran_confirmation/application_controller'
 require 'common/exceptions'
 
 module VeteranConfirmation
@@ -17,6 +16,9 @@ module VeteranConfirmation
           birth_date: params['birth_date'],
           gender: params['gender']
         )
+
+        response.set_header('Deprecation', 'true')
+        response.set_header('Sunset', 'Thu, 04 Apr 2024 23:59:59 UTC')
 
         render json: { veteran_status: status }
       end

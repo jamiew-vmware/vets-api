@@ -7,6 +7,8 @@ module AppealsApi::SupplementalClaims::V0
     include AppealsApi::OpenidAuth
 
     FORM_NUMBER = '200995_WITH_SHARED_REFS'
+    API_VERSION = 'V0'
+    SCHEMA_VERSION = 'v2'
     HEADERS = JSON.parse(
       File.read(
         AppealsApi::Engine.root.join('config/schemas/v2/200995_with_shared_refs_headers.json')
@@ -14,9 +16,9 @@ module AppealsApi::SupplementalClaims::V0
     )['definitions']['scCreateParameters']['properties'].keys
 
     OAUTH_SCOPES = {
-      GET: %w[appeals/SupplementalClaims.read],
-      PUT: %w[appeals/SupplementalClaims.write],
-      POST: %w[appeals/SupplementalClaims.write]
+      GET: %w[veteran/SupplementalClaims.read representative/SupplementalClaims.read system/SupplementalClaims.read],
+      PUT: %w[veteran/SupplementalClaims.write representative/SupplementalClaims.write system/SupplementalClaims.read],
+      POST: %w[veteran/SupplementalClaims.write representative/SupplementalClaims.write system/SupplementalClaims.read]
     }.freeze
 
     private

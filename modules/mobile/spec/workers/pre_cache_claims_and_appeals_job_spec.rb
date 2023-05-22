@@ -11,6 +11,7 @@ RSpec.describe Mobile::V0::PreCacheClaimsAndAppealsJob, type: :job do
   before(:all) do
     @original_cassette_dir = VCR.configure(&:cassette_library_dir)
     VCR.configure { |c| c.cassette_library_dir = 'modules/mobile/spec/support/vcr_cassettes' }
+    Flipper.disable(:mobile_lighthouse_claims)
   end
 
   after(:all) { VCR.configure { |c| c.cassette_library_dir = @original_cassette_dir } }
@@ -31,7 +32,8 @@ RSpec.describe Mobile::V0::PreCacheClaimsAndAppealsJob, type: :job do
               completed: false,
               date_filed: '2020-09-23',
               updated_at: '2020-09-23',
-              display_title: 'supplemental claim for disability compensation'
+              display_title: 'supplemental claim for disability compensation',
+              decision_letter_sent: false
             }
           )
         end
@@ -75,7 +77,8 @@ RSpec.describe Mobile::V0::PreCacheClaimsAndAppealsJob, type: :job do
                 completed: false,
                 date_filed: '2020-09-23',
                 updated_at: '2020-09-23',
-                display_title: 'supplemental claim for disability compensation'
+                display_title: 'supplemental claim for disability compensation',
+                decision_letter_sent: false
               }
             )
           end

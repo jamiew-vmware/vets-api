@@ -56,9 +56,8 @@ sign_in:
   cookies_secure: false
   info_cookie_domain: localhost
   auto_uplevel: true
-  mock_auth_url: http://localhost:3000/mock_auth_frontend
+  mock_auth_url: http://localhost:3000/mocked_authentication/profiles
   mock_redirect_uri: http://localhost:3000/v0/sign_in/callback
-  mock_credential_dir: '../vets-api-mockdata'
   mockdata_sync_api_key: ~
 
 lockbox:
@@ -176,6 +175,16 @@ edu:
       - david.rowley@accenturefederal.com
       - nick.barthelemy@accenturefederal.com
     staging_emails:
+  staging_spool_contents:
+    emails:
+      - noah.stern@va.gov
+      - gregg.puhala@dbitpro.com
+      - kara.ciprich@va.gov
+      - napoleon.kernessant@govcio.com
+      - vishnhav.ashok@va.gov
+      - jarred.simon@vetsez.com
+      - ariana.adili@govcio.com
+
 dependents:
   prefill: true
 
@@ -285,14 +294,22 @@ modules_appeals_api:
       api_key: ''
   # The token generation values below are only used for development rake tasks.
   token_generation:
-    # URI to the well-known configuration endpoint for appeals auth:
-    config_uri: ''
     ccg:
-      # Get a client ID by submitting your public jwk here - make sure to check the box for the API under
+      config_uri: 'https://dev-api.va.gov/oauth2/appeals/system/v1/.well-known/openid-configuration'
+      # Get a client ID by submitting your public jwk here - make sure to check the boxes for the APIs under
       # "Client Credentials Grant APIs": https://developer.va.gov/onboarding/request-sandbox-access
       client_id: ''
       # Absolute path to the private key file matching the jwk:
       private_key_path: ''
+    auth:
+      config_uri: 'https://dev-api.va.gov/oauth2/appeals/v1/.well-known/openid-configuration'
+      # Get a client ID/secret by submitting this form - make sure to check the boxes for the APIs under
+      # "Authorization Code Flow APIs": https://developer.va.gov/onboarding/request-sandbox-access
+      client_id: ''
+      client_secret: ''
+      redirect_uri: ''
+      user_email: ''
+      user_password: ''
   slack:
     api_key: ''
     appeals_channel_id: ''
@@ -347,6 +364,12 @@ coe:
   prefill: true
 
 adapted_housing:
+  prefill: true
+
+medical_release:
+  prefill: true
+
+lay_witness:
   prefill: true
 
 # Settings for Expiry Scanner
@@ -588,7 +611,6 @@ vba_documents:
     in_flight_notification_hung_time_in_days: 14
     renotification_in_minutes: 240
     update_stalled_notification_in_minutes: 180
-    daily_notification_hour: 7
   webhooks:
     registration_next_run_in_minutes: 15
     registration_max_retries: 3
@@ -805,6 +827,7 @@ maintenance:
     evss: PZKWB6Y
     global: PLPSIB0
     idme: PVWB4R8
+    logingov: P2SHMM9
     mvi: PCIPVGJ
     mhv: PP2ZZ2V
     search: PRG8HJI
@@ -824,6 +847,7 @@ maintenance:
 betamocks:
   enabled: true
   recording: false
+  cache_dir: ~
   services_config: config/betamocks/services_config.yml
 
 # Settings for search
@@ -893,6 +917,7 @@ flipper:
     - james.adams2@va.gov # Jim Adams designer on GCIO
     - jayson.perkins@adhocteam.us
     - jeff.roof@adhocteam.us
+    - jeffrey.roof@va.gov
     - jennie.mcgibney@va.gov
     - jeremy.wu@oddball.io
     - jesse.cohn@adhocteam.us
@@ -935,6 +960,7 @@ flipper:
     - michael.pelz-sherman@gcio.com
     - michelle.middaugh@adhocteam.us
     - mmiller@pluribusdigital.com
+    - mmiller+staging@pluribusdigital.com
     - n.ratana@gmail.com
     - nathaniel.buck@gmail.com # AFS - My Education Benefits
     - narin@adhocteam.us
@@ -988,7 +1014,9 @@ flipper:
     - matt.long@adhocteam.us # Matt Long - Staff Software Engineer - Ad Hoc
     - trent.mcdole@gcio.com
     - simi.adebowale@adhocteam.us
-    - tom.harrison@adhocteam.us
+    - berni.xiong@agile6.com # Bernie Xiong - Agile 6
+    - mcahill@gwu.edu # Travis Cahill - Agile 6
+    - tom.harrison@adhocteam.us # Tom Harrison - Ad Hoc
     - angela.agosto@adhocteam.us # Angela Agosto - Ad Hoc
     - ryan.koch@agile6.com
     - wesley.rowe@agile6.com
@@ -1023,6 +1051,13 @@ flipper:
     - florence.mccafferty@agile6.com # Florence McCafferty - Agile 6 - Authenticated Experience
     - berni.xiong@agile6.com # Berni Xiong - Agile 6 - Authenticated Experience
     - liz.lantz@adhocteam.us # Liz Lantz - Ad Hoc - Authenticated Experience
+    - seth.darr@agile6.com # Seth Darr - Engineer - Agile 6 - Benefits Delivery Experience Team 1
+    - aurora.hampton@agile6.com # Aurora Hampton - Engineer - Agile 6 - Benefits Delivery Experience Team 1
+    - christinec.fftc@gmail.com # Christine Cereca - Engineer - Friends From The City - Benefits Delivery Experience Team 1
+    - markchae@navapbc.com # Mark Chae - Engineer - Nava - Benefits Delivery Experience Team 1
+    - eddieglenn@navapbc.com # Eddie Glenn - Engineer - Nava - Benefits Delivery Experience Team 1
+    - john.woolschlager@va.gov # John Woolschlager - CivicActions - Check In Experience
+    - kevin.duensing@adhocteam.us # Kevin Duensing - Ad Hoc - Benefits Team 1, Management Tools
 
 bgs:
   application: ~
@@ -1108,6 +1143,13 @@ lighthouse:
       client_id: ~
       rsa_key: ~
     use_mocks: false
+    form526:
+      host: https://staging-api.va.gov
+      access_token:
+        aud_claim_url: https://deptva-eval.okta.com/oauth2/ausdg7guis2TYDlFe2p7/v1/token
+        client_id: ~
+        rsa_key: ~
+      use_mocks: false
   letters_generator:
     url: https://sandbox-api.va.gov
     path: /services/va-letter-generator/v1/
@@ -1147,6 +1189,16 @@ lighthouse:
   facilities:
     url: https://sandbox-api.va.gov
     api_key: fake_key
+  veteran_verification:
+    host: https://staging-api.va.gov
+    aud_claim_url: https://deptva-eval.okta.com/oauth2/ausi3u00gw66b9Ojk2p7/v1/token
+    use_mocks: false
+    form526:
+      host: https://staging-api.va.gov
+      access_token:
+        client_id: ~
+        rsa_key: ~
+      use_mocks: false
 
 mail_automation:
   url: https://viccs-api-test.ibm-intelligent-automation.com
@@ -1226,6 +1278,7 @@ vanotify:
         form686c_confirmation_email: fake_template_id
         form686c_reminder_email: fake_template_id
         form1010ez_reminder_email: fake_template_id
+        form1880_reminder_email: form1880_reminder_email_template_id
         in_progress_reminder_email_generic: fake_template_id
         covid_vaccine_registration: fake_template_id
         covid_vaccine_expanded_registration: fake_template_id
@@ -1241,6 +1294,13 @@ vanotify:
       template_id:
         fsr_confirmation_email: fake_template_id
         vha_fsr_confirmation_email: fake_template_id
+    check_in:
+      api_key: fake_secret
+      sms_sender_id: fake_secret
+      template_id:
+        claim_submission_success_text: fake_template_id
+        claim_submission_duplicate_text: fake_template_id
+        claim_submission_error_text: fake_template_id
   mock: false
   links:
     connected_applications: https://www.va.gov/profile/connected-applications
@@ -1442,10 +1502,11 @@ rrd:
       - fake_email
 
 virtual_regional_office:
-  url: https://sandbox.lighthouse.va.gov/abd-vro
+  url: http://localhost:8080
   api_key: 9d3868d1-ec15-4889-8002-2bff1b50ba62
   health_assessment_path: health-data-assessment
   evidence_pdf_path: evidence-pdf
+  ctn_classification_path: contention-classification/classifier
 
 # Settings for Test User Dashboard modules
 test_user_dashboard:
@@ -1468,14 +1529,9 @@ lighthouse_health_immunization:
     - "patient/Immunization.read"
     - "patient/Location.read"
 
-mobile_lighthouse_letters:
+mobile_lighthouse:
   client_id: '0oajpx78t3M8kurld2p7'
-  key_path: ~
-  aud_claim_url: "https://deptva-eval.okta.com/oauth2/ausftw7zk6eHr7gMN2p7/v1/token"
-  access_token_url: 'https://sandbox-api.va.gov/oauth2/va-letter-generator/system/v1/token'
-  api_url: 'https://sandbox-api.va.gov/services/va-letter-generator/v1/'
-  api_scopes:
-    - "letters.read"
+  rsa_key: ~
 
 token_validation:
   url: https://dev-api.va.gov/internal/auth
@@ -1507,6 +1563,10 @@ form526_backup:
     region: ~
     access_key_id: ~
     secret_access_key: ~
+
+forms_api_benefits_intake:
+  api_key: ~
+  url: https://sandbox-api.va.gov/services/vba_documents/v1/
 
 form1095_b:
   s3:

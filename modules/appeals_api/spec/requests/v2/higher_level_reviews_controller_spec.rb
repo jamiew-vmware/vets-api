@@ -11,7 +11,7 @@ describe AppealsApi::V2::DecisionReviews::HigherLevelReviewsController, type: :r
   end
 
   def new_base_path(path)
-    "/services/appeals/higher_level_reviews/v0/#{path}"
+    "/services/appeals/higher-level-reviews/v0/#{path}"
   end
 
   before do
@@ -87,6 +87,7 @@ describe AppealsApi::V2::DecisionReviews::HigherLevelReviewsController, type: :r
         hlr_guid = JSON.parse(response.body)['data']['id']
         hlr = AppealsApi::HigherLevelReview.find(hlr_guid)
         expect(hlr.source).to eq('va.gov')
+        expect(hlr.api_version).to eq('V2')
         expect(parsed['data']['type']).to eq('higherLevelReview')
         expect(parsed['data']['attributes']['status']).to eq('pending')
         expect(parsed.dig('data', 'attributes', 'formData')).to be_a Hash
@@ -303,7 +304,7 @@ describe AppealsApi::V2::DecisionReviews::HigherLevelReviewsController, type: :r
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::HigherLevelReviews::V0::HigherLevelReviewsController::OAUTH_SCOPES[:POST]
+        scopes: AppealsApi::HigherLevelReviews::V0::HigherLevelReviewsController::OAUTH_SCOPES[:POST]
       ) do
         def make_request(auth_header)
           post(oauth_path, params: @data, headers: @headers.merge(auth_header))
@@ -427,7 +428,7 @@ describe AppealsApi::V2::DecisionReviews::HigherLevelReviewsController, type: :r
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::HigherLevelReviews::V0::HigherLevelReviewsController::OAUTH_SCOPES[:POST]
+        scopes: AppealsApi::HigherLevelReviews::V0::HigherLevelReviewsController::OAUTH_SCOPES[:POST]
       ) do
         def make_request(auth_header)
           post(oauth_path, params: @data, headers: @headers.merge(auth_header))
@@ -500,7 +501,7 @@ describe AppealsApi::V2::DecisionReviews::HigherLevelReviewsController, type: :r
 
     it_behaves_like(
       'an endpoint with OpenID auth',
-      AppealsApi::HigherLevelReviews::V0::HigherLevelReviewsController::OAUTH_SCOPES[:GET]
+      scopes: AppealsApi::HigherLevelReviews::V0::HigherLevelReviewsController::OAUTH_SCOPES[:GET]
     ) do
       def make_request(auth_header)
         get(oauth_path, headers: auth_header)

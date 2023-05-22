@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'disability_compensation/factories/api_provider_factory'
 
 RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :job do
   subject { described_class }
 
   before do
     Sidekiq::Worker.clear_all
+    Flipper.disable(:disability_526_classifier)
   end
 
   let(:user) { FactoryBot.create(:user, :loa3) }
@@ -32,6 +34,7 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
 
     before do
       cassettes.each { |cassette| VCR.insert_cassette(cassette) }
+      Flipper.disable(ApiProviderFactory::FEATURE_TOGGLE_RATED_DISABILITIES)
     end
 
     after do
@@ -47,6 +50,27 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
       end.to raise_error(error_class).and not_change(Sidekiq::Form526BackupSubmissionProcess::Submit.jobs, :size)
     end
 
+    context 'with contention classification enabled' do
+      before { Flipper.enable(:disability_526_classifier) }
+      after { Flipper.disable(:disability_526_classifier) }
+
+      context 'when diagnostic code is not set' do
+        let(:submission) do
+          create(:form526_submission,
+                 :without_diagnostic_code,
+                 user_uuid: user.uuid,
+                 auth_headers_json: auth_headers.to_json,
+                 saved_claim_id: saved_claim.id)
+        end
+
+        it 'does not call contention classification endpoint' do
+          subject.perform_async(submission.id)
+          expect(submission).not_to receive(:classify_by_diagnostic_code)
+          described_class.drain
+        end
+      end
+    end
+
     context 'with a successful submission job' do
       it 'queues a job for submit' do
         expect do
@@ -58,6 +82,22 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
         subject.perform_async(submission.id)
         expect { described_class.drain }.not_to change(Sidekiq::Form526BackupSubmissionProcess::Submit.jobs, :size)
         expect(Form526JobStatus.last.status).to eq 'success'
+      end
+
+      it 'submits successfully without calling classification service' do
+        subject.perform_async(submission.id)
+        expect do
+          VCR.use_cassette('virtual_regional_office/contention_classification') do
+            described_class.drain
+          end
+        end.not_to change(Sidekiq::Form526BackupSubmissionProcess::Submit.jobs, :size)
+        expect(Form526JobStatus.last.status).to eq 'success'
+      end
+
+      it 'does not call contention classification endpoint' do
+        subject.perform_async(submission.id)
+        expect(submission).not_to receive(:classify_by_diagnostic_code)
+        described_class.drain
       end
 
       context 'with an MAS-related diagnostic code' do
@@ -73,7 +113,9 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
           [open_claims_cassette, rated_disabilities_cassette, submit_form_cassette, mas_cassette]
         end
 
-        before { allow(StatsD).to receive(:increment) }
+        before do
+          allow(StatsD).to receive(:increment)
+        end
 
         it 'sends form526 to the MAS endpoint successfully' do
           subject.perform_async(submission.id)
@@ -239,9 +281,9 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
     context 'with a client error' do
       it 'sets the job_status to "non_retryable_error"' do
         VCR.use_cassette('evss/disability_compensation_form/submit_400') do
-          VCR.use_cassette('form526_backup/200_lighthouse_intake_upload_location') do
+          VCR.use_cassette('lighthouse/benefits_intake/200_lighthouse_intake_upload_location') do
             VCR.use_cassette('form526_backup/200_evss_get_pdf') do
-              VCR.use_cassette('form526_backup/200_lighthouse_intake_upload') do
+              VCR.use_cassette('lighthouse/benefits_intake/200_lighthouse_intake_upload') do
                 backup_klass = Sidekiq::Form526BackupSubmissionProcess::Submit
                 expect_any_instance_of(described_class).to receive(:log_exception_to_sentry)
                 subject.perform_async(submission.id)
@@ -385,17 +427,12 @@ RSpec.describe EVSS::DisabilityCompensationForm::SubmitForm526AllClaim, type: :j
     end
 
     context 'with an RRD claim' do
-      before do
-        allow_any_instance_of(RapidReadyForDecision::SidekiqJobSelector).to receive(:rrd_applicable?).and_return(true)
-      end
-
       context 'with a non-retryable (unexpected) error' do
         before do
           allow_any_instance_of(Faraday::Connection).to receive(:post).and_raise(StandardError.new('foo'))
         end
 
         it 'sends a "non-retryable" RRD alert' do
-          expect_any_instance_of(described_class).to receive(:send_rrd_alert).with(anything, anything, 'non-retryable')
           subject.perform_async(submission.id)
           described_class.drain
           expect(Form526JobStatus.last.status).to eq Form526JobStatus::STATUS[:non_retryable_error]

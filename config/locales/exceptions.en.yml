@@ -95,6 +95,11 @@ en:
         detail: "\"%{host}\" is not a safe host"
         code: 110
         status: 400
+      bad_request:
+        <<: *defaults
+        title: Bad request
+        code: 400
+        status: 400
       unauthorized:
         <<: *defaults
         title: Not authorized
@@ -107,6 +112,11 @@ en:
         code: 403
         status: 403
         sentry_type: 'none'
+      service_error:
+        <<: *defaults
+        title: Unknown Service Error
+        code: 500
+        status: 500
       record_not_found:
         <<: *defaults
         title: Record not found
@@ -119,6 +129,11 @@ en:
         detail: The requested resource could not be found
         code: 404
         status: 404
+      payload_too_large:
+        <<: *defaults
+        title: Not authorized
+        code: 413
+        status: 413
       failed_dependency:
         <<: *defaults
         title: Failed Dependency
@@ -155,11 +170,22 @@ en:
         title: Internal server error
         code: 500
         status: 500
+      external_server_internal_server_error:
+        <<: *defaults
+        title: Internal server error
+        detail: The external service sent back an internal server error
+        code: 500
+        status: 500
       bad_gateway:
         <<: *defaults
         title: Bad Gateway
         code: 502
         status: 502
+      service_unavailable:
+        <<: *defaults
+        title: Service Unavailable
+        code: 503
+        status: 503
       service_outage:
         <<: *defaults
         title: Service unavailable
@@ -486,6 +512,11 @@ en:
         code: 'RX99'
         detail: 'Something went wrong. Please try again later.'
         status: 502
+      RX99LOCKED: # record is locked
+        <<: *external_defaults
+        code: 'RX99LOCKED'
+        detail: 'Record is locked. Please try again later.'
+        status: 409
       RX135: # 'The User has not accepted the Rx Agreement. Please login to MHV to accept it'
         <<: *external_defaults
         code: 'RX135'
@@ -505,6 +536,11 @@ en:
         <<: *validation_errors
         code: 'RX157'
         detail: 'Email address is invalid'
+      rx_gateway_timeout:
+        <<: *gateway_timeout
+        detail: "Did not receive a timely response from an upstream server"
+        code: 408
+        status: 408
       MHVACCTCREATION99: # 'Unknown application error occurred'
         <<: *external_defaults
         code: 'MHVACCTCREATION99'
@@ -2067,6 +2103,41 @@ en:
         detail: Not Found
         code: DR_not_found
         status: 404
+
+  lighthouse:
+    letters_generator:
+      bad_request:
+        <<: *defaults
+        code: LH_bad_request
+        status: 400
+      not_authorized:
+        <<: *defaults
+        code: LH_not_authorized
+        status: 401
+      forbidden:
+        <<: *defaults
+        code: LH_forbidden
+        status: 403
+      not_found:
+        <<: *defaults
+        code: LH_not_found
+        status: 404
+      not_acceptable:
+        <<: *defaults
+        code: LH_not_acceptable
+        status: 406
+      payload_too_large:
+        <<: *defaults
+        code: LH_payload_too_large
+        status: 413
+      unprocessable_entity:
+        <<: *defaults
+        code: LH_unprocessable_entity
+        status: 422
+      too_many_requests:
+        <<: *defaults
+        code: LH_too_many_requests
+        status: 429
 
   evss:
     external_service_unavailable:

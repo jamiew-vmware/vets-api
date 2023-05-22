@@ -2,6 +2,7 @@
 
 require 'rails_helper'
 require 'decision_review/schemas'
+require 'disability_compensation/factories/api_provider_factory'
 
 RSpec.describe FormProfile, type: :model do
   include SchemaMatchers
@@ -849,6 +850,30 @@ RSpec.describe FormProfile, type: :model do
     }
   end
 
+  let(:v21_4142_expected) do
+    {
+      'veteran' => {
+        'fullName' => {
+          'first' => user.first_name&.capitalize,
+          'last' => user.last_name&.capitalize,
+          'suffix' => user.suffix
+        },
+        'ssn' => '796111863',
+        'dateOfBirth' => '1809-02-12',
+        'homePhone' => '14445551212',
+        'email' => user.pciu_email,
+        'address' => {
+          'street' => street_check[:street],
+          'street2' => street_check[:street2],
+          'city' => user.address[:city],
+          'state' => user.address[:state],
+          'country' => user.address[:country],
+          'postal_code' => user.address[:postal_code][0..4]
+        }
+      }
+    }
+  end
+
   describe '#initialize_military_information_vaprofile' do
     context 'when va profile is down in production' do
       before do
@@ -871,7 +896,7 @@ RSpec.describe FormProfile, type: :model do
             'hca_last_service_branch' => 'army',
             'last_entry_date' => '2012-03-02',
             'last_discharge_date' => '2018-10-31',
-            'discharge_type' => 'other',
+            'discharge_type' => nil,
             'post_nov111998_combat' => false,
             'sw_asia_combat' => false
           }
@@ -1211,6 +1236,7 @@ RSpec.describe FormProfile, type: :model do
           28-1900
           26-1880
           26-4555
+          21-4142
         ].each do |form_id|
           it "returns prefilled #{form_id}" do
             expect_prefilled(form_id)
@@ -1218,6 +1244,10 @@ RSpec.describe FormProfile, type: :model do
         end
 
         context 'with a user that can prefill evss' do
+          before do
+            allow_any_instance_of(Auth::ClientCredentials::Service).to receive(:get_token).and_return('usyergd')
+          end
+
           # NOTE: `increase only` and `all claims` use the same form prefilling
           context 'when Vet360 prefill is disabled' do
             before do
@@ -1226,6 +1256,7 @@ RSpec.describe FormProfile, type: :model do
             end
 
             it 'returns prefilled 21-526EZ' do
+              Flipper.disable(ApiProviderFactory::FEATURE_TOGGLE_RATED_DISABILITIES)
               VCR.use_cassette('evss/pciu_address/address_domestic') do
                 VCR.use_cassette('evss/disability_compensation_form/rated_disabilities') do
                   VCR.use_cassette('evss/ppiu/payment_information') do
@@ -1251,6 +1282,7 @@ RSpec.describe FormProfile, type: :model do
               end
 
               it 'returns prefilled 21-526EZ' do
+                Flipper.disable(ApiProviderFactory::FEATURE_TOGGLE_RATED_DISABILITIES)
                 expect(user).to receive(:authorize).with(:ppiu, :access?).and_return(true).at_least(:once)
                 expect(user).to receive(:authorize).with(:evss, :access?).and_return(true).at_least(:once)
                 VCR.use_cassette('evss/pciu_address/address_domestic') do

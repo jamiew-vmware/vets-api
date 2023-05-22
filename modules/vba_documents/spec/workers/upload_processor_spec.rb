@@ -2,6 +2,8 @@
 
 require 'rails_helper'
 require_relative '../support/vba_document_fixtures'
+require 'vba_documents/multipart_parser'
+require 'vba_documents/pdf_inspector'
 
 RSpec.describe VBADocuments::UploadProcessor, type: :job do
   include VBADocuments::Fixtures
@@ -71,6 +73,7 @@ RSpec.describe VBADocuments::UploadProcessor, type: :job do
 
   before do
     allow_any_instance_of(described_class).to receive(:cancelled?).and_return(false)
+    allow_any_instance_of(Tempfile).to receive(:size).and_return(1) # must be > 0 or submission will error w/DOC107
     objstore = instance_double(VBADocuments::ObjectStore)
     version = instance_double(Aws::S3::ObjectVersion)
     bucket = instance_double(Aws::S3::Bucket)
@@ -222,6 +225,22 @@ RSpec.describe VBADocuments::UploadProcessor, type: :job do
       expect(metadata['numberAttachments']).to eq(1)
       updated = VBADocuments::UploadSubmission.find_by(guid: upload.guid)
       expect(updated.status).to eq('received')
+    end
+
+    context 'when payload is empty' do
+      let(:empty_payload) { get_fixture('emptyfile.blob') }
+
+      before do
+        allow(VBADocuments::PayloadManager).to receive(:download_raw_file).and_return([empty_payload, DateTime.now])
+      end
+
+      it 'sets error status with DOC107: Empty payload' do
+        described_class.new.perform(upload.guid, test_caller)
+        upload.reload
+        expect(upload.status).to eq('error')
+        expect(upload.code).to eq('DOC107')
+        expect(upload.detail).to eq('Empty payload')
+      end
     end
 
     context 'with pdf size too large' do
@@ -480,6 +499,7 @@ RSpec.describe VBADocuments::UploadProcessor, type: :job do
     end
 
     it 'saves the SHA-256 checksum to the submission metadata' do
+      allow(VBADocuments::MultipartParser).to receive(:parse) { { 'content' => valid_doc } }
       sha256_char_length = 64
       described_class.new.perform(upload.guid, test_caller)
       upload.reload
@@ -488,6 +508,7 @@ RSpec.describe VBADocuments::UploadProcessor, type: :job do
     end
 
     it 'saves the MD5 checksum to the submission metadata' do
+      allow(VBADocuments::MultipartParser).to receive(:parse) { { 'content' => valid_doc } }
       md5_char_length = 32
       described_class.new.perform(upload.guid, test_caller)
       upload.reload
@@ -496,13 +517,11 @@ RSpec.describe VBADocuments::UploadProcessor, type: :job do
     end
 
     context 'with invalid sizes' do
-      invalid_sizes = %w[18x22 22x18]
+      context 'when vba_documents_larger_page_size_limit flag is off' do
+        before { Flipper.disable(:vba_documents_larger_page_size_limit) }
 
-      context 'when vba_documents_skip_dimension_check flag is off' do
-        before { Flipper.disable(:vba_documents_skip_dimension_check) }
-
-        it 'sets an error status for invalid size' do
-          invalid_sizes.each do |invalid_size|
+        %w[18x22 22x18].each do |invalid_size|
+          it "sets an error status for invalid size of #{invalid_size}" do
             allow(VBADocuments::MultipartParser).to receive(:parse) {
               { 'metadata' => valid_metadata, 'content' => get_fixture("#{invalid_size}.pdf") }
             }
@@ -515,7 +534,7 @@ RSpec.describe VBADocuments::UploadProcessor, type: :job do
 
         context 'when metadata.json contains skipDimensionCheck = true' do
           let(:special_metadata) { JSON.parse(valid_metadata).merge({ 'skipDimensionCheck' => true }).to_json }
-          let(:content) { get_fixture("#{invalid_sizes.first}.pdf") }
+          let(:content) { get_fixture('18x22.pdf') }
 
           before do
             allow(CentralMail::Service).to receive(:new) { client_stub }
@@ -537,26 +556,41 @@ RSpec.describe VBADocuments::UploadProcessor, type: :job do
         end
       end
 
-      context 'when vba_documents_skip_dimension_check flag is on' do
-        let(:content) { get_fixture("#{invalid_sizes.first}.pdf") }
-
+      context 'when vba_documents_larger_page_size_limit flag is on' do
         before do
-          Flipper.enable(:vba_documents_skip_dimension_check)
+          Flipper.enable(:vba_documents_larger_page_size_limit)
           allow(CentralMail::Service).to receive(:new) { client_stub }
           allow(faraday_response).to receive(:status).and_return(200)
           allow(faraday_response).to receive(:body).and_return('')
           allow(faraday_response).to receive(:success?).and_return(true)
           allow(client_stub).to receive(:upload).and_return(faraday_response)
-        end
-
-        it 'allows the upload' do
           allow(VBADocuments::MultipartParser).to receive(:parse) {
             { 'metadata' => valid_metadata, 'content' => content }
           }
-          described_class.new.perform(upload.guid, test_caller)
-          updated = VBADocuments::UploadSubmission.find_by(guid: upload.guid)
-          expect(updated.uploaded_pdf.dig('content', 'dimensions', 'oversized_pdf')).to eq(true)
-          expect(updated.status).to eq('received')
+        end
+
+        context 'with large but not-too-large PDF' do
+          let(:content) { get_fixture('18x22.pdf') }
+
+          it 'allows the upload' do
+            described_class.new.perform(upload.guid, test_caller)
+            updated = VBADocuments::UploadSubmission.find_by(guid: upload.guid)
+            expect(updated.uploaded_pdf.dig('content', 'dimensions', 'oversized_pdf')).to eq(false)
+            expect(updated.status).to eq('received')
+          end
+        end
+
+        context 'with a too large PDF' do
+          %w[10x102 79x10].each do |invalid_size|
+            let(:content) { get_fixture("#{invalid_size}.pdf") }
+
+            it "sets an error status for an invalid size of #{invalid_size}" do
+              described_class.new.perform(upload.guid, test_caller)
+              updated = VBADocuments::UploadSubmission.find_by(guid: upload.guid)
+              expect(updated.status).to eq('error')
+              expect(updated.code).to eq('DOC108')
+            end
+          end
         end
       end
     end

@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-
-require_dependency 'authentication_token_service'
+require 'authentication_token_service'
 
 Rspec.describe MebApi::AuthenticationTokenService do
   describe '.call' do

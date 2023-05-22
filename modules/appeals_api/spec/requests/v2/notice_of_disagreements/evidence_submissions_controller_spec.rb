@@ -9,7 +9,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreements::EvidenceSubmiss
   let(:headers) { fixture_as_json 'valid_10182_headers.json', version: 'v2' }
   let(:evidence_submissions) { create_list(:evidence_submission, 3, supportable: notice_of_disagreement) }
   let(:path) { '/services/appeals/v2/decision_reviews/notice_of_disagreements/evidence_submissions/' }
-  let(:oauth_path) { '/services/appeals/notice_of_disagreements/v0/evidence_submissions/' }
+  let(:oauth_path) { '/services/appeals/notice-of-disagreements/v0/evidence-submissions/' }
 
   let(:parsed) { JSON.parse(response.body) }
 
@@ -115,8 +115,8 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreements::EvidenceSubmiss
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreements::EvidenceSubmissionsController::OAUTH_SCOPES[:POST],
-        :accepted
+        scopes: AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreements::EvidenceSubmissionsController::OAUTH_SCOPES[:POST],
+        success_status: :accepted
       ) do
         def make_request(auth_header)
           post(oauth_path, params:, headers: headers.merge(auth_header))
@@ -188,7 +188,9 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreements::EvidenceSubmiss
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreements::EvidenceSubmissionsController::OAUTH_SCOPES[:GET]
+        # rubocop:disable Layout/LineLength
+        scopes: AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreements::EvidenceSubmissionsController::OAUTH_SCOPES[:GET]
+        # rubocop:enable Layout/LineLength
       ) do
         def make_request(auth_header)
           get("#{oauth_path}#{evidence_submissions.sample.guid}", headers: auth_header)

@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-require_dependency 'vba_documents/pdf_inspector'
-
 require 'central_mail/utilities'
 require 'central_mail/service'
 require 'pdf_utilities/pdf_validator'
+require 'vba_documents/document_request_validator'
 
 # rubocop:disable Metrics/ModuleLength
 module VBADocuments
@@ -59,7 +58,7 @@ module VBADocuments
       raise VBADocuments::UploadError.new(code: 'DOC102', detail: 'Invalid JSON object')
     end
 
-    def validate_documents(parts, pdf_validator_options = {})
+    def validate_documents(parts, pdf_validator_options = VBADocuments::DocumentRequestValidator.pdf_validator_options)
       # Validate 'content' document
       validate_document(parts[DOC_PART_NAME], DOC_PART_NAME, pdf_validator_options)
 
@@ -112,33 +111,27 @@ module VBADocuments
       end
     end
 
-    DEFAULT_PDF_VALIDATOR_OPTIONS = {
-      check_encryption: false # Owner passwords are allowed, user passwords are not
-    }.freeze
-
     def validate_document(file_path, part_name, pdf_validator_options = {})
-      options = DEFAULT_PDF_VALIDATOR_OPTIONS.merge(pdf_validator_options)
-      options.merge!({ check_page_dimensions: false }) if Flipper.enabled?(:vba_documents_skip_dimension_check)
+      validation_result = PDFValidator::Validator.new(file_path, pdf_validator_options).validate
 
-      result = PDFValidator::Validator.new(file_path, options).validate
+      unless validation_result.valid_pdf?
+        raise_validation_error(validation_result.errors, part_name, pdf_validator_options)
+      end
+    end
 
-      unless result.valid_pdf?
-        errors = result.errors
-
-        if errors.grep(/#{PDFValidator::FILE_SIZE_LIMIT_EXCEEDED_MSG}/).any?
-          raise VBADocuments::UploadError.new(code: 'DOC106',
-                                              detail: 'Maximum document size exceeded. Limit is 100MB per document')
-        end
-
-        if errors.grep(/#{PDFValidator::USER_PASSWORD_MSG}|#{PDFValidator::INVALID_PDF_MSG}/).any?
-          raise VBADocuments::UploadError.new(code: 'DOC103',
-                                              detail: "Invalid PDF content, part #{part_name}")
-        end
-
-        if errors.grep(/#{PDFValidator::PAGE_SIZE_LIMIT_EXCEEDED_MSG}/).any?
-          raise VBADocuments::UploadError.new(code: 'DOC108',
-                                              detail: VBADocuments::UploadError::DOC108)
-        end
+    def raise_validation_error(errors, part_name, pdf_validator_options)
+      if errors.grep(/#{PDFValidator::FILE_SIZE_LIMIT_EXCEEDED_MSG}/).any?
+        code = 'DOC106'
+        detail = CentralMail::UploadError.default_message(code, pdf_validator_options)
+        raise VBADocuments::UploadError.new(code:, detail:, pdf_validator_options:)
+      elsif errors.grep(/#{PDFValidator::PAGE_SIZE_LIMIT_EXCEEDED_MSG}/).any?
+        code = 'DOC108'
+        detail = CentralMail::UploadError.default_message(code, pdf_validator_options)
+        raise VBADocuments::UploadError.new(code:, detail:, pdf_validator_options:)
+      else
+        raise VBADocuments::UploadError.new(code: 'DOC103',
+                                            detail: "Invalid PDF content, part #{part_name}",
+                                            pdf_validator_options:)
       end
     end
 

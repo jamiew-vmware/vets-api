@@ -29,7 +29,7 @@ module SpoolHelpers
             allow(Flipper).to receive(:enabled?).with(feature).and_return(false)
           end
 
-          windows_linebreak = EducationForm::WINDOWS_NOTEPAD_LINEBREAK
+          windows_linebreak = EducationForm::CreateDailySpoolFiles::WINDOWS_NOTEPAD_LINEBREAK
           expected_text = File.read("#{file_prefix}spl").rstrip
           expected_text.gsub!("\n", windows_linebreak) unless expected_text.include?(windows_linebreak)
 
@@ -37,18 +37,6 @@ module SpoolHelpers
         end
       end
     end
-
-    def set_dates(file_name, birth_date, graduate_date)
-      infile = "spec/fixtures/education_benefits_claims/5490/template/#{file_name}"
-      outfile_name = "spec/fixtures/education_benefits_claims/5490/#{file_name}"
-      outfile = File.open(outfile_name, 'w')
-      File.foreach(infile) do |line|
-        line = line.sub('#DATEOFBIRTH#', birth_date).sub('#GRADUATEDATE#', graduate_date)
-        outfile.write(line)
-      end
-      outfile.close
-    end
-
     # rubocop:enable Metrics/MethodLength
   end
 end

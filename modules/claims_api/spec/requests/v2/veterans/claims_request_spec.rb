@@ -6,9 +6,13 @@ require 'bgs_service/local_bgs'
 
 RSpec.describe 'Claims', type: :request do
   let(:veteran_id) { '1013062086V794840' }
+  let(:claimant_on_behalf_of_veteran_id) { '8675309' }
   let(:claim_id) { '600131328' }
   let(:all_claims_path) { "/services/claims/v2/veterans/#{veteran_id}/claims" }
   let(:claim_by_id_path) { "/services/claims/v2/veterans/#{veteran_id}/claims/#{claim_id}" }
+  let(:claim_by_id_with_claimant_path) do
+    "/services/claims/v2/veterans/#{claimant_on_behalf_of_veteran_id}/claims/#{claim_id}"
+  end
   let(:scopes) { %w[system/claim.read] }
   let(:profile) do
     MPI::Responses::FindProfileResponse.new(
@@ -19,7 +23,13 @@ RSpec.describe 'Claims', type: :request do
     )
   end
   let(:bcs) { ClaimsApi::LocalBGS }
-
+  let(:profile_for_claimant_on_behalf_of_veteran) do
+    MPI::Responses::FindProfileResponse.new(
+      status: 'OK',
+      profile: FactoryBot.build(:mpi_profile,
+                                participant_id: '8675309')
+    )
+  end
   let(:profile_erroneous_icn) do
     MPI::Responses::FindProfileResponse.new(
       status: 'OK',
@@ -432,10 +442,40 @@ RSpec.describe 'Claims', type: :request do
 
                 json_response = JSON.parse(response.body)
                 expect(response.status).to eq(200)
-                expect(json_response['data']['attributes']['claimPhaseDates']['currentPhaseBack']).to eq(true)
+                expect(json_response['data']['attributes']['claimPhaseDates']['currentPhaseBack']).to eq(false)
                 expect(json_response['data']['attributes']['claimPhaseDates']['latestPhaseType'])
-                  .to eq('Claim Received')
+                  .to eq('CLAIM_RECEIVED')
                 expect(json_response['data']['attributes']['claimPhaseDates']['previousPhases']).to be_truthy
+              end
+            end
+          end
+        end
+      end
+    end
+
+    context 'show with validate_id_with_icn when there is a claimant ID in place of the verteran ID' do
+      describe ' BGS attributes (w/ Claimant ID replacing vet ID)' do
+        it 'are listed' do
+          bgs_claim_response = build(:bgs_response_claim_with_unmatched_ptcpnt_vet_id).to_h
+          lh_claim = create(:auto_established_claim, status: 'PENDING', veteran_icn: '2023062086V8675309',
+                                                     evss_id: '111111111')
+          with_okta_user(scopes) do |auth_header|
+            VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
+              VCR.use_cassette('evss/documents/get_claim_documents') do
+                expect_any_instance_of(bcs)
+                  .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim_response)
+
+                expect(ClaimsApi::AutoEstablishedClaim)
+                  .to receive(:get_by_id_and_icn).and_return(lh_claim)
+
+                allow_any_instance_of(MPIData)
+                  .to receive(:mvi_response).and_return(profile_for_claimant_on_behalf_of_veteran)
+
+                get claim_by_id_path, headers: auth_header
+
+                json_response = JSON.parse(response.body)
+                expect(response.status).to eq(200)
+                expect(json_response).to be_an_instance_of(Hash)
               end
             end
           end
@@ -451,7 +491,7 @@ RSpec.describe 'Claims', type: :request do
           .to receive(:validate_id_with_icn).and_return(nil)
       end
 
-      describe ' BGS attributes' do
+      describe 'BGS attributes' do
         it 'are listed' do
           lh_claim = create(:auto_established_claim, status: 'PENDING', veteran_icn: veteran_id,
                                                      evss_id: '111111111')
@@ -468,8 +508,8 @@ RSpec.describe 'Claims', type: :request do
                 json_response = JSON.parse(response.body)
                 expect(response.status).to eq(200)
                 claim_attributes = json_response['data']['attributes']
-                expect(claim_attributes['claimPhaseDates']['currentPhaseBack']).to eq(true)
-                expect(claim_attributes['claimPhaseDates']['latestPhaseType']).to eq('Claim Received')
+                expect(claim_attributes['claimPhaseDates']['currentPhaseBack']).to eq(false)
+                expect(claim_attributes['claimPhaseDates']['latestPhaseType']).to eq('CLAIM_RECEIVED')
                 expect(claim_attributes['claimPhaseDates']['previousPhases']).to be_truthy
               end
             end
@@ -819,6 +859,33 @@ RSpec.describe 'Claims', type: :request do
           end
         end
 
+        context 'when a phaseback to Under Review status is received' do
+          let(:bgs_claim) { build(:bgs_response_with_phaseback_lc_status).to_h }
+
+          it "the v2 mapper sets the 'status' correctly" do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
+                VCR.use_cassette('evss/documents/get_claim_documents') do
+                  expect_any_instance_of(bcs)
+                    .to receive(:find_benefit_claim_details_by_benefit_claim_id).and_return(bgs_claim)
+                  expect(ClaimsApi::AutoEstablishedClaim)
+                    .to receive(:get_by_id_and_icn).and_return(nil)
+
+                  get claim_by_id_path, headers: auth_header
+
+                  json_response = JSON.parse(response.body)
+                  expect(response.status).to eq(200)
+                  expect(json_response).to be_an_instance_of(Hash)
+                  expect(json_response['data']['attributes']['status']).to eq('INITIAL_REVIEW')
+                  expect(json_response['data']['attributes']['claimPhaseDates']['currentPhaseBack']).to eq(true)
+                  expect(json_response['data']['attributes']['claimPhaseDates']['latestPhaseType'])
+                    .to eq('UNDER_REVIEW')
+                end
+              end
+            end
+          end
+        end
+
         context 'it picks the newest status' do
           it "returns a claim with the 'claimId' and 'lighthouseId' set" do
             with_okta_user(scopes) do |auth_header|
@@ -1045,40 +1112,31 @@ RSpec.describe 'Claims', type: :request do
 
           it "returns a claim with 'tracked_items'" do
             with_okta_user(scopes) do |auth_header|
-              VCR.use_cassette(
-                'bgs/ebenefits_benefit_claims_status/find_benefit_claim_details_by_benefit_claim_id'
-              ) do
-                VCR.use_cassette('bgs/tracked_items/find_tracked_items') do
-                  VCR.use_cassette('evss/documents/get_claim_documents') do
-                    expect(ClaimsApi::AutoEstablishedClaim)
-                      .to receive(:get_by_id_and_icn).and_return(nil)
+              VCR.use_cassette('evss/documents/get_claim_documents') do
+                VCR.use_cassette('bgs/tracked_item_service/claims_v2_show_tracked_items') do
+                  allow(ClaimsApi::AutoEstablishedClaim).to receive(:get_by_id_and_icn)
 
-                    get claim_by_id_with_items_path, headers: auth_header
+                  get claim_by_id_with_items_path, headers: auth_header
 
-                    json_response = JSON.parse(response.body)
-                    first_doc_id = json_response['data']['attributes'].dig('trackedItems', 0, 'id')
-                    resp_tracked_items = json_response['data']['attributes']['trackedItems']
-                    expect(response.status).to eq(200)
-                    expect(json_response).to be_an_instance_of(Hash)
-                    expect(json_response['data']['id']).to eq('600236068')
-                    expect(first_doc_id).to eq(325_525)
-                    expect(resp_tracked_items[0]['description']).to eq(nil)
-                    expect(resp_tracked_items[7]['description']).to start_with('On your application,')
-                    expect(json_response['data']['attributes']['trackedItems'][0]['displayName']).to eq(
-                      'MG-not a recognized condition'
-                    )
-                    expect(json_response['data']['attributes']['trackedItems'][1]['displayName']).to eq(
-                      'Line of Duty determination from claimant'
-                    )
-                    # date_open
-                    expect(json_response['data']['attributes']['trackedItems'][0]['requestedDate']).to eq(
-                      '2022-02-04'
-                    )
-                    # req_dt
-                    expect(json_response['data']['attributes']['trackedItems'][2]['requestedDate']).to eq(
-                      '2021-05-05'
-                    )
-                  end
+                  json_response = JSON.parse(response.body)
+                  first_doc_id = json_response['data']['attributes'].dig('trackedItems', 0, 'id')
+                  resp_tracked_items = json_response['data']['attributes']['trackedItems']
+                  expect(response.status).to eq(200)
+                  expect(json_response['data']['id']).to eq(claim_id_with_items)
+                  expect(first_doc_id).to eq(293_439)
+                  expect(resp_tracked_items[1]['description']).to eq(nil)
+                  expect(resp_tracked_items[2]['description']).to start_with('On your application,')
+                  expect(json_response['data']['attributes']['trackedItems'][0]['displayName']).to eq(
+                    'STRs not available - substitute documents needed'
+                  )
+                  expect(json_response['data']['attributes']['trackedItems'][8]['displayName']).to eq(
+                    'Submit buddy statement(s)'
+                  )
+                  expect(json_response['data']['attributes']['trackedItems'][2]['requestedDate']).to eq(
+                    '2021-05-05'
+                  )
+                  expect(json_response['data']['attributes']['trackedItems'][0]['overdue']).to eq(true)
+                  expect(json_response['data']['attributes']['trackedItems'][1]['overdue']).to eq(false)
                 end
               end
             end

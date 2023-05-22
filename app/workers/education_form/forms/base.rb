@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './app/workers/education_form/create_daily_spool_files'
-
 module EducationForm::Forms
   class Base
     include ActionView::Helpers::TextHelper # Needed for word_wrap
@@ -81,7 +79,7 @@ module EducationForm::Forms
       # Trim any lines that end in whitespace, but keep the lines themselves
       transliterated.gsub!(/ +\n/, "\n")
       # The spool file must actually use windows style linebreaks
-      transliterated.gsub("\n", EducationForm::WINDOWS_NOTEPAD_LINEBREAK)
+      transliterated.gsub("\n", EducationForm::CreateDailySpoolFiles::WINDOWS_NOTEPAD_LINEBREAK)
     end
 
     def parse_with_template(template)

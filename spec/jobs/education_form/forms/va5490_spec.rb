@@ -75,7 +75,6 @@ RSpec.describe EducationForm::Forms::VA5490 do
       simple_chapter_33_step_child
       kitchen_sink_chapter_33_spouse
       kitchen_sink_chapter_35_spouse
-      kitchen_sink_chapter_33_spouse
       kitchen_sink_chapter_35_adopted_child
     ].each do |test_application|
       test_spool_file('5490', test_application)
@@ -97,11 +96,6 @@ RSpec.describe EducationForm::Forms::VA5490 do
       kitchen_sink_chapter_33_died_non_duty_guardian_graduated
       kitchen_sink_chapter_33_died_non_duty_guardian_not_graduated
     ].each do |test_application|
-      # ensures birth_date results in person being under 18 yrs old
-      birth_date = (Time.zone.today - 17.years).strftime('%Y-%m-%d')
-      graduate_date = Time.zone.today.strftime('%Y-%m-%d')  # ensures graduate_date is current
-      set_dates("#{test_application}.spl", birth_date, graduate_date)
-      set_dates("#{test_application}.json", birth_date, graduate_date)
       test_spool_file('5490', test_application)
     end
   end

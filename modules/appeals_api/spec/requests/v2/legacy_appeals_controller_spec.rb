@@ -163,7 +163,7 @@ describe AppealsApi::V2::DecisionReviews::LegacyAppealsController, type: :reques
     context 'using the versioned namespace route' do
       let(:ssn) { '502628285' }
       let(:icn) { '1013062086V794840' }
-      let(:oauth_path) { '/services/appeals/legacy_appeals/v0/legacy_appeals/' }
+      let(:oauth_path) { '/services/appeals/legacy-appeals/v0/legacy-appeals/' }
 
       it 'behaves the same as when using the original route' do
         original_response = nil
@@ -186,7 +186,7 @@ describe AppealsApi::V2::DecisionReviews::LegacyAppealsController, type: :reques
       context 'with oauth' do
         it_behaves_like(
           'an endpoint with OpenID auth',
-          AppealsApi::LegacyAppeals::V0::LegacyAppealsController::OAUTH_SCOPES[:GET]
+          scopes: AppealsApi::LegacyAppeals::V0::LegacyAppealsController::OAUTH_SCOPES[:GET]
         ) do
           def make_request(auth_header)
             VCR.use_cassette('caseflow/legacy_appeals_get_by_ssn') do

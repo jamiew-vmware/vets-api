@@ -11,7 +11,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
   end
 
   def new_base_path(path)
-    "/services/appeals/notice_of_disagreements/v0/#{path}"
+    "/services/appeals/notice-of-disagreements/v0/#{path}"
   end
 
   before do
@@ -84,6 +84,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
         nod = AppealsApi::NoticeOfDisagreement.find_by(id: parsed['data']['id'])
 
         expect(nod.source).to eq('va.gov')
+        expect(nod.api_version).to eq('V2')
         expect(nod.veteran_icn).to eq('1013062086V794840')
         expect(parsed['data']['type']).to eq('noticeOfDisagreement')
         expect(parsed['data']['attributes']['status']).to eq('pending')
@@ -218,7 +219,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreementsController::OAUTH_SCOPES[:POST]
+        scopes: AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreementsController::OAUTH_SCOPES[:POST]
       ) do
         def make_request(auth_header)
           post(oauth_path, params: @max_data, headers: @max_headers.merge(auth_header))
@@ -285,7 +286,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreementsController::OAUTH_SCOPES[:GET]
+        scopes: AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreementsController::OAUTH_SCOPES[:GET]
       ) do
         def make_request(auth_header)
           get(oauth_path, headers: auth_header)
@@ -400,7 +401,7 @@ describe AppealsApi::V2::DecisionReviews::NoticeOfDisagreementsController, type:
 
       it_behaves_like(
         'an endpoint with OpenID auth',
-        AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreementsController::OAUTH_SCOPES[:POST]
+        scopes: AppealsApi::NoticeOfDisagreements::V0::NoticeOfDisagreementsController::OAUTH_SCOPES[:POST]
       ) do
         def make_request(auth_header)
           post(oauth_path, params: @max_data, headers: @max_headers.merge(auth_header))

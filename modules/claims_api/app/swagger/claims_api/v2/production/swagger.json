@@ -733,7 +733,7 @@
                         "currentPhaseBack": false,
                         "latestPhaseType": "COMPLETE",
                         "previousPhases": {
-                          "phase1CompleteDate": "2017-10-18"
+                          "phase7CompleteDate": "2017-10-18"
                         }
                       },
                       "claimType": "Compensation",
@@ -791,30 +791,52 @@
                       "tempJurisdiction": null,
                       "trackedItems": [
                         {
-                          "closedDate": null,
-                          "requestedDate": "2022-02-04",
-                          "receivedDate": null,
+                          "closedDate": "2021-06-04",
                           "description": null,
-                          "displayName": "MG-not a recognized condition",
-                          "overdue": true,
-                          "status": "INITIAL_REVIEW_COMPLETE",
-                          "suspenseDate": "2022-03-06",
-                          "id": 325525,
-                          "uploaded": false,
-                          "uploadsAllowed": true
+                          "displayName": "21-4142a",
+                          "overdue": false,
+                          "receivedDate": null,
+                          "requestedDate": "2021-05-05",
+                          "status": "NO_LONGER_REQUIRED",
+                          "suspenseDate": "2021-06-04",
+                          "id": 293440,
+                          "uploadsAllowed": false
                         },
                         {
-                          "closedDate": null,
-                          "requestedDate": "2022-02-04",
-                          "receivedDate": null,
+                          "closedDate": "2021-06-04",
                           "description": null,
-                          "displayName": "Line of Duty determination from claimant",
-                          "overdue": true,
-                          "status": "INITIAL_REVIEW_COMPLETE",
-                          "suspenseDate": "2022-03-06",
-                          "id": 325524,
-                          "uploaded": false,
-                          "uploadsAllowed": true
+                          "displayName": "Employment info needed",
+                          "overdue": false,
+                          "receivedDate": null,
+                          "requestedDate": "2021-05-05",
+                          "status": "NO_LONGER_REQUIRED",
+                          "suspenseDate": "2021-06-04",
+                          "id": 293443,
+                          "uploadsAllowed": false
+                        },
+                        {
+                          "closedDate": "2021-06-04",
+                          "description": null,
+                          "displayName": "Accidental injury - 21-4176 needed",
+                          "overdue": false,
+                          "receivedDate": null,
+                          "requestedDate": "2021-05-05",
+                          "status": "NO_LONGER_REQUIRED",
+                          "suspenseDate": "2021-06-04",
+                          "id": 293444,
+                          "uploadsAllowed": false
+                        },
+                        {
+                          "closedDate": "2021-06-04",
+                          "description": null,
+                          "displayName": "Buddy mentioned - No complete address",
+                          "overdue": false,
+                          "receivedDate": null,
+                          "requestedDate": "2021-05-05",
+                          "status": "NO_LONGER_REQUIRED",
+                          "suspenseDate": "2021-06-04",
+                          "id": 293446,
+                          "uploadsAllowed": false
                         }
                       ]
                     }
@@ -915,16 +937,13 @@
                                 "latestPhaseType": {
                                   "type": "string",
                                   "enum": [
-                                    "CANCELED",
                                     "CLAIM_RECEIVED",
-                                    "INITIAL_REVIEW",
-                                    "PENDING",
-                                    "EVIDENCE_GATHERING",
+                                    "UNDER_REVIEW",
+                                    "GATHERING_OF_EVIDENCE",
                                     "REVIEW_OF_EVIDENCE",
                                     "PREPARATION_FOR_DECISION",
                                     "PENDING_DECISION_APPROVAL",
                                     "PREPARATION_FOR_NOTIFICATION",
-                                    "ERRORED",
                                     "COMPLETE"
                                   ],
                                   "nullable": true,
@@ -1195,14 +1214,8 @@
                                     "nullable": true,
                                     "example": "2017-10-18"
                                   },
-                                  "uploaded": {
-                                    "type": "boolean",
-                                    "nullable": true,
-                                    "example": true
-                                  },
                                   "uploadsAllowed": {
                                     "type": "boolean",
-                                    "nullable": true,
                                     "example": true
                                   }
                                 }
@@ -1891,8 +1904,8 @@
                     "id": "1",
                     "type": "intent_to_file",
                     "attributes": {
-                      "creationDate": "2023-04-12",
-                      "expirationDate": "2024-04-12",
+                      "creationDate": "2023-04-27",
+                      "expirationDate": "2024-04-27",
                       "type": "compensation",
                       "status": "active"
                     }

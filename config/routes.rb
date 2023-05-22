@@ -49,7 +49,7 @@ Rails.application.routes.draw do
 
     resources :medical_copays, only: %i[index show]
     get 'medical_copays/get_pdf_statement_by_id/:statement_id', to: 'medical_copays#get_pdf_statement_by_id'
-    post 'medical_copays/send_new_statements_notifications', to: 'medical_copays#send_new_statements_notifications'
+    post 'medical_copays/send_statement_notifications', to: 'medical_copays#send_statement_notifications'
 
     resources :apps, only: %i[index show]
     scope_default = { category: 'unknown_category' }
@@ -60,6 +60,13 @@ Rails.application.routes.draw do
       collection do
         get 'beneficiary', to: 'letters#beneficiary'
         post ':id', to: 'letters#download'
+      end
+    end
+
+    resources :letters_generator, only: [:index] do
+      collection do
+        get 'beneficiary', to: 'letters_generator#beneficiary'
+        get 'download/:id', to: 'letters_generator#download'
       end
     end
 
@@ -99,6 +106,7 @@ Rails.application.routes.draw do
       collection do
         get(:healthcheck)
         get(:enrollment_status)
+        get(:rating_info)
       end
     end
 
@@ -137,6 +145,7 @@ Rails.application.routes.draw do
     end
 
     resources :evss_claims_async, only: %i[index show]
+    resources :evss_benefits_claims, only: %i[index show]
 
     namespace :virtual_agent do
       get 'claim', to: 'virtual_agent_claim#index'

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_dependency 'appeals_api/form_schemas'
+require 'appeals_api/form_schemas'
 
 class AppealsApi::V1::NoticeOfDisagreementsControllerSwagger
   include Swagger::Blocks

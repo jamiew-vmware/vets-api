@@ -1,16 +1,10 @@
 # frozen_string_literal: true
 
-require 'central_mail/utilities'
-require 'central_mail/service'
-require 'pdf_info'
-
 module FormsApi
   class PdfFiller
-    include CentralMail::Utilities
+    attr_accessor :data, :form_number
 
     TEMPLATE_BASE = Rails.root.join('modules', 'forms_api', 'templates')
-
-    attr_accessor :data, :form_number
 
     def initialize(form_number:, data:)
       @data = data.with_indifferent_access
@@ -31,12 +25,22 @@ module FormsApi
       b = binding
       b.local_variable_set(:data, data)
       result = ERB.new(template).result(b)
-      JSON.parse(result)
+      JSON.parse(escape_json_string(result))
     end
 
     def metadata
       klass = "FormsApi::#{form_number.titleize.gsub(' ', '')}".constantize.new(data)
-      klass.metadata("tmp/#{form_number}-tmp.pdf")
+      klass.metadata
+    end
+
+    def escape_json_string(str)
+      # remove characters that will break the json parser
+      # \u0000-\u001f: control characters in the ASCII table,
+      # characters such as null, tab, line feed, and carriage return
+      # \u0080-\u009f: control characters in the Latin-1 Supplement block of Unicode
+      # \u2000-\u201f: various punctuation and other non-printable characters in Unicode,
+      # including various types of spaces, dashes, and quotation marks.
+      str.gsub(/[\u0000-\u001f\u0080-\u009f\u2000-\u201f]/, ' ')
     end
   end
 end

@@ -75,8 +75,7 @@ describe TravelClaim::Service do
     context 'when valid token exists' do
       let(:access_token) { 'test-token-123' }
       let(:claims_json) do
-        { value: { claimNumber: 'TC202207000011666' }, formatters: [], contentTypes: [],
-          declaredType: [], statusCode: 200 }
+        { claimNumber: 'TC202207000011666' }
       end
       let(:appointment_identifiers) do
         {
@@ -89,7 +88,7 @@ describe TravelClaim::Service do
       end
       let(:faraday_response) { Faraday::Response.new(body: claims_json, status: 200) }
 
-      let(:submit_claim_response) { { data: claims_json, status: 200 } }
+      let(:submit_claim_response) { { data: claims_json.merge(code: 'CLM_000_SUCCESS'), status: 200 } }
 
       before do
         Rails.cache.write(
