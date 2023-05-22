@@ -1290,7 +1290,7 @@ RSpec.describe 'Disability Claims', type: :request do
                 ]
                 params['data']['attributes']['disabilities'] = disabilities
                 post path, params: params.to_json, headers: headers.merge(auth_header)
-                expect(response).to have_http_status(:bad_request)
+                expect(response).to have_http_status(:unprocessable_entity)
               end
             end
           end
@@ -1317,7 +1317,7 @@ RSpec.describe 'Disability Claims', type: :request do
                   ]
                   params['data']['attributes']['disabilities'] = disabilities
                   post path, params: params.to_json, headers: headers.merge(auth_header)
-                  expect(response).to have_http_status(:bad_request)
+                  expect(response).to have_http_status(:unprocessable_entity)
                 end
               end
             end

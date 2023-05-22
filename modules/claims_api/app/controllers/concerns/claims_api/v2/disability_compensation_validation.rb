@@ -150,8 +150,6 @@ module ClaimsApi
               validate_form_526_disability_secondary_disability_classification_code_matches_name!(
                 secondary_disability
               )
-            else
-              validate_form_526_disability_secondary_disability_name!(secondary_disability)
             end
 
             if secondary_disability['approximateBeginDate'].present?
@@ -194,16 +192,6 @@ module ClaimsApi
           detail: "'disabilities.secondaryDisabilities.name' must match the name value associated " \
                   "with 'disabilities.secondaryDisabilities.classificationCode' as returned from the " \
                   '/disabilities endpoint of the Benefits Reference Data API.'
-        )
-      end
-
-      def validate_form_526_disability_secondary_disability_name!(secondary_disability)
-        return if %r{([a-zA-Z0-9\-'.,/()]([a-zA-Z0-9\-',. ])?)+$}.match?(secondary_disability['name']) &&
-                  secondary_disability['name'].length <= 255
-
-        raise ::Common::Exceptions::InvalidFieldValue.new(
-          'disabilities.secondaryDisabilities.name',
-          secondary_disability['name']
         )
       end
 
