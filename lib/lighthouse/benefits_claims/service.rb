@@ -37,7 +37,6 @@ module BenefitsClaims
       handle_error(e, lighthouse_client_id, endpoint)
     end
 
-    # TODO-BDEX: Type of Intent To File being submitted [ compensation, pension, survivor ]
     # For type "survivor", the request must include claimantSsn and be made by a valid Veteran Representative.
     # If the Representative is not a Veteran or a VA employee, this method is currently not available to them,
     # and they should use the Benefits Intake API as an alternative.
@@ -47,12 +46,16 @@ module BenefitsClaims
       response = config.post(
         path,
         {
-          type:,
-          claimantSsn: @ssn
+          data: {
+            type: 'intent_to_file',
+            attributes: {
+              type:,
+              claimantSsn: @ssn
+            }
+          }
         },
         lighthouse_client_id, lighthouse_rsa_key_path, options
       ).body
-      puts response
     rescue Faraday::ClientError => e
       handle_error(e, lighthouse_client_id, endpoint)
     end
