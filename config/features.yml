@@ -266,6 +266,10 @@ features:
     actor_type: user
     description: Manage dependent removal from view dependent page
     enable_in_development: true
+  disability_526_classifier:
+    actor_type: user
+    description: enables sending claims for increase to VRO Contention Classification service for more accurate classification entry.
+    enable_in_development: true
   disability_compensation_flashes:
     actor_type: user
     description: enables sending flashes to BGS for disability_compensation submissions.
@@ -553,10 +557,6 @@ features:
   pw_ehr_cta_use_slo:
     actor_type: user
     description: Use single-logout (SLO) paths for Public Websites-managed EHR CTAs
-  rrd_asthma_compensation:
-    actor_type: user
-    description: Fast tracks 526 disability compensation asthma claims by submitting additional health data
-    enable_in_development: true
   my_va_experimental:
     actor_type: user
     description: Use for experimental features for My VA application
@@ -564,10 +564,6 @@ features:
   my_va_redirect:
     actor_type: user
     description: After authentication redirects a user to the My VA page if they are on the homepage
-    enable_in_development: true
-  rrd_hypertension_compensation:
-    actor_type: user
-    description: Fast tracks 526 disability compensation hypertension claims by submitting additional health data
     enable_in_development: true
   rrd_mas_all_claims_tracking:
     actor_type: user

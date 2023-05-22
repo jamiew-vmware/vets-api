@@ -49,11 +49,7 @@ module VAOS
           appointment[:friendly_name] = clinic&.[](:friendly_name) if clinic&.[](:friendly_name)
         end
 
-        # rubocop:disable Style/IfUnlessModifier
-        unless appointment[:location_id].nil?
-          appointment[:location] = get_facility(appointment[:location_id])
-        end
-        # rubocop:enable Style/IfUnlessModifier
+        appointment[:location] = get_facility(appointment[:location_id]) unless appointment[:location_id].nil?
 
         serializer = VAOS::V2::VAOSSerializer.new
         serialized = serializer.serialize(appointment, 'appointments')
@@ -191,49 +187,10 @@ module VAOS
         @@provider_cache[key] = value
       end
 
-      def logged_toc_providers
-        @logged_toc_providers ||= Set.new
-      end
-
-      def log_type_of_care_and_provider(appt, clinic)
-        logged_key = "#{appt[:kind]}-#{appt[:status]}-#{appt[:service_type]}-#{appt[:practitioners]}"
-        if logged_toc_providers.exclude?(logged_key)
-          Rails.logger.info(
-            'VAOS Type of care and provider',
-            kind: appt[:kind],
-            status: appt[:status],
-            type_of_care: appt[:service_type],
-            treatment_specialty: appt.dig(:extension, :cc_treating_specialty),
-            primary_stop_code: clinic&.[](:primary_stop_code),
-            primary_stop_code_name: clinic&.[](:primary_stop_code_name),
-            secondary_stop_code: clinic&.[](:secondary_stop_code),
-            secondary_stop_code_name: clinic&.[](:secondary_stop_code_name),
-            provider_npi: find_npi(appt),
-            provider_name: find_provider_name(appt),
-            practice_name: find_practice_name(appt)
-          )
-          logged_toc_providers.add(logged_key)
-        end
-      end
-
-      # helper method to extract provider name from appointment response, returns nil if not found
-      def find_provider_name(appt)
-        if appt.dig(:practitioners, 0, :name).present?
-          "#{appt.dig(:practitioners, 0, :name, :given, 0)} #{appt.dig(:practitioners, 0, :name, :family)}"
-        end
-      end
-
-      # helper method to extract practice name from appointment response,
-      # first checks for practice name in extension cc location, then in practitioners
-      # returns nil if not found in either
-      def find_practice_name(appt)
-        appt.dig(:extension, :cc_location, :practice_name) || appt.dig(:practitioners, 0, :practice_name)
-      end
-
       # Makes a call to the VAOS service to create a new appointment.
       def get_new_appointment
         if create_params[:kind] == 'clinic' && create_params[:status] == 'booked' # a direct scheduled appointment
-          modify_desired_date(create_params, get_facility_timezone)
+          modify_desired_date(create_params, get_facility_timezone(create_params[:location_id]))
         end
 
         appointments_service.post_appointment(create_params)
@@ -268,10 +225,16 @@ module VAOS
         utc_date.change(offset: timezone_offset).to_datetime
       end
 
+      FACILITY_ERROR_MSG = 'Error fetching facility details'
+
       # Returns the facility timezone id (eg. 'America/New_York') associated with facility id (location_id)
-      def get_facility_timezone
-        facility_info = get_facility(create_params[:location_id])
-        facility_info[:timezone]&.[](:time_zone_id)
+      def get_facility_timezone(facility_location_id)
+        facility_info = get_facility(facility_location_id)
+        if facility_info == FACILITY_ERROR_MSG
+          nil # returns nil if unable to fetch facility info, which will be handled by the timezone conversion
+        else
+          facility_info[:timezone]&.[](:zone_id)
+        end
       end
 
       def merge_clinics(appointments)
@@ -292,8 +255,6 @@ module VAOS
               appt[:friendly_name] = cached_clinics[appt[:clinic]][:friendly_name]
             end
           end
-
-          log_type_of_care_and_provider(appt, cached_clinics[appt[:clinic]])
         end
       end
 
@@ -330,6 +291,7 @@ module VAOS
           "Error fetching facility details for location_id #{location_id}",
           location_id:
         )
+        FACILITY_ERROR_MSG
       end
 
       def update_appt_id
