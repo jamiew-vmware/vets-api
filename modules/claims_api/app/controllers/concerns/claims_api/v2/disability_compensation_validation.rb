@@ -4,7 +4,7 @@ require 'brd/brd'
 
 module ClaimsApi
   module V2
-    module DisabilityCompensationValidation
+    module DisabilityCompensationValidation # rubocop:disable Metrics/ModuleLength
       def validate_form_526_submission_values!
         # ensure 'claimDate', if provided, is a valid date not in the future
         validate_form_526_submission_claim_date!
