@@ -281,4 +281,3 @@ module ClaimsApi
     end
   end
 end
-

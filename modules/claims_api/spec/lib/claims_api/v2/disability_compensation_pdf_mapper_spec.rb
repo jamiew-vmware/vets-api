@@ -336,4 +336,3 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
     end
   end
 end
-
