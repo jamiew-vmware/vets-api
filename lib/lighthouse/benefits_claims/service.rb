@@ -17,19 +17,19 @@ module BenefitsClaims
       raise ArgumentError, 'no SSN passed in for LH API request.' if ssn.blank?
     end
 
-    def get_claims(lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+    def get_claims(lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
       config.get("#{@icn}/claims", lighthouse_client_id, lighthouse_rsa_key_path, options).body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end
 
-    def get_claim(id, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+    def get_claim(id, lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
       config.get("#{@icn}/claims/#{id}", lighthouse_client_id, lighthouse_rsa_key_path, options).body
     rescue Faraday::ClientError => e
       raise BenefitsClaims::ServiceException.new(e.response), 'Lighthouse Error'
     end
 
-    def get_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+    def get_intent_to_file(type, lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
       endpoint = 'benefits_claims/intent_to_file'
       path = "#{@icn}/intent-to-file/#{type}"
       config.get(path, lighthouse_client_id, lighthouse_rsa_key_path, options).body

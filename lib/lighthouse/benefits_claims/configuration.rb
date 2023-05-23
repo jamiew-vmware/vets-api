@@ -46,7 +46,7 @@ module BenefitsClaims
     ##
     # @return [Faraday::Response] response from GET request
     #
-    def get(path, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+    def get(path, lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
       connection.get(path, options[:params], { Authorization: "Bearer #{
         access_token(
           lighthouse_client_id,
@@ -101,7 +101,7 @@ module BenefitsClaims
       !use_mocks? || Settings.betamocks.recording
     end
 
-    def access_token(lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+    def access_token(lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
       if get_access_token?
         token_service(
           lighthouse_client_id,
@@ -116,6 +116,8 @@ module BenefitsClaims
     # @return [BenefitsClaims::AccessToken::Service] Service used to generate access tokens.
     #
     def token_service(lighthouse_client_id, lighthouse_rsa_key_path, aud_claim_url = nil, host = nil)
+      lighthouse_client_id = settings.access_token.client_id if lighthouse_client_id.nil?
+      lighthouse_rsa_key_path = settings.access_token.rsa_key if lighthouse_rsa_key_path.nil?
       host ||= base_path(host)
       url = "#{host}/#{TOKEN_PATH}"
       aud_claim_url ||= settings.access_token.aud_claim_url

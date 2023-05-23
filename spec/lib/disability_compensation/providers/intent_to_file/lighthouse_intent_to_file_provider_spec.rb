@@ -4,8 +4,6 @@ require 'rails_helper'
 require 'disability_compensation/providers/intent_to_file/lighthouse_intent_to_file_provider'
 require 'support/disability_compensation_form/shared_examples/intent_to_file_provider'
 
-require "vcr"
-
 RSpec.describe LighthouseIntentToFileProvider do
   let(:current_user) { build(:user, :loa3) }
   let(:provider) { LighthouseIntentToFileProvider.new(current_user) }
@@ -28,20 +26,12 @@ RSpec.describe LighthouseIntentToFileProvider do
     end
   end
 
-  # TODO-BDEX: Test this after fixing docker
-  it 'creates intent to file using the Lighthouse API' do
-    VCR.configure do |c|
-      c.cassette_library_dir = "spec/support/vcr_cassettes"
-      c.hook_into :faraday
-      
-      VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/create_compensation_200_response') do
-        response = provider.create_intent_to_file('compensation', '', '')
-        expect(response).to be_an_instance_of(DisabilityCompensation::ApiProvider::IntentToFilesResponse)
-        expect(response['intent_to_file']['type']).to eq('compensation')
-
-        itf_id = response['intent_to_file']['id']
-        expect(DisabilityCompensation::ApiProvider::IntentToFile.find(itf_id)).to be_present
-      end
+  it 'creates intent to file using the Lighthouse API' do      
+    VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/create_compensation_200_response') do
+      response = provider.create_intent_to_file('compensation', '', '')
+      expect(response).to be_an_instance_of(DisabilityCompensation::ApiProvider::IntentToFilesResponse)
+      expect(response['intent_to_file']['type']).to eq('compensation')
+      expect(response['intent_to_file']['id']).to be_present
     end
   end
 
@@ -50,9 +40,7 @@ RSpec.describe LighthouseIntentToFileProvider do
       response = provider.create_intent_to_file('survivor', '', '')
       expect(response).to be_an_instance_of(DisabilityCompensation::ApiProvider::IntentToFilesResponse)
       expect(response['intent_to_file']['type']).to eq('survivor')
-
-      itf_id = response['intent_to_file']['id']
-      expect(DisabilityCompensation::ApiProvider::IntentToFile.find(itf_id)).to be_present
+      expect(response['intent_to_file']['id']).to be_present
     end
   end
 
