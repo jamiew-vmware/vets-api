@@ -266,6 +266,10 @@ features:
     actor_type: user
     description: Manage dependent removal from view dependent page
     enable_in_development: true
+  disability_526_classifier:
+    actor_type: user
+    description: enables sending claims for increase to VRO Contention Classification service for more accurate classification entry.
+    enable_in_development: true
   disability_compensation_flashes:
     actor_type: user
     description: enables sending flashes to BGS for disability_compensation submissions.
@@ -560,22 +564,6 @@ features:
   my_va_redirect:
     actor_type: user
     description: After authentication redirects a user to the My VA page if they are on the homepage
-    enable_in_development: true
-  rrd_mas_all_claims_tracking:
-    actor_type: user
-    description: Enables Slack and other email notifications for all MAS-eligible claims
-    enable_in_development: true
-  rrd_mas_all_claims_notification:
-    actor_type: user
-    description: Notifies MAS service of all MAS-eligible claims that have come through
-    enable_in_development: true
-  rrd_hypertension_mas_notification:
-    actor_type: user
-    description: Notifies MAS service of single-issue hypertension claims
-    enable_in_development: true
-  rrd_call_vro_service:
-    actor_type: user
-    description: Enables the RRD flow to call VRO for assessing health data and generating RRD PDF
     enable_in_development: true
   search_representative:
     actor_type: user
@@ -880,3 +868,6 @@ features:
   drupal_footer:
     actor_type: user
     description: If enabled, pulls Drupal data to populate most of the global footer
+  hlr_disable_submit:
+    actor_type: user
+    description: If enabled, the HLR submit button will be disabled to prevent user testing submission in production
