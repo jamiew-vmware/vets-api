@@ -142,13 +142,10 @@
               }
           ],
           "confinements": [
-            {
-            "confinement":
               {
                 "approximateBeginDate": "8349-11-06",
                 "approximateEndDate": "2884-12-09"
               }
-            }
         ],
           "reservesNationalGuardService": {
               "obligationTermsOfService": {
