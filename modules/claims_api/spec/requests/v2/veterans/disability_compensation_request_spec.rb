@@ -834,8 +834,8 @@ RSpec.describe 'Disability Claims', type: :request do
       end
 
       describe "'servicePay validations'" do
-        describe "'servicePay.militaryRetiredPay' validations" do
-          describe "'receiving' and 'willReceiveInFuture' validations" do
+        describe "retired pay validations" do
+          describe "'receivingMilitaryRetiredPay' and 'futureMilitaryRetiredPay' validations" do
             let(:service_pay_attribute) do
               {
                 receivingMilitaryRetiredPay: receiving,
@@ -847,7 +847,7 @@ RSpec.describe 'Disability Claims', type: :request do
               }
             end
 
-            context "when 'receiving' and 'willReceiveInFuture' are equal but not 'nil'" do
+            context "when 'receivingMilitaryRetiredPay' and 'futureMilitaryRetiredPay' are equal but not 'nil'" do
               context "when both are 'true'" do
                 let(:receiving) { true }
                 let(:future) { true }
@@ -885,8 +885,8 @@ RSpec.describe 'Disability Claims', type: :request do
               end
             end
 
-            context "when 'receiving' and 'willReceiveInFuture' are not equal" do
-              context "when 'receiving' is 'false' and 'willReceiveInFuture' is 'true'" do
+            context "when 'receivingMilitaryRetiredPay' and 'futureMilitaryRetiredPay' are not equal" do
+              context "when 'receivingMilitaryRetiredPay' is 'false' and 'futureMilitaryRetiredPay' is 'true'" do
                 let(:receiving) { false }
                 let(:future) { true }
 
@@ -905,7 +905,7 @@ RSpec.describe 'Disability Claims', type: :request do
                 end
               end
 
-              context "when 'receiving' is 'true' and 'willReceiveInFuture' is 'false'" do
+              context "when 'receivingMilitaryRetiredPay' is 'true' and 'futureMilitaryRetiredPay' is 'false'" do
                 let(:receiving) { true }
                 let(:future) { false }
 
@@ -938,7 +938,7 @@ RSpec.describe 'Disability Claims', type: :request do
               }
             end
 
-            context "when 'amount' is below the minimum" do
+            context "when 'monthlyAmount' is below the minimum" do
               let(:military_retired_payment_amount) { 0 }
 
               it 'responds with an unprocessible entity' do
@@ -954,7 +954,7 @@ RSpec.describe 'Disability Claims', type: :request do
               end
             end
 
-            context "when 'amount' is above the maximum" do
+            context "when 'monthlyAmount' is above the maximum" do
               let(:military_retired_payment_amount) { 1_000_000 }
 
               it 'responds with an unprocessible entity' do
@@ -972,7 +972,7 @@ RSpec.describe 'Disability Claims', type: :request do
               end
             end
 
-            context "when 'amount' is within limits" do
+            context "when 'monthlyAmount' is within limits" do
               let(:military_retired_payment_amount) { 100 }
 
               it 'responds with a 200' do
@@ -995,7 +995,7 @@ RSpec.describe 'Disability Claims', type: :request do
             context "when 'futureMilitaryRetiredPay' is 'true'" do
               let(:future_military_retired_pay) { true }
 
-              context "when 'militaryRetiredPay.futurePayExplanation' is not provided" do
+              context "when 'futureMilitaryRetiredPayExplanation' is not provided" do
                 let(:service_pay_attribute) do
                   {
                     receivingMilitaryRetiredPay: false,
@@ -1019,7 +1019,7 @@ RSpec.describe 'Disability Claims', type: :request do
                 end
               end
 
-              context "when 'militaryRetiredPay.futurePayExplanation' is provided" do
+              context "when 'futureMilitaryRetiredPayExplanation' is provided" do
                 let(:service_pay_attribute) do
                   {
                     receivingMilitaryRetiredPay: false,
@@ -1049,7 +1049,7 @@ RSpec.describe 'Disability Claims', type: :request do
           end
         end
 
-        describe "'servicePay.separationPay' validations" do
+        describe "'servicePay.separationSeverancePay' validations" do
           describe "'payment'" do
             let(:service_pay_attribute) do
               {
@@ -1062,7 +1062,7 @@ RSpec.describe 'Disability Claims', type: :request do
               }
             end
 
-            context "when 'amount' is below the minimum" do
+            context "when 'preTaxAmountReceived' is below the minimum" do
               let(:separation_payment_amount) { 0 }
 
               it 'responds with an unprocessible entity' do
@@ -1078,7 +1078,7 @@ RSpec.describe 'Disability Claims', type: :request do
               end
             end
 
-            context "when 'amount' is above the maximum" do
+            context "when 'preTaxAmountReceived' is above the maximum" do
               let(:separation_payment_amount) { 1_000_000 }
 
               it 'responds with an unprocessible entity' do
@@ -1096,7 +1096,7 @@ RSpec.describe 'Disability Claims', type: :request do
               end
             end
 
-            context "when 'amount' is within limits" do
+            context "when 'preTaxAmountReceived' is within limits" do
               let(:separation_payment_amount) { 100 }
 
               it 'responds with a 200' do
@@ -1115,7 +1115,7 @@ RSpec.describe 'Disability Claims', type: :request do
             end
           end
 
-          describe "'receivedDate'" do
+          describe "'datePaymentReceived'" do
             let(:service_pay_attribute) do
               {
                 receivedSeparationOrSeverancePay: true,
@@ -1127,7 +1127,7 @@ RSpec.describe 'Disability Claims', type: :request do
               }
             end
 
-            context "when 'receivedDate' is not in the past" do
+            context "when 'datePaymentReceived' is not in the past" do
               let(:received_date) { (Time.zone.today + 1.day).to_s }
 
               it 'responds with a bad request' do
@@ -1143,7 +1143,7 @@ RSpec.describe 'Disability Claims', type: :request do
               end
             end
 
-            context "when 'receivedDate' is in the past" do
+            context "when 'datePaymentReceived' is in the past" do
               let(:received_date) { (Time.zone.today - 1.year).to_s }
 
               it 'responds with a 200' do
