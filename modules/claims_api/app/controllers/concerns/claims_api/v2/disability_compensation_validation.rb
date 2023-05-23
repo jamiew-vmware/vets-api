@@ -5,6 +5,7 @@ require 'brd/brd'
 module ClaimsApi
   module V2
     module DisabilityCompensationValidation # rubocop:disable Metrics/ModuleLength
+    module DisabilityCompensationValidation # rubocop:disable Metrics/ModuleLength
       def validate_form_526_submission_values!
         # ensure 'claimDate', if provided, is a valid date not in the future
         validate_form_526_submission_claim_date!
@@ -16,6 +17,8 @@ module ClaimsApi
         validate_form_526_veteran_homelessness!
         # ensure military service pay information is valid
         validate_form_526_service_pay!
+        # ensure treament centers information is valid
+        validate_form_526_treatments!
       end
 
       def validate_form_526_submission_claim_date!
@@ -163,6 +166,55 @@ module ClaimsApi
 
         raise ::Common::Exceptions::InvalidFieldValue.new('separationSeverancePay.datePaymentReceived',
                                                           separation_pay_received_date)
+      end
+
+      def validate_form_526_treatments!
+        treatments = form_attributes['treatments']
+        return if treatments.blank?
+
+        validate_treated_disability_names!
+      end
+
+      def validate_treated_disability_names!
+        treatments = form_attributes['treatments']
+
+        treated_disability_names = collect_treated_disability_names(treatments)
+        declared_disability_names = collect_primary_secondary_disability_names(form_attributes['disabilities'])
+
+        treated_disability_names.each do |treatment|
+          next if declared_disability_names.include?(treatment)
+
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'The treated disability must match a disability listed above'
+          )
+        end
+      end
+
+      def collect_treated_disability_names(treatments)
+        names = []
+        treatments.each do |treatment|
+          if treatment['treatedDisabilityNames'].blank?
+            raise ::Common::Exceptions::UnprocessableEntity.new(
+              detail: 'Treated disability names are required.'
+            )
+          end
+
+          treatment['treatedDisabilityNames'].each do |disability_name|
+            names << disability_name.strip.downcase
+          end
+        end
+        names
+      end
+
+      def collect_primary_secondary_disability_names(disabilities)
+        names = []
+        disabilities.each do |disability|
+          names << disability['name'].strip.downcase
+          disability['secondaryDisabilities'].each do |secondary|
+            names << secondary['name'].strip.downcase
+          end
+        end
+        names
       end
     end
   end
