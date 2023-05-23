@@ -16,7 +16,6 @@ RSpec.describe 'Disability Claims', type: :request do
 
   before do
     stub_poa_verification
-    stub_mpi
     Timecop.freeze(Time.zone.now)
   end
 
@@ -853,10 +852,6 @@ RSpec.describe 'Disability Claims', type: :request do
                 let(:receiving) { true }
                 let(:future) { true }
 
-                before do
-                  stub_mpi
-                end
-
                 it 'responds with a bad request' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('evss/claims/claims') do
@@ -875,10 +870,6 @@ RSpec.describe 'Disability Claims', type: :request do
               context "when both are 'false'" do
                 let(:receiving) { false }
                 let(:future) { false }
-
-                before do
-                  stub_mpi
-                end
 
                 it 'responds with a bad request' do
                   with_okta_user(scopes) do |auth_header|
@@ -899,10 +890,6 @@ RSpec.describe 'Disability Claims', type: :request do
                 let(:receiving) { false }
                 let(:future) { true }
 
-                before do
-                  stub_mpi
-                end
-
                 it 'responds with a 200' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('evss/claims/claims') do
@@ -921,10 +908,6 @@ RSpec.describe 'Disability Claims', type: :request do
               context "when 'receiving' is 'true' and 'willReceiveInFuture' is 'false'" do
                 let(:receiving) { true }
                 let(:future) { false }
-
-                before do
-                  stub_mpi
-                end
 
                 it 'responds with a 200' do
                   with_okta_user(scopes) do |auth_header|
@@ -950,17 +933,13 @@ RSpec.describe 'Disability Claims', type: :request do
                 futureMilitaryRetiredPay: false,
                 militaryRetiredPay: {
                   branchOfService: 'Air Force',
-                  preTaxAmountReceived: military_retired_payment_amount
+                  monthlyAmount: military_retired_payment_amount
                 }
               }
             end
 
             context "when 'amount' is below the minimum" do
               let(:military_retired_payment_amount) { 0 }
-
-              before do
-                stub_mpi
-              end
 
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
@@ -977,10 +956,6 @@ RSpec.describe 'Disability Claims', type: :request do
 
             context "when 'amount' is above the maximum" do
               let(:military_retired_payment_amount) { 1_000_000 }
-
-              before do
-                stub_mpi
-              end
 
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
@@ -999,10 +974,6 @@ RSpec.describe 'Disability Claims', type: :request do
 
             context "when 'amount' is within limits" do
               let(:military_retired_payment_amount) { 100 }
-
-              before do
-                stub_mpi
-              end
 
               it 'responds with a 200' do
                 with_okta_user(scopes) do |auth_header|
@@ -1035,10 +1006,6 @@ RSpec.describe 'Disability Claims', type: :request do
                   }
                 end
 
-                before do
-                  stub_mpi
-                end
-
                 it 'responds with an unprocessible entity' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('brd/countries') do
@@ -1062,10 +1029,6 @@ RSpec.describe 'Disability Claims', type: :request do
                       branchOfService: 'Air Force'
                     }
                   }
-                end
-
-                before do
-                  stub_mpi
                 end
 
                 it 'responds with a 200' do
@@ -1102,10 +1065,6 @@ RSpec.describe 'Disability Claims', type: :request do
             context "when 'amount' is below the minimum" do
               let(:separation_payment_amount) { 0 }
 
-              before do
-                stub_mpi
-              end
-
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('brd/countries') do
@@ -1121,10 +1080,6 @@ RSpec.describe 'Disability Claims', type: :request do
 
             context "when 'amount' is above the maximum" do
               let(:separation_payment_amount) { 1_000_000 }
-
-              before do
-                stub_mpi
-              end
 
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
@@ -1143,10 +1098,6 @@ RSpec.describe 'Disability Claims', type: :request do
 
             context "when 'amount' is within limits" do
               let(:separation_payment_amount) { 100 }
-
-              before do
-                stub_mpi
-              end
 
               it 'responds with a 200' do
                 with_okta_user(scopes) do |auth_header|
@@ -1179,10 +1130,6 @@ RSpec.describe 'Disability Claims', type: :request do
             context "when 'receivedDate' is not in the past" do
               let(:received_date) { (Time.zone.today + 1.day).to_s }
 
-              before do
-                stub_mpi
-              end
-
               it 'responds with a bad request' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('brd/countries') do
@@ -1198,10 +1145,6 @@ RSpec.describe 'Disability Claims', type: :request do
 
             context "when 'receivedDate' is in the past" do
               let(:received_date) { (Time.zone.today - 1.year).to_s }
-
-              before do
-                stub_mpi
-              end
 
               it 'responds with a 200' do
                 with_okta_user(scopes) do |auth_header|
