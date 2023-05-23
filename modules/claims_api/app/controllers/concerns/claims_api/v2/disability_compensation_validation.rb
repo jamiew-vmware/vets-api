@@ -118,31 +118,31 @@ module ClaimsApi
       end
 
       def validate_form_526_service_pay!
-        # byebug
         validate_form_526_military_retired_pay!
         validate_form_526_future_military_retired_pay!
         validate_form_526_separation_pay!
       end
-  
+
       def validate_form_526_military_retired_pay!
         receiving_attr = form_attributes.dig('servicePay', 'receivingMilitaryRetiredPay')
         future_attr = form_attributes.dig('servicePay', 'futureMilitaryRetiredPay')
-  
+
         return if receiving_attr.nil? || future_attr.nil?
         return unless receiving_attr == future_attr
-  
+
         # EVSS does not allow both attributes to be the same value (unless that value is nil)
         raise ::Common::Exceptions::InvalidFieldValue.new(
           'servicePay.militaryRetiredPay',
           form_attributes['servicePay']['militaryRetiredPay']
         )
       end
-  
+
       def validate_form_526_future_military_retired_pay!
         future_attr = form_attributes.dig('servicePay', 'futureMilitaryRetiredPay')
         future_explanation_attr = form_attributes.dig('servicePay', 'futureMilitaryRetiredPayExplanation')
         return if future_attr.nil?
-        if future_attr == true && future_explanation_attr.blank? 
+
+        if future_attr == true && future_explanation_attr.blank?
           raise ::Common::Exceptions::UnprocessableEntity.new(
             detail: "If 'servicePay.futureMilitaryRetiredPay' is true, then " \
                     "'servicePay.futureMilitaryRetiredPayExplanation' is required"
@@ -153,15 +153,16 @@ module ClaimsApi
       def validate_form_526_separation_pay!
         validate_form_526_separation_pay_received_date!
       end
-  
+
       def validate_form_526_separation_pay_received_date!
-        separation_pay_received_date = form_attributes.dig('servicePay', 'separationSeverancePay', 'datePaymentReceived')
-  byebug
+        separation_pay_received_date = form_attributes.dig('servicePay', 'separationSeverancePay',
+                                                           'datePaymentReceived')
         return if separation_pay_received_date.blank?
-  
+
         return if Date.parse(separation_pay_received_date) < Time.zone.today
-  
-        raise ::Common::Exceptions::InvalidFieldValue.new('separationSeverancePay.datePaymentReceived', separation_pay_received_date)
+
+        raise ::Common::Exceptions::InvalidFieldValue.new('separationSeverancePay.datePaymentReceived',
+                                                          separation_pay_received_date)
       end
     end
   end

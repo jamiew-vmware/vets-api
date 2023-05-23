@@ -839,24 +839,24 @@ RSpec.describe 'Disability Claims', type: :request do
           describe "'receiving' and 'willReceiveInFuture' validations" do
             let(:service_pay_attribute) do
               {
-                'receivingMilitaryRetiredPay': receiving,
-                'futureMilitaryRetiredPay': future,
-                'futureMilitaryRetiredPayExplanation': 'Some explanation',
-                'militaryRetiredPay': {
-                  'branchOfService': 'Air Force'
+                receivingMilitaryRetiredPay: receiving,
+                futureMilitaryRetiredPay: future,
+                futureMilitaryRetiredPayExplanation: 'Some explanation',
+                militaryRetiredPay: {
+                  branchOfService: 'Air Force'
                 }
               }
             end
-  
+
             context "when 'receiving' and 'willReceiveInFuture' are equal but not 'nil'" do
               context "when both are 'true'" do
                 let(:receiving) { true }
                 let(:future) { true }
-  
+
                 before do
                   stub_mpi
                 end
-  
+
                 it 'responds with a bad request' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('evss/claims/claims') do
@@ -865,21 +865,21 @@ RSpec.describe 'Disability Claims', type: :request do
                         params = json_data
                         params['data']['attributes']['servicePay'] = service_pay_attribute
                         post path, params: params.to_json, headers: headers.merge(auth_header)
-                        expect(response.status).to eq(400)
+                        expect(response).to have_http_status(:bad_request)
                       end
                     end
                   end
                 end
               end
-  
+
               context "when both are 'false'" do
                 let(:receiving) { false }
                 let(:future) { false }
-  
+
                 before do
                   stub_mpi
                 end
-  
+
                 it 'responds with a bad request' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('brd/countries') do
@@ -887,22 +887,22 @@ RSpec.describe 'Disability Claims', type: :request do
                       params = json_data
                       params['data']['attributes']['servicePay'] = service_pay_attribute
                       post path, params: params.to_json, headers: headers.merge(auth_header)
-                      expect(response.status).to eq(400)
+                      expect(response).to have_http_status(:bad_request)
                     end
                   end
                 end
               end
             end
-  
+
             context "when 'receiving' and 'willReceiveInFuture' are not equal" do
               context "when 'receiving' is 'false' and 'willReceiveInFuture' is 'true'" do
                 let(:receiving) { false }
                 let(:future) { true }
-  
+
                 before do
                   stub_mpi
                 end
-  
+
                 it 'responds with a 200' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('evss/claims/claims') do
@@ -911,21 +911,21 @@ RSpec.describe 'Disability Claims', type: :request do
                         params = json_data
                         params['data']['attributes']['servicePay'] = service_pay_attribute
                         post path, params: params.to_json, headers: headers.merge(auth_header)
-                        expect(response.status).to eq(200)
+                        expect(response).to have_http_status(:ok)
                       end
                     end
                   end
                 end
               end
-  
+
               context "when 'receiving' is 'true' and 'willReceiveInFuture' is 'false'" do
                 let(:receiving) { true }
                 let(:future) { false }
-  
+
                 before do
                   stub_mpi
                 end
-  
+
                 it 'responds with a 200' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('evss/claims/claims') do
@@ -934,7 +934,7 @@ RSpec.describe 'Disability Claims', type: :request do
                         params = json_data
                         params['data']['attributes']['servicePay'] = service_pay_attribute
                         post path, params: params.to_json, headers: headers.merge(auth_header)
-                        expect(response.status).to eq(200)
+                        expect(response).to have_http_status(:ok)
                       end
                     end
                   end
@@ -942,26 +942,26 @@ RSpec.describe 'Disability Claims', type: :request do
               end
             end
           end
-  
+
           describe "'payment'" do
             let(:service_pay_attribute) do
               {
-                'receivingMilitaryRetiredPay': true,
-                'futureMilitaryRetiredPay': false,
-                'militaryRetiredPay': {
-                  'branchOfService': 'Air Force',
-                  'preTaxAmountReceived': military_retired_payment_amount
+                receivingMilitaryRetiredPay: true,
+                futureMilitaryRetiredPay: false,
+                militaryRetiredPay: {
+                  branchOfService: 'Air Force',
+                  preTaxAmountReceived: military_retired_payment_amount
                 }
               }
             end
-  
+
             context "when 'amount' is below the minimum" do
               let(:military_retired_payment_amount) { 0 }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('brd/countries') do
@@ -969,19 +969,19 @@ RSpec.describe 'Disability Claims', type: :request do
                     params = json_data
                     params['data']['attributes']['servicePay'] = service_pay_attribute
                     post path, params: params.to_json, headers: headers.merge(auth_header)
-                    expect(response.status).to eq(422)
+                    expect(response).to have_http_status(:unprocessable_entity)
                   end
                 end
               end
             end
-  
+
             context "when 'amount' is above the maximum" do
               let(:military_retired_payment_amount) { 1_000_000 }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
@@ -990,20 +990,20 @@ RSpec.describe 'Disability Claims', type: :request do
                       params = json_data
                       params['data']['attributes']['servicePay'] = service_pay_attribute
                       post path, params: params.to_json, headers: headers.merge(auth_header)
-                      expect(response.status).to eq(422)
+                      expect(response).to have_http_status(:unprocessable_entity)
                     end
                   end
                 end
               end
             end
-  
+
             context "when 'amount' is within limits" do
               let(:military_retired_payment_amount) { 100 }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with a 200' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
@@ -1012,33 +1012,33 @@ RSpec.describe 'Disability Claims', type: :request do
                       params = json_data
                       params['data']['attributes']['servicePay'] = service_pay_attribute
                       post path, params: params.to_json, headers: headers.merge(auth_header)
-                      expect(response.status).to eq(200)
+                      expect(response).to have_http_status(:ok)
                     end
                   end
                 end
               end
             end
           end
-  
+
           describe "'futurePayExplanation'" do
             context "when 'futureMilitaryRetiredPay' is 'true'" do
               let(:future_military_retired_pay) { true }
-  
+
               context "when 'militaryRetiredPay.futurePayExplanation' is not provided" do
                 let(:service_pay_attribute) do
                   {
-                    'receivingMilitaryRetiredPay': false,
-                    'futureMilitaryRetiredPay': future_military_retired_pay,
-                    'militaryRetiredPay': {
-                      'branchOfService': 'Air Force'
+                    receivingMilitaryRetiredPay: false,
+                    futureMilitaryRetiredPay: future_military_retired_pay,
+                    militaryRetiredPay: {
+                      branchOfService: 'Air Force'
                     }
                   }
                 end
-  
+
                 before do
                   stub_mpi
                 end
-  
+
                 it 'responds with an unprocessible entity' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('brd/countries') do
@@ -1046,28 +1046,28 @@ RSpec.describe 'Disability Claims', type: :request do
                       params = json_data
                       params['data']['attributes']['servicePay'] = service_pay_attribute
                       post path, params: params.to_json, headers: headers.merge(auth_header)
-                      expect(response.status).to eq(422)
+                      expect(response).to have_http_status(:unprocessable_entity)
                     end
                   end
                 end
               end
-  
+
               context "when 'militaryRetiredPay.futurePayExplanation' is provided" do
                 let(:service_pay_attribute) do
                   {
-                    'receivingMilitaryRetiredPay': false,
-                    'futureMilitaryRetiredPay': future_military_retired_pay,
-                    'futureMilitaryRetiredPayExplanation': 'Retiring soon.',
-                    'militaryRetiredPay': {
-                      'branchOfService': 'Air Force'
+                    receivingMilitaryRetiredPay: false,
+                    futureMilitaryRetiredPay: future_military_retired_pay,
+                    futureMilitaryRetiredPayExplanation: 'Retiring soon.',
+                    militaryRetiredPay: {
+                      branchOfService: 'Air Force'
                     }
                   }
                 end
-  
+
                 before do
                   stub_mpi
                 end
-  
+
                 it 'responds with a 200' do
                   with_okta_user(scopes) do |auth_header|
                     VCR.use_cassette('evss/claims/claims') do
@@ -1076,8 +1076,7 @@ RSpec.describe 'Disability Claims', type: :request do
                         params = json_data
                         params['data']['attributes']['servicePay'] = service_pay_attribute
                         post path, params: params.to_json, headers: headers.merge(auth_header)
-                        byebug
-                        expect(response.status).to eq(200)
+                        expect(response).to have_http_status(:ok)
                       end
                     end
                   end
@@ -1086,27 +1085,27 @@ RSpec.describe 'Disability Claims', type: :request do
             end
           end
         end
-  
+
         describe "'servicePay.separationPay' validations" do
           describe "'payment'" do
             let(:service_pay_attribute) do
               {
-                'receivedSeparationOrSeverancePay': true,
-                'separationSeverancePay': {
-                  'datePaymentReceived': (Time.zone.today - 1.year).to_s,
-                  'branchOfService': 'Air Force',
-                  'preTaxAmountReceived': separation_payment_amount
+                receivedSeparationOrSeverancePay: true,
+                separationSeverancePay: {
+                  datePaymentReceived: (Time.zone.today - 1.year).to_s,
+                  branchOfService: 'Air Force',
+                  preTaxAmountReceived: separation_payment_amount
                 }
               }
             end
-  
+
             context "when 'amount' is below the minimum" do
               let(:separation_payment_amount) { 0 }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('brd/countries') do
@@ -1114,19 +1113,19 @@ RSpec.describe 'Disability Claims', type: :request do
                     params = json_data
                     params['data']['attributes']['servicePay'] = service_pay_attribute
                     post path, params: params.to_json, headers: headers.merge(auth_header)
-                    expect(response.status).to eq(422)
+                    expect(response).to have_http_status(:unprocessable_entity)
                   end
                 end
               end
             end
-  
+
             context "when 'amount' is above the maximum" do
               let(:separation_payment_amount) { 1_000_000 }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with an unprocessible entity' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
@@ -1135,20 +1134,20 @@ RSpec.describe 'Disability Claims', type: :request do
                       params = json_data
                       params['data']['attributes']['servicePay'] = service_pay_attribute
                       post path, params: params.to_json, headers: headers.merge(auth_header)
-                      expect(response.status).to eq(422)
+                      expect(response).to have_http_status(:unprocessable_entity)
                     end
                   end
                 end
               end
             end
-  
+
             context "when 'amount' is within limits" do
               let(:separation_payment_amount) { 100 }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with a 200' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
@@ -1157,33 +1156,33 @@ RSpec.describe 'Disability Claims', type: :request do
                       params = json_data
                       params['data']['attributes']['servicePay'] = service_pay_attribute
                       post path, params: params.to_json, headers: headers.merge(auth_header)
-                      expect(response.status).to eq(200)
+                      expect(response).to have_http_status(:ok)
                     end
                   end
                 end
               end
             end
           end
-  
+
           describe "'receivedDate'" do
             let(:service_pay_attribute) do
               {
-                'receivedSeparationOrSeverancePay': true,
-                'separationSeverancePay': {
-                  'datePaymentReceived': received_date,
-                  'branchOfService': 'Air Force',
-                  'preTaxAmountReceived': 100
+                receivedSeparationOrSeverancePay: true,
+                separationSeverancePay: {
+                  datePaymentReceived: received_date,
+                  branchOfService: 'Air Force',
+                  preTaxAmountReceived: 100
                 }
               }
             end
-  
+
             context "when 'receivedDate' is not in the past" do
               let(:received_date) { (Time.zone.today + 1.day).to_s }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with a bad request' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('brd/countries') do
@@ -1191,19 +1190,19 @@ RSpec.describe 'Disability Claims', type: :request do
                     params = json_data
                     params['data']['attributes']['servicePay'] = service_pay_attribute
                     post path, params: params.to_json, headers: headers.merge(auth_header)
-                    expect(response.status).to eq(400)
+                    expect(response).to have_http_status(:bad_request)
                   end
                 end
               end
             end
-  
+
             context "when 'receivedDate' is in the past" do
               let(:received_date) { (Time.zone.today - 1.year).to_s }
-  
+
               before do
                 stub_mpi
               end
-  
+
               it 'responds with a 200' do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
@@ -1212,7 +1211,7 @@ RSpec.describe 'Disability Claims', type: :request do
                       params = json_data
                       params['data']['attributes']['servicePay'] = service_pay_attribute
                       post path, params: params.to_json, headers: headers.merge(auth_header)
-                      expect(response.status).to eq(200)
+                      expect(response).to have_http_status(:ok)
                     end
                   end
                 end
