@@ -103,45 +103,58 @@ module ClaimsApi
       end
 
       def service_info
-        service_periods
+        symbolize_ser_info
+        most_recent_ser_per
+        array_of_remaining_serv_date_objects
         confinements
         national_guard
+        service_info_other_names
+        fed_activation
 
         @pdf_data
       end
 
-      def service_periods
+      def symbolize_ser_info
         @pdf_data[:data][:attributes][:serviceInformation].merge!(
-          @auto_claim["serviceInformation"].deep_symbolize_keys
+          @auto_claim['serviceInformation'].deep_symbolize_keys
         )
-        # what of there are more than one service period?
-        details = @pdf_data[:data][:attributes][:serviceInformation][:servicePeriods].map do |ser_per|
-          act_start = ser_per[:activeDutyBeginDate]
-          act_end = ser_per[:activeDutyEndDate]
-          # TODO: get location name from code
-          location = ser_per[:separationLocationCode]
-          branch = ser_per[:serviceBranch]
-          component = ser_per[:serviceComponent]
 
-          @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService] = {}
-          @pdf_data[:data][:attributes][:serviceInformation][:additionalPeriodsOfService] = {}
-          
-          @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService][:startDate] = act_start
-          @pdf_data[:data][:attributes][:serviceInformation][:additionalPeriodsOfService][:startDate] = act_start
-          @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService][:endDate] = act_end
-          @pdf_data[:data][:attributes][:serviceInformation][:additionalPeriodsOfService][:endDate] = act_end
-          @pdf_data[:data][:attributes][:serviceInformation][:placeOfLastOrAnticipatedSeparation] = location
-          @pdf_data[:data][:attributes][:serviceInformation][:branchOfService] = branch
-          @pdf_data[:data][:attributes][:serviceInformation][:serviceComponent] = component
-          @pdf_data[:data][:attributes][:serviceInformation]
-        end
-        
         @pdf_data
       end
-      
+
+      def most_recent_ser_per
+        @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService] = {}
+        most_recent_period = @pdf_data[:data][:attributes][:serviceInformation][:servicePeriods].max_by do |sp|
+          sp[:activeDutyEndDate]
+        end
+
+        @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService][:startDate] =
+          most_recent_period[:activeDutyBeginDate]
+        @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService][:endDate] =
+          most_recent_period[:activeDutyEndDate]
+        @pdf_data[:data][:attributes][:serviceInformation][:placeOfLastOrAnticipatedSeparation] =
+          most_recent_period[:separationLocationCode]
+        @pdf_data[:data][:attributes][:serviceInformation][:branchOfService] = most_recent_period[:serviceBranch]
+        @pdf_data[:data][:attributes][:serviceInformation][:serviceComponent] = most_recent_period[:serviceComponent]
+
+        @pdf_data
+      end
+
+      def array_of_remaining_serv_date_objects
+        arr = []
+        @pdf_data[:data][:attributes][:serviceInformation][:servicePeriods].each do |sp|
+          arr.push({ startDate: sp[:activeDutyBeginDate], endDate: sp[:activeDutyEndDate] })
+        end
+        sorted = arr.sort_by { |sp| sp[:activeDutyEndDate] }
+        sorted.pop
+        @pdf_data[:data][:attributes][:serviceInformation][:additionalPeriodsOfService] = sorted
+        @pdf_data[:data][:attributes][:serviceInformation].delete(:servicePeriods)
+        @pdf_data
+      end
+
       def confinements
         si = {}
-        addtl_service_info = @pdf_data[:data][:attributes][:serviceInformation][:confinements].map do |confinement|
+        @pdf_data[:data][:attributes][:serviceInformation][:confinements].map do |confinement|
           start = confinement[:confinement][:approximateBeginDate]
           end_date = confinement[:confinement][:approximateEndDate]
           si[:prisonerOfWarConfinement] = { confinementDates: {} }
@@ -151,7 +164,7 @@ module ClaimsApi
           si
         end
         @pdf_data[:data][:attributes][:serviceInformation].merge!(si)
-        
+
         @pdf_data
       end
 
@@ -161,6 +174,29 @@ module ClaimsApi
         si[:servedInReservesOrNationalGuard] = true if reserves[:obligationTermsOfService][:startDate]
         @pdf_data[:data][:attributes][:serviceInformation].merge!(si)
 
+        @pdf_data
+      end
+
+      def service_info_other_names
+        other_names = @pdf_data[:data][:attributes][:serviceInformation][:alternateNames].present?
+        names = @pdf_data[:data][:attributes][:serviceInformation][:alternateNames].join(', ')
+        @pdf_data[:data][:attributes][:serviceInformation][:servedUnderAnotherName] = true if other_names
+        @pdf_data[:data][:attributes][:serviceInformation][:alternateNames] = names
+      end
+
+      def fed_activation
+        @pdf_data[:data][:attributes][:serviceInformation][:federalActivation] = {}
+        ten = @pdf_data[:data][:attributes][:serviceInformation][:reservesNationalGuardService][:title10Activation]
+        activation_date = ten[:title10ActivationDate]
+        @pdf_data[:data][:attributes][:serviceInformation][:federalActivation][:activationDate] = activation_date
+
+        anticipated_sep_date = ten[:anticipatedSeparationDate]
+        @pdf_data[:data][:attributes][:serviceInformation][:federalActivation][:anticipatedSeparationDate] =
+          anticipated_sep_date
+        @pdf_data[:data][:attributes][:serviceInformation][:activatedOnFederalOrders] = true if activation_date
+        @pdf_data[:data][:attributes][:serviceInformation][:reservesNationalGuardService].delete(:title10Activation)
+
+        @pdf_data
       end
     end
   end

@@ -206,8 +206,8 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
         component = serv_info[:serviceComponent]
         recent_start = serv_info[:mostRecentActiveService][:startDate]
         recent_end = serv_info[:mostRecentActiveService][:endDate]
-        addtl_start = serv_info[:additionalPeriodsOfService][:startDate]
-        addtl_end = serv_info[:additionalPeriodsOfService][:endDate]
+        addtl_start = serv_info[:additionalPeriodsOfService][0][:startDate]
+        addtl_end = serv_info[:additionalPeriodsOfService][0][:endDate]
         last_sep = serv_info[:placeOfLastOrAnticipatedSeparation]
         pow = serv_info[:confinedAsPrisonerOfWar]
         pow_start = serv_info[:prisonerOfWarConfinement][:confinementDates][:startDate]
@@ -219,38 +219,39 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
         unit_name = serv_info[:reservesNationalGuardService][:unitName]
         unit_address = serv_info[:reservesNationalGuardService][:unitAddress]
         unit_phone = serv_info[:reservesNationalGuardService][:unitPhone]
-        # act_duty_pay = serv_info[:reservesNationalGuardService][:receivingInactiveDutyTrainingPay]
-        # fed_orders = serv_info[:activatedOnFederalOrders]
-        # fed_act = serv_info[:federalActivation][:activationDate]
-        # fed_sep = serv_info[:federalActivation][:anticipatedSeparationDate]
-        # other_name = serv_info[:servedUnderAnotherName]
-        # alt_names = serv_info[:alternateNames]
-        # served_911 = serv_info[:servedInActiveCombatSince911]
-        
-        expect(branch).to eq('Public Health Service')
+        act_duty_pay = serv_info[:reservesNationalGuardService][:receivingInactiveDutyTrainingPay]
+        other_name = serv_info[:servedUnderAnotherName]
+        fed_orders = serv_info[:activatedOnFederalOrders]
+        alt_names = serv_info[:alternateNames]
+        fed_act = serv_info[:federalActivation][:activationDate]
+        fed_sep = serv_info[:federalActivation][:anticipatedSeparationDate]
+        served_after_nine_eleven = serv_info[:servedInActiveCombatSince911]
+
+        expect(branch).to eq('Air Force')
         expect(component).to eq('Active')
-        expect(recent_start).to eq('0815-11-14')
-        expect(recent_end).to eq('2343-11-30')
-        expect(addtl_start).to eq('0815-11-14')
-        expect(addtl_end).to eq('2343-11-30')
-        expect(last_sep).to eq('ABCDEFGHIJKLMN')
+        expect(recent_start).to eq('2022-12-14')
+        expect(recent_end).to eq('2023-11-30')
+        expect(addtl_start).to eq('2021-11-14')
+        expect(addtl_end).to eq('2022-11-30')
+        expect(last_sep).to eq('5678')
         expect(pow).to eq(true)
-        expect(pow_start).to eq('8349-11-06')
-        expect(pow_end).to eq('2884-12-09')
+        expect(pow_start).to eq('2021-11-06')
+        expect(pow_end).to eq('2023-12-09')
         expect(natl_guard).to eq(true)
         expect(natl_guard_comp).to eq('Active')
         expect(obl_start).to eq('3995-11-24')
         expect(obl_end).to eq('8502-11-17')
         expect(unit_name).to eq("''c'5'l'#l#2z")
-        expect(unit_address).to eq('')
-        expect(unit_phone).to eq('')
-        # expect(act_duty_pay).to eq('')
-        # expect(fed_orders).to eq('')
-        # expect(fed_act).to eq('')
-        # expect(fed_sep).to eq('')
-        # expect(other_name).to eq('')
-        # expect(alt_names).to eq('')
-        # expect(served_911).to eq('')
+        expect(unit_address).to eq('1243 pine court')
+        expect(unit_phone[:areaCode]).to eq('123')
+        expect(unit_phone[:phoneNumber]).to eq('1234567')
+        expect(act_duty_pay).to eq(true)
+        expect(other_name).to eq(true)
+        expect(alt_names).to eq('john jacob, johnny smith')
+        expect(fed_orders).to eq(true)
+        expect(fed_act).to eq('3619-02-11')
+        expect(fed_sep).to eq('6705-10-03')
+        expect(served_after_nine_eleven).to eq(false)
       end
     end
   end

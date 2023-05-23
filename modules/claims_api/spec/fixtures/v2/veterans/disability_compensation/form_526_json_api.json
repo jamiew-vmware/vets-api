@@ -28,18 +28,25 @@
                 "servicePeriods": [
                     {
                         "serviceBranch": "Public Health Service",
-                        "activeDutyBeginDate": "0815-11-14",
-                        "activeDutyEndDate": "2343-11-30",
+                        "activeDutyBeginDate": "2021-11-14",
+                        "activeDutyEndDate": "2022-11-30",
+                        "serviceComponent": "Reserves",
+                        "separationLocationCode": "2390"
+                    },
+                    {
+                        "serviceBranch": "Air Force",
+                        "activeDutyBeginDate": "2022-12-14",
+                        "activeDutyEndDate": "2023-11-30",
                         "serviceComponent": "Active",
-                        "separationLocationCode": "ABCDEFGHIJKLMN"
+                        "separationLocationCode": "5678" 
                     }
                 ],
                 "confinements": [
                     {
-                    "confinement":
+                    "confinement": 
                       {
-                        "approximateBeginDate": "8349-11-06",
-                        "approximateEndDate": "2884-12-09"
+                        "approximateBeginDate": "2021-11-06",
+                        "approximateEndDate": "2023-12-09"
                       }
                     }
                 ],
@@ -49,6 +56,7 @@
                         "endDate":"8502-11-17"
                     },
                     "unitName": "''c'5'l'#l#2z",
+                    "unitAddress": "1243 pine court",
                     "component": "Active",
                     "title10Activation": {
                         "anticipatedSeparationDate": "6705-10-03",

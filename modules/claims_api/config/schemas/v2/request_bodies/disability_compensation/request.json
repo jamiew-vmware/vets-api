@@ -782,14 +782,13 @@
                         }
                     },
                     "confinements": {
-                        "type": "object",
+                        "type": "array",
                         "description": "",
                         "properties": {
                           "confinement": {
-                            "type": "array",
+                            "type": "object",
                             "uniqueItems": true,
                             "items": {
-                              "type": "object",
                               "additionalProperties": false,
                               "required": [
                                 "approximateBeginDate",
