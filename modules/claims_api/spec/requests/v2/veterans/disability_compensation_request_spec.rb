@@ -834,7 +834,7 @@ RSpec.describe 'Disability Claims', type: :request do
       end
 
       describe "'servicePay validations'" do
-        describe "retired pay validations" do
+        describe 'retired pay validations' do
           describe "'receivingMilitaryRetiredPay' and 'futureMilitaryRetiredPay' validations" do
             let(:service_pay_attribute) do
               {
