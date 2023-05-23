@@ -29,6 +29,21 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
       )
     end
 
+    let(:claim_without_exposure) do
+      JSON.parse(
+        Rails.root.join(
+          'modules',
+          'claims_api',
+          'config',
+          'schemas',
+          'v2',
+          'request_bodies',
+          'disability_compensation',
+          'example.json'
+        ).read
+      )
+    end
+
     context '526 section 0, claim attributes' do
       let(:form_attributes) { auto_claim.dig('data', 'attributes') || {} }
       let(:mapper) { ClaimsApi::V2::DisabilityCompensationPdfMapper.new(form_attributes, pdf_data) }
@@ -193,6 +208,71 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
       end
     end
 
+    context '526 section 5, claimInfo: diabilities' do
+      let(:form_attributes) { auto_claim.dig('data', 'attributes') || {} }
+      let(:mapper) { ClaimsApi::V2::DisabilityCompensationPdfMapper.new(form_attributes, pdf_data) }
+
+      it 'maps the attributes correctly' do
+        mapper.map_claim
+
+        claim_info = pdf_data[:data][:attributes][:claimInformation]
+
+        name = claim_info[:disabilities][0][:disability]
+        relevance = claim_info[:disabilities][0][:serviceRelevance]
+        date = claim_info[:disabilities][0][:approximateDate]
+        is_related = claim_info[:disabilities][0][:isRelatedToToxicExposure]
+        event = claim_info[:disabilities][0][:exposureOrEventOrInjury]
+        attribut_count = claim_info[:disabilities][0].count
+        secondary_name = claim_info[:disabilities][1][:disability]
+        secondary_event = claim_info[:disabilities][1][:exposureOrEventOrInjury]
+        secondary_relevance = claim_info[:disabilities][1][:serviceRelevance]
+        has_conditions = pdf_data[:data][:attributes][:exposureInformation][:hasConditionsRelatedToToxicExposures]
+
+        expect(has_conditions).to eq(true)
+        expect(name).to eq('PTSD (post traumatic stress disorder)')
+        expect(relevance).to eq('ABCDEFG')
+        expect(date).to eq('4592-11-04')
+        expect(event).to eq('EXPOSURE')
+        expect(is_related).to eq(true)
+        expect(attribut_count).to eq(5)
+        expect(secondary_name).to eq('Trauma')
+        expect(secondary_event).to eq('EXPOSURE')
+        expect(secondary_relevance).to eq('ABCDEFG')
+      end
+    end
+
+    context '526 section 5, claim info: disabilities, & has conditions attribute' do
+      let(:form_attributes) { claim_without_exposure.dig('data', 'attributes') || {} }
+      let(:mapper) { ClaimsApi::V2::DisabilityCompensationPdfMapper.new(form_attributes, pdf_data) }
+
+      it 'maps the has_condition related to exposure method correctly' do
+        mapper.map_claim
+
+        has_conditions = pdf_data[:data][:attributes][:exposureInformation][:hasConditionsRelatedToToxicExposures]
+
+        expect(has_conditions).to eq(false)
+      end
+    end
+
+    context '526 section 5, treatment centers' do
+      let(:form_attributes) { auto_claim.dig('data', 'attributes') || {} }
+      let(:mapper) { ClaimsApi::V2::DisabilityCompensationPdfMapper.new(form_attributes, pdf_data) }
+
+      it 'maps the attributes correctly' do
+        mapper.map_claim
+
+        tx_center_data = pdf_data[:data][:attributes][:claimInformation][:treatments]
+
+        start_date = tx_center_data[0][:dateOfTreatment]
+        no_date = tx_center_data[0][:doNotHaveDate]
+        treatment_details = tx_center_data[0][:treatmentDetails]
+
+        expect(start_date).to eq('03-1985')
+        expect(no_date).to eq(false)
+        expect(treatment_details).to eq('PTSD (post traumatic stress disorder), Trauma - Center One, Decatur, GA')
+      end
+    end
+
     context '526 section 6, service info' do
       let(:form_attributes) { auto_claim.dig('data', 'attributes') || {} }
       let(:mapper) { ClaimsApi::V2::DisabilityCompensationPdfMapper.new(form_attributes, pdf_data) }
@@ -227,13 +307,13 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
         fed_sep = serv_info[:federalActivation][:anticipatedSeparationDate]
         served_after_nine_eleven = serv_info[:servedInActiveCombatSince911]
 
-        expect(branch).to eq('Air Force')
+        expect(branch).to eq('Public Health Service')
         expect(component).to eq('Active')
-        expect(recent_start).to eq('2022-12-14')
-        expect(recent_end).to eq('2023-11-30')
-        expect(addtl_start).to eq('2021-11-14')
-        expect(addtl_end).to eq('2022-11-30')
-        expect(last_sep).to eq('5678')
+        expect(recent_start).to eq('1980-11-14')
+        expect(recent_end).to eq('1991-11-30')
+        expect(addtl_start).to eq('1980-11-14')
+        expect(addtl_end).to eq('1991-11-30')
+        expect(last_sep).to eq('ABCDEFGHIJKLMN')
         expect(pow).to eq(true)
         expect(pow_start).to eq('2021-11-06')
         expect(pow_end).to eq('2023-12-09')
@@ -256,3 +336,4 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
     end
   end
 end
+
