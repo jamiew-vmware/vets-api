@@ -6,7 +6,6 @@ http_interactions:
     body:
       encoding: US-ASCII
       string: ''
-      string: ''
     headers:
       Accept:
       - application/json

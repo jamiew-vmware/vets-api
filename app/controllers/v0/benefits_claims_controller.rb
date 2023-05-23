@@ -18,7 +18,6 @@ module V0
 
     private
 
-    # TODO-BDEX: Double check if this has any cascading implications
     def service
       @service ||= BenefitsClaims::Service.new(@current_user.icn, @current_user.ssn)
     end
