@@ -27,14 +27,11 @@ RSpec.describe 'Disability Claims', type: :request do
   describe '#526' do
     context 'submit' do
       let(:claim_date) { (Time.zone.today - 1.day).to_s }
-      let(:anticipated_separation_date) { 2.days.from_now.strftime('%Y-%m-%d') }
       let(:data) do
         temp = Rails.root.join('modules', 'claims_api', 'spec', 'fixtures', 'v2', 'veterans', 'disability_compensation',
                                'form_526_json_api.json').read
         temp = JSON.parse(temp)
         temp['data']['attributes']['claimDate'] = claim_date
-        temp['data']['attributes']['serviceInformation']['reservesNationalGuardService']['title10Activation']['anticipatedSeparationDate'] = # rubocop:disable Layout/LineLength
-          anticipated_separation_date
 
         temp.to_json
       end
