@@ -177,6 +177,7 @@ module ClaimsApi
 
         validate_anticipated_seperation_date!
         validate_alternate_names!
+        validate_reserves_tos_dates!
       end
 
       def validate_anticipated_seperation_date!
@@ -219,6 +220,18 @@ module ClaimsApi
 
         # return true if activationDate is an earlier date
         Date.parse(activation_date) < Date.parse(earliest_active_duty_begin_date['activeDutyBeginDate'])
+      end
+
+      def validate_reserves_tos_dates!
+        service_information = form_attributes['serviceInformation']
+
+        tos_start_date = service_information['reservesNationalGuardService']['obligationTermsOfService']['startDate']
+        tos_end_date = service_information['reservesNationalGuardService']['obligationTermsOfService']['endDate']
+        if Date.parse(tos_start_date) > Date.parse(tos_end_date)
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'Terms of service Start date must be before the terms of service end date.'
+          )
+        end
       end
     end
   end
