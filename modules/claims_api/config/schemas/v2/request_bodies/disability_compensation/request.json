@@ -864,6 +864,10 @@
                                 "type": "string",
                                 "pattern": "([a-zA-Z0-9\\-'.,# ][a-zA-Z0-9\\-'.,# ]?)*$"
                               },
+                              "unitAddress": {
+                                  "type": "string",
+                                  "pattern": "^([-a-zA-Z0-9'.,&#]([-a-zA-Z0-9'.,&# ])?)+$"
+                              },
                               "unitPhone": {
                                 "type": "object",
                                 "additionalProperties": false,
