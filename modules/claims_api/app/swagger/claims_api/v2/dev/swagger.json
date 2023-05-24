@@ -3425,28 +3425,22 @@
                                 "description": "",
                                 "uniqueItems": true,
                                 "items": {
-                                  "type": "object",
                                   "additionalProperties": false,
+                                  "type": "object",
+                                  "required": [
+                                    "approximateBeginDate",
+                                    "approximateEndDate"
+                                  ],
                                   "properties": {
-                                    "confinement": {
-                                      "type": "object",
-                                      "additionalProperties": false,
-                                      "required": [
-                                        "approximateBeginDate",
-                                        "approximateEndDate"
-                                      ],
-                                      "properties": {
-                                        "approximateBeginDate": {
-                                          "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
-                                          "type": "string",
-                                          "example": "2018-06-04"
-                                        },
-                                        "approximateEndDate": {
-                                          "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
-                                          "type": "string",
-                                          "example": "2018-08-04"
-                                        }
-                                      }
+                                    "approximateBeginDate": {
+                                      "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
+                                      "type": "string",
+                                      "example": "2018-06-04"
+                                    },
+                                    "approximateEndDate": {
+                                      "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$",
+                                      "type": "string",
+                                      "example": "2018-08-04"
                                     }
                                   }
                                 }
@@ -3903,10 +3897,12 @@
                         ],
                         "confinements": [
                           {
-                            "confinement": {
-                              "approximateBeginDate": "2016-11-06",
-                              "approximateEndDate": "2016-11-09"
-                            }
+                            "approximateBeginDate": "2016-11-06",
+                            "approximateEndDate": "2016-11-09"
+                          },
+                          {
+                            "approximateBeginDate": "2019-11-06",
+                            "approximateEndDate": "2019-11-09"
                           }
                         ],
                         "reservesNationalGuardService": {

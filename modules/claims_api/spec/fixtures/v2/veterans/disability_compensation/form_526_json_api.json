@@ -36,11 +36,13 @@
                 ],
                 "confinements": [
                     {
-                        "confinement": {
-                            "approximateBeginDate": "2018-06-04",
-                            "approximateEndDate": "2018-07-04"
-                        }
-                    }     
+                        "approximateBeginDate": "2018-06-04",
+                        "approximateEndDate": "2018-07-04"
+                    } ,
+                    {
+                        "approximateBeginDate": "2020-06-04",
+                        "approximateEndDate": "2020-07-04"
+                    } 
                 ],
                 "reservesNationalGuardService": {
                     "obligationTermsOfService": {

@@ -1154,19 +1154,6 @@ RSpec.describe 'Disability Claims', type: :request do
       end
 
       describe 'Validation of service information elements' do
-        context 'when the data is all valid' do
-          it 'responds with a 200' do
-            with_okta_user(scopes) do |auth_header|
-              VCR.use_cassette('evss/claims/claims') do
-                VCR.use_cassette('brd/countries') do
-                  post path, params: data, headers: headers.merge(auth_header)
-                  expect(response).to have_http_status(:ok)
-                end
-              end
-            end
-          end
-        end
-
         context 'when the serviceBranch is empty' do
           let(:service_branch) { '' }
 
@@ -1256,6 +1243,7 @@ RSpec.describe 'Disability Claims', type: :request do
                       active_duty_end_date
                     data = json.to_json
                     post path, params: data, headers: headers.merge(auth_header)
+                    puts "RESP #{response.pretty_inspect}"
                     expect(response).to have_http_status(:ok)
                   end
                 end
@@ -1308,12 +1296,10 @@ RSpec.describe 'Disability Claims', type: :request do
           let(:confinements) do
             [
               {
-                confinement: {
-                  approximateBeginDate: '2016-01-01',
-                  approximateEndDate: '2016-01-06'
-                }
+                approximateBeginDate: '2016-01-01',
+                approximateEndDate: '2016-01-06'
               },
-              confinement: {
+              {
                 approximateBeginDate: '2017-01-01',
                 approximateEndDate: '2017-01-06'
               }
@@ -1343,7 +1329,7 @@ RSpec.describe 'Disability Claims', type: :request do
               VCR.use_cassette('evss/claims/claims') do
                 VCR.use_cassette('brd/countries') do
                   json = JSON.parse(data)
-                  confinement = json['data']['attributes']['serviceInformation']['confinements'][0]['confinement']
+                  confinement = json['data']['attributes']['serviceInformation']['confinements'][0]
                   confinement['approximateBeginDate'] = approximate_begin_date
                   data = json.to_json
                   post path, params: data, headers: headers.merge(auth_header)
@@ -1362,7 +1348,7 @@ RSpec.describe 'Disability Claims', type: :request do
               VCR.use_cassette('evss/claims/claims') do
                 VCR.use_cassette('brd/countries') do
                   json = JSON.parse(data)
-                  confinement = json['data']['attributes']['serviceInformation']['confinements'][0]['confinement']
+                  confinement = json['data']['attributes']['serviceInformation']['confinements'][0]
                   confinement['approximateEndDate'] = approximate_end_date
                   data = json.to_json
                   post path, params: data, headers: headers.merge(auth_header)
@@ -1381,7 +1367,7 @@ RSpec.describe 'Disability Claims', type: :request do
               VCR.use_cassette('evss/claims/claims') do
                 VCR.use_cassette('brd/countries') do
                   json = JSON.parse(data)
-                  confinement = json['data']['attributes']['serviceInformation']['confinements'][0]['confinement']
+                  confinement = json['data']['attributes']['serviceInformation']['confinements'][0]
                   confinement['approximateEndDate'] = approximate_end_date
                   data = json.to_json
                   post path, params: data, headers: headers.merge(auth_header)

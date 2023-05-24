@@ -143,10 +143,12 @@
           ],
           "confinements": [
             {
-              "confinement": {
-                "approximateBeginDate": "2016-11-06",
-                "approximateEndDate": "2016-11-09"
-              }
+              "approximateBeginDate": "2016-11-06",
+              "approximateEndDate": "2016-11-09"
+            },
+            {
+              "approximateBeginDate": "2019-11-06",
+              "approximateEndDate": "2019-11-09"
             }
           ],
           "reservesNationalGuardService": {

@@ -203,8 +203,8 @@ module ClaimsApi
         service_information = form_attributes['serviceInformation']
 
         service_information['confinements'].each do |confinement|
-          approximate_begin_date = confinement['confinement']['approximateBeginDate']
-          approximate_end_date = confinement['confinement']['approximateEndDate']
+          approximate_begin_date = confinement['approximateBeginDate']
+          approximate_end_date = confinement['approximateEndDate']
           if Date.parse(approximate_begin_date) > Date.parse(approximate_end_date)
             raise ::Common::Exceptions::UnprocessableEntity.new(
               detail: 'Approximate end date must be after approximate begin date.'
