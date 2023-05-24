@@ -953,7 +953,6 @@ RSpec.describe 'Disability Claims', type: :request do
                   attrs['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
                   data = json.to_json
                   post path, params: data, headers: headers.merge(auth_header)
-                  byebug
                   expect(response).to have_http_status(:ok)
                 end
               end
@@ -1217,7 +1216,7 @@ RSpec.describe 'Disability Claims', type: :request do
                             {
                               name: 'PTSD personal trauma',
                               disabilityActionType: 'SECONDARY',
-                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description'
                             }
                           ]
                         }
@@ -1298,7 +1297,7 @@ RSpec.describe 'Disability Claims', type: :request do
                             {
                               name: 'PTSD personal trauma',
                               disabilityActionType: 'SECONDARY',
-                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description'
                             }
                           ]
                         }
@@ -1351,7 +1350,7 @@ RSpec.describe 'Disability Claims', type: :request do
                               {
                                 name: 'PTSD personal trauma',
                                 disabilityActionType: 'SECONDARY',
-                                serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                                serviceRelevance: 'Caused by a service-connected disability\\nLengthy description'
                               }
                             ]
                           }
@@ -1384,7 +1383,7 @@ RSpec.describe 'Disability Claims', type: :request do
                             {
                               name: 'PTSD personal trauma',
                               disabilityActionType: 'SECONDARY',
-                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description'
                             }
                           ]
                         }
@@ -1411,7 +1410,7 @@ RSpec.describe 'Disability Claims', type: :request do
                   {
                     name: 'PTSD personal trauma',
                     disabilityActionType: 'SECONDARY',
-                    serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                    serviceRelevance: 'Caused by a service-connected disability\\nLengthy description'
                   }
                 ]
               }
