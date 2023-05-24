@@ -4,7 +4,7 @@ require 'brd/brd'
 
 module ClaimsApi
   module V2
-    module DisabilityCompensationValidation
+    module DisabilityCompensationValidation # rubocop:disable Metrics/ModuleLength:
       def validate_form_526_submission_values!
         # ensure 'claimDate', if provided, is a valid date not in the future
         validate_form_526_submission_claim_date!
@@ -14,6 +14,47 @@ module ClaimsApi
         validate_form_526_current_mailing_address_country!
         # ensure homeless information is valid
         validate_form_526_veteran_homelessness!
+        # ensure new address is valid
+        validate_form_526_change_of_address!
+      end
+
+      def validate_form_526_change_of_address!
+        return if form_attributes['changeOfAddress'].blank?
+
+        validate_form_526_change_of_address_beginning_date!
+        validate_form_526_change_of_address_ending_date!
+        validate_form_526_change_of_address_country!
+      end
+
+      def validate_form_526_change_of_address_beginning_date!
+        change_of_address = form_attributes['changeOfAddress']
+        date = change_of_address.dig('dates', 'beginningDate')
+        return unless 'TEMPORARY'.casecmp?(change_of_address['typeOfAddressChange'])
+
+        # If the date parse fails, then fall back to the InvalidFieldValue
+        begin
+          return if Date.parse(date) < Time.zone.now
+        rescue
+          raise ::Common::Exceptions::InvalidFieldValue.new('changeOfAddress.dates.beginningDate', date)
+        end
+
+        raise ::Common::Exceptions::InvalidFieldValue.new('changeOfAddress.dates.beginningDate', date)
+      end
+
+      def validate_form_526_change_of_address_ending_date!
+        change_of_address = form_attributes['changeOfAddress']
+        date = change_of_address.dig('dates', 'endingDate')
+        return unless 'TEMPORARY'.casecmp?(change_of_address['typeOfAddressChange'])
+        return if Date.parse(date) > Date.parse(change_of_address.dig('dates', 'beginningDate'))
+
+        raise ::Common::Exceptions::InvalidFieldValue.new('changeOfAddress.dates.endingDate', date)
+      end
+
+      def validate_form_526_change_of_address_country!
+        change_of_address = form_attributes['changeOfAddress']
+        return if valid_countries.include?(change_of_address['country'])
+
+        raise ::Common::Exceptions::InvalidFieldValue.new('changeOfAddress.country', change_of_address['country'])
       end
 
       def validate_form_526_submission_claim_date!
