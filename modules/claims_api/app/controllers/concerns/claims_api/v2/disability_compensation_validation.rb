@@ -179,7 +179,6 @@ module ClaimsApi
 
         validate_service_periods!
         validate_confinements!
-        validate_reserves_tos_dates!
       end
 
       def validate_service_periods!
