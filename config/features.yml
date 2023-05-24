@@ -862,9 +862,15 @@ features:
   disability_compensation_lighthouse_intent_to_file_provider:
     actor_type: user
     description: If enabled uses the lighthouse intent to file endpoint
+  virtual_agent_fetch_jwt_token:
+    actor_type: user
+    description: Enable the fetching of a JWT token to access MAP environment
   income_limits_new:
     actor_type: user
     description: If enabled, shows the newly designed income limits application
   drupal_footer:
     actor_type: user
     description: If enabled, pulls Drupal data to populate most of the global footer
+  hlr_disable_submit:
+    actor_type: user
+    description: If enabled, the HLR submit button will be disabled to prevent user testing submission in production
