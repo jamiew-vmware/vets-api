@@ -158,12 +158,12 @@
               },
               "unitPhone": {
                   "areaCode": "123",
-                  "phoneNumber": "456-7890"
+                  "phoneNumber": "4567890"
               },
               "receivingInactiveDutyTrainingPay": true
           },
           "alternateNames": [
-              "John Jacob Jingleheimer-Schmidt"
+            "john jacob", "johnny smith", "John"
           ],
           "servedInActiveCombatSince911": false
       },

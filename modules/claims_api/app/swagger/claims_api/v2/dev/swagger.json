@@ -2323,11 +2323,15 @@
                                 "properties": {
                                   "areaCode": {
                                     "type": "string",
-                                    "maxLength": 3
+                                    "maxLength": 3,
+                                    "pattern": "^\\d{3}$",
+                                    "example": "688"
                                   },
                                   "phoneNumber": {
                                     "type": "string",
-                                    "maxLength": 7
+                                    "maxLength": 7,
+                                    "pattern": "^\\d{7}$",
+                                    "example": "8675309"
                                   }
                                 }
                               },
@@ -3477,11 +3481,15 @@
                                     "properties": {
                                       "areaCode": {
                                         "type": "string",
-                                        "maxLength": 3
+                                        "maxLength": 3,
+                                        "pattern": "^\\d{3}?$",
+                                        "example": "688"
                                       },
                                       "phoneNumber": {
                                         "type": "string",
-                                        "maxLength": 7
+                                        "maxLength": 7,
+                                        "pattern": "^\\d{7}$",
+                                        "example": "8675309"
                                       }
                                     }
                                   },
@@ -3816,7 +3824,7 @@
                               "exposureOrEventOrInjury": ""
                             }
                           ],
-                          "isRelatedToToxicExposure": true,
+                          "isRelatedToToxicExposure": false,
                           "exposureOrEventOrInjury": ""
                         }
                       ],
@@ -3872,12 +3880,14 @@
                           },
                           "unitPhone": {
                             "areaCode": "123",
-                            "phoneNumber": "456-7890"
+                            "phoneNumber": "4567890"
                           },
                           "receivingInactiveDutyTrainingPay": true
                         },
                         "alternateNames": [
-                          "John Jacob Jingleheimer-Schmidt"
+                          "john jacob",
+                          "johnny smith",
+                          "John"
                         ],
                         "servedInActiveCombatSince911": false
                       },
@@ -4547,8 +4557,8 @@
                     "id": "1",
                     "type": "intent_to_file",
                     "attributes": {
-                      "creationDate": "2023-05-22",
-                      "expirationDate": "2024-05-22",
+                      "creationDate": "2023-05-24",
+                      "expirationDate": "2024-05-24",
                       "type": "compensation",
                       "status": "active"
                     }
