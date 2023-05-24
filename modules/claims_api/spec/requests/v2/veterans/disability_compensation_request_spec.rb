@@ -860,8 +860,10 @@ RSpec.describe 'Disability Claims', type: :request do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('evss/claims/claims') do
                 VCR.use_cassette('brd/countries') do
-                  post path, params: data, headers: headers.merge(auth_header)
-                  expect(response).to have_http_status(:ok)
+                  VCR.use_cassette('brd/disabilities') do
+                    post path, params: data, headers: headers.merge(auth_header)
+                    expect(response).to have_http_status(:ok)
+                  end
                 end
               end
             end
@@ -897,7 +899,7 @@ RSpec.describe 'Disability Claims', type: :request do
                   state: 'GA',
                   city: 'Decatur'
                 },
-                treatedDisabilityNames: ['PTSD (post traumatic stress disorder)', 'Trauma']
+                treatedDisabilityNames: ['PTSD (post traumatic stress disorder)', 'Traumatic Brain Injury']
               }
             ]
           end
@@ -906,11 +908,13 @@ RSpec.describe 'Disability Claims', type: :request do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('evss/claims/claims') do
                 VCR.use_cassette('brd/countries') do
-                  json = JSON.parse data
-                  json['data']['attributes']['treatments'] = treatments
-                  data = json.to_json
-                  post path, params: data, headers: headers.merge(auth_header)
-                  expect(response).to have_http_status(:ok)
+                  VCR.use_cassette('brd/disabilities') do
+                    json = JSON.parse data
+                    json['data']['attributes']['treatments'] = treatments
+                    data = json.to_json
+                    post path, params: data, headers: headers.merge(auth_header)
+                    expect(response).to have_http_status(:ok)
+                  end
                 end
               end
             end
@@ -923,30 +927,35 @@ RSpec.describe 'Disability Claims', type: :request do
           it 'returns a 422' do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('brd/countries') do
-                json = JSON.parse(data)
-                json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = not_treated_disability_name
-                data = json.to_json
-                post path, params: data, headers: headers.merge(auth_header)
-                expect(response).to have_http_status(:unprocessable_entity)
+                VCR.use_cassette('brd/disabilities') do
+                  json = JSON.parse(data)
+                  json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = not_treated_disability_name
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                end
               end
             end
           end
         end
 
         context 'when treatedDisabilityName includes a name that is declared only as a secondary disability' do
-          let(:treated_disability_name) { 'Secondary' }
-          let(:secondary_disability_name) { 'Secondary' }
+          let(:treated_disability_name) { 'Cancer - Musculoskeletal - Elbow' }
+          let(:secondary_disability_name) { 'Cancer - Musculoskeletal - Elbow' }
 
           it 'returns a 200' do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('brd/countries') do
-                json = JSON.parse(data)
-                attrs = json['data']['attributes']
-                attrs['disabilities'][0]['secondaryDisabilities'][0]['name'] = secondary_disability_name
-                attrs['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
-                data = json.to_json
-                post path, params: data, headers: headers.merge(auth_header)
-                expect(response).to have_http_status(:ok)
+                VCR.use_cassette('brd/disabilities') do
+                  json = JSON.parse(data)
+                  attrs = json['data']['attributes']
+                  attrs['disabilities'][0]['secondaryDisabilities'][0]['name'] = secondary_disability_name
+                  attrs['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  byebug
+                  expect(response).to have_http_status(:ok)
+                end
               end
             end
           end
@@ -956,8 +965,10 @@ RSpec.describe 'Disability Claims', type: :request do
           it 'returns a 200' do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('brd/countries') do
-                post path, params: data, headers: headers.merge(auth_header)
-                expect(response).to have_http_status(:ok)
+                VCR.use_cassette('brd/disabilities') do
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:ok)
+                end
               end
             end
           end
@@ -969,11 +980,13 @@ RSpec.describe 'Disability Claims', type: :request do
               with_okta_user(scopes) do |auth_header|
                 VCR.use_cassette('evss/claims/claims') do
                   VCR.use_cassette('brd/countries') do
-                    json = JSON.parse(data)
-                    json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
-                    data = json.to_json
-                    post path, params: data, headers: headers.merge(auth_header)
-                    expect(response).to have_http_status(:ok)
+                    VCR.use_cassette('brd/disabilities') do
+                      json = JSON.parse(data)
+                      json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
+                      data = json.to_json
+                      post path, params: data, headers: headers.merge(auth_header)
+                      expect(response).to have_http_status(:ok)
+                    end
                   end
                 end
               end
@@ -987,11 +1000,13 @@ RSpec.describe 'Disability Claims', type: :request do
               with_okta_user(scopes) do |auth_header|
                 VCR.use_cassette('evss/claims/claims') do
                   VCR.use_cassette('brd/countries') do
-                    json = JSON.parse(data)
-                    json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
-                    data = json.to_json
-                    post path, params: data, headers: headers.merge(auth_header)
-                    expect(response).to have_http_status(:ok)
+                    VCR.use_cassette('brd/disabilities') do
+                      json = JSON.parse(data)
+                      json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
+                      data = json.to_json
+                      post path, params: data, headers: headers.merge(auth_header)
+                      expect(response).to have_http_status(:ok)
+                    end
                   end
                 end
               end
@@ -1005,11 +1020,13 @@ RSpec.describe 'Disability Claims', type: :request do
               with_okta_user(scopes) do |auth_header|
                 VCR.use_cassette('evss/claims/claims') do
                   VCR.use_cassette('brd/countries') do
-                    json = JSON.parse(data)
-                    json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
-                    data = json.to_json
-                    post path, params: data, headers: headers.merge(auth_header)
-                    expect(response).to have_http_status(:ok)
+                    VCR.use_cassette('brd/disabilities') do
+                      json = JSON.parse(data)
+                      json['data']['attributes']['treatments'][0]['treatedDisabilityNames'][0] = treated_disability_name
+                      data = json.to_json
+                      post path, params: data, headers: headers.merge(auth_header)
+                      expect(response).to have_http_status(:ok)
+                    end
                   end
                 end
               end
@@ -1080,11 +1097,13 @@ RSpec.describe 'Disability Claims', type: :request do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
                     VCR.use_cassette('brd/countries') do
-                      json = JSON.parse(data)
-                      json['data']['attributes']['treatments'][0]['center']['name'] = treated_center_name
-                      data = json.to_json
-                      post path, params: data, headers: headers.merge(auth_header)
-                      expect(response).to have_http_status(:unprocessable_entity)
+                      VCR.use_cassette('brd/disabilities') do
+                        json = JSON.parse(data)
+                        json['data']['attributes']['treatments'][0]['center']['name'] = treated_center_name
+                        data = json.to_json
+                        post path, params: data, headers: headers.merge(auth_header)
+                        expect(response).to have_http_status(:unprocessable_entity)
+                      end
                     end
                   end
                 end
@@ -1096,8 +1115,10 @@ RSpec.describe 'Disability Claims', type: :request do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
                     VCR.use_cassette('brd/countries') do
-                      post path, params: data, headers: headers.merge(auth_header)
-                      expect(response).to have_http_status(:ok)
+                      VCR.use_cassette('brd/disabilities') do
+                        post path, params: data, headers: headers.merge(auth_header)
+                        expect(response).to have_http_status(:ok)
+                      end
                     end
                   end
                 end
@@ -1111,8 +1132,10 @@ RSpec.describe 'Disability Claims', type: :request do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
                     VCR.use_cassette('brd/countries') do
-                      post path, params: data, headers: headers.merge(auth_header)
-                      expect(response).to have_http_status(:ok)
+                      VCR.use_cassette('brd/disabilities') do
+                        post path, params: data, headers: headers.merge(auth_header)
+                        expect(response).to have_http_status(:ok)
+                      end
                     end
                   end
                 end
@@ -1144,8 +1167,10 @@ RSpec.describe 'Disability Claims', type: :request do
                 with_okta_user(scopes) do |auth_header|
                   VCR.use_cassette('evss/claims/claims') do
                     VCR.use_cassette('brd/countries') do
-                      post path, params: data, headers: headers.merge(auth_header)
-                      expect(response).to have_http_status(:ok)
+                      VCR.use_cassette('brd/disabilities') do
+                        post path, params: data, headers: headers.merge(auth_header)
+                        expect(response).to have_http_status(:ok)
+                      end
                     end
                   end
                 end
@@ -1187,7 +1212,14 @@ RSpec.describe 'Disability Claims', type: :request do
                         {
                           disabilityActionType: 'NEW',
                           name: 'PTSD (post traumatic stress disorder)',
-                          classificationCode: '5420'
+                          classificationCode: '5420',
+                          secondaryDisabilities: [
+                            {
+                              name: 'PTSD personal trauma',
+                              disabilityActionType: 'SECONDARY',
+                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                            }
+                          ]
                         }
                       ]
                       params['data']['attributes']['disabilities'] = disabilities
@@ -1261,7 +1293,14 @@ RSpec.describe 'Disability Claims', type: :request do
                           diagnosticCode: 123,
                           ratedDisabilityId: '1100583',
                           disabilityActionType: 'INCREASE',
-                          name: 'PTSD (post traumatic stress disorder)'
+                          name: 'PTSD (post traumatic stress disorder)',
+                          secondaryDisabilities: [
+                            {
+                              name: 'PTSD personal trauma',
+                              disabilityActionType: 'SECONDARY',
+                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                            }
+                          ]
                         }
                       ]
                       params['data']['attributes']['disabilities'] = disabilities
@@ -1313,7 +1352,6 @@ RSpec.describe 'Disability Claims', type: :request do
                                 name: 'PTSD personal trauma',
                                 disabilityActionType: 'SECONDARY',
                                 serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
-                                specialIssues: ['Radiation', 'Emergency Care – CH17 Determination']
                               }
                             ]
                           }
@@ -1341,7 +1379,14 @@ RSpec.describe 'Disability Claims', type: :request do
                         {
                           diagnosticCode: 123,
                           disabilityActionType: 'NEW',
-                          name: 'PTSD (post traumatic stress disorder)'
+                          name: 'PTSD (post traumatic stress disorder)',
+                          secondaryDisabilities: [
+                            {
+                              name: 'PTSD personal trauma',
+                              disabilityActionType: 'SECONDARY',
+                              serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                            }
+                          ]
                         }
                       ]
                       params['data']['attributes']['disabilities'] = disabilities
@@ -1355,19 +1400,26 @@ RSpec.describe 'Disability Claims', type: :request do
           end
         end
 
-        describe "'disabilites.approximateBeginDate' validations" do
+        describe "'disabilites.approximateDate' validations" do
           let(:disabilities) do
             [
               {
                 disabilityActionType: 'NEW',
                 name: 'PTSD (post traumatic stress disorder)',
-                approximateBeginDate: approximate_begin_date
+                approximateDate: approximate_date,
+                secondaryDisabilities: [
+                  {
+                    name: 'PTSD personal trauma',
+                    disabilityActionType: 'SECONDARY',
+                    serviceRelevance: 'Caused by a service-connected disability\\nLengthy description',
+                  }
+                ]
               }
             ]
           end
 
-          context "when 'approximateBeginDate' is in the future" do
-            let(:approximate_begin_date) { (Time.zone.today + 1.year).to_s }
+          context "when 'approximateDate' is in the future" do
+            let(:approximate_date) { (Time.zone.today + 1.year).to_s }
 
             it 'responds with a bad request' do
               with_okta_user(scopes) do |auth_header|
@@ -1376,14 +1428,14 @@ RSpec.describe 'Disability Claims', type: :request do
                   params = json_data
                   params['data']['attributes']['disabilities'] = disabilities
                   post path, params: params.to_json, headers: headers.merge(auth_header)
-                  expect(response).to have_http_status(:unprocessable_entity)
+                  expect(response).to have_http_status(:bad_request)
                 end
               end
             end
           end
 
-          context "when 'approximateBeginDate' is in the past" do
-            let(:approximate_begin_date) { (Time.zone.today - 1.year).to_s }
+          context "when 'approximateDate' is in the past" do
+            let(:approximate_date) { (Time.zone.today - 1.year).to_s }
 
             it 'responds with a 200' do
               with_okta_user(scopes) do |auth_header|
@@ -1392,13 +1444,6 @@ RSpec.describe 'Disability Claims', type: :request do
                     VCR.use_cassette('brd/disabilities') do
                       json_data = JSON.parse data
                       params = json_data
-                      disabilities = [
-                        {
-                          diagnosticCode: 123,
-                          disabilityActionType: 'NEW',
-                          name: 'PTSD (post traumatic stress disorder)'
-                        }
-                      ]
                       params['data']['attributes']['disabilities'] = disabilities
                       post path, params: params.to_json, headers: headers.merge(auth_header)
                       expect(response).to have_http_status(:ok)
@@ -1531,7 +1576,7 @@ RSpec.describe 'Disability Claims', type: :request do
           end
         end
 
-        context "when 'disabilites.secondaryDisabilities.approximateBeginDate' is present" do
+        context "when 'disabilites.secondaryDisabilities.approximateDate' is present" do
           it 'raises an exception if date is invalid' do
             with_okta_user(scopes) do |auth_header|
               VCR.use_cassette('brd/countries') do
@@ -1547,14 +1592,14 @@ RSpec.describe 'Disability Claims', type: :request do
                         disabilityActionType: 'SECONDARY',
                         name: 'PTSD',
                         serviceRelevance: 'Caused by a service-connected disability.',
-                        approximateBeginDate: '2019-02-30'
+                        approximateDate: '2019-02-30'
                       }
                     ]
                   }
                 ]
                 params['data']['attributes']['disabilities'] = disabilities
                 post path, params: params.to_json, headers: headers.merge(auth_header)
-                expect(response).to have_http_status(:unprocessable_entity)
+                expect(response).to have_http_status(:bad_request)
               end
             end
           end
@@ -1574,14 +1619,14 @@ RSpec.describe 'Disability Claims', type: :request do
                         disabilityActionType: 'SECONDARY',
                         name: 'PTSD',
                         serviceRelevance: 'Caused by a service-connected disability.',
-                        approximateBeginDate: "#{Time.zone.now.year + 1}-01-01"
+                        approximateDate: "#{Time.zone.now.year + 1}-01-01"
                       }
                     ]
                   }
                 ]
                 params['data']['attributes']['disabilities'] = disabilities
                 post path, params: params.to_json, headers: headers.merge(auth_header)
-                expect(response).to have_http_status(:unprocessable_entity)
+                expect(response).to have_http_status(:bad_request)
               end
             end
           end

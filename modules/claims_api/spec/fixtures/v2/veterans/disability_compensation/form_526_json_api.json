@@ -63,8 +63,8 @@
             "disabilities": [
                 {
                     "disabilityActionType": "REOPEN",
-                    "name": "Cancer - Musculoskeletal - Elbow",
-                    "classificationCode": "249470",
+                    "name": "PTSD (post traumatic stress disorder)",
+                    "classificationCode": "5420",
                     "serviceRelevance": "ABCDEFG",
                     "approximateDate": "2018-03-02",
                     "ratedDisabilityId": "ABCDEFGHIJKLMNOPQRSTUVWX",
@@ -84,19 +84,19 @@
                 },
                 {
                     "disabilityActionType": "REOPEN",
-                    "name": "Trauma",
-                    "classificationCode": "ABCDEFGHIJ",
+                    "name": "Traumatic Brain Injury",
+                    "classificationCode": "9020",
                     "serviceRelevance": "ABCDEFG",
-                    "approximateDate": "4592-11-04",
+                    "approximateDate": "2018-03-02",
                     "ratedDisabilityId": "ABCDEFGHIJKLMNOPQRSTUVWX",
                     "diagnosticCode": 0,
                     "secondaryDisabilities": [
                         {
-                            "name": "GHIJKLM",
+                            "name": "Cancer - Musculoskeletal - Elbow",
                             "disabilityActionType": "SECONDARY",
                             "serviceRelevance": "ABCDEFGHIJKLMNOPQ",
-                            "classificationCode": "ABCDEFGHIJKLMNO",
-                            "approximateDate": "9904-01-03",
+                            "classificationCode": "249470",
+                            "approximateDate": "2018-03-02",
                             "exposureOrEventOrInjury": "EXPOSURE"
                         }
                     ],
@@ -167,16 +167,7 @@
             },
             "treatments": [
                 {
-                    "treatedDisabilityNames": ["PTSD (post traumatic stress disorder)", "Trauma"],
-                    "center": {
-                        "name": "Center One",
-                        "state": "GA",
-                        "city": "Decatur"
-                    },
-                    "startDate": "03-1985"
-                },
-                {
-                    "treatedDisabilityNames": ["Trauma"],
+                    "treatedDisabilityNames": ["PTSD (post traumatic stress disorder)"],
                     "center": {
                         "name": "Center One",
                         "state": "GA",

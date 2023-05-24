@@ -106,12 +106,12 @@ module ClaimsApi
         return if disabilities.blank?
 
         disabilities.each do |disability|
-          approx_begin_date = disability['approximateBeginDate']
+          approx_begin_date = disability['approximateDate']
           next if approx_begin_date.blank?
 
           next if Date.parse(approx_begin_date) < Time.zone.today
 
-          raise ::Common::Exceptions::InvalidFieldValue.new('disability.approximateBeginDate', approx_begin_date)
+          raise ::Common::Exceptions::InvalidFieldValue.new('disability.approximateDate', approx_begin_date)
         end
       end
 
@@ -154,7 +154,7 @@ module ClaimsApi
               )
             end
 
-            if secondary_disability['approximateBeginDate'].present?
+            if secondary_disability['approximateDate'].present?
               validate_form_526_disability_secondary_disability_approximate_begin_date!(secondary_disability)
             end
           end
@@ -198,16 +198,16 @@ module ClaimsApi
       end
 
       def validate_form_526_disability_secondary_disability_approximate_begin_date!(secondary_disability)
-        return if Date.parse(secondary_disability['approximateBeginDate']) < Time.zone.today
+        return if Date.parse(secondary_disability['approximateDate']) < Time.zone.today
 
         raise ::Common::Exceptions::InvalidFieldValue.new(
-          'disabilities.secondaryDisabilities.approximateBeginDate',
-          secondary_disability['approximateBeginDate']
+          'disabilities.secondaryDisabilities.approximateDate',
+          secondary_disability['approximateDate']
         )
       rescue ArgumentError
         raise ::Common::Exceptions::InvalidFieldValue.new(
-          'disabilities.secondaryDisabilities.approximateBeginDate',
-          secondary_disability['approximateBeginDate']
+          'disabilities.secondaryDisabilities.approximateDate',
+          secondary_disability['approximateDate']
         )
       end
 
