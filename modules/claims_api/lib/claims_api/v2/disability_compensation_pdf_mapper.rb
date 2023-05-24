@@ -15,8 +15,8 @@ module ClaimsApi
         chg_addr_attributes
         veteran_info
         disability_attributes
-
         treatment_centers
+        direct_deposit_information
 
         @pdf_data
       end
@@ -179,6 +179,13 @@ module ClaimsApi
           tx.delete('startDate')
           tx
         end
+      end
+
+      def direct_deposit_information
+        @pdf_data[:data][:attributes][:directDepositInformation] = @pdf_data[:data][:attributes][:directDeposit]
+        @pdf_data[:data][:attributes].delete(:directDeposit)
+
+        @pdf_data
       end
     end
   end
