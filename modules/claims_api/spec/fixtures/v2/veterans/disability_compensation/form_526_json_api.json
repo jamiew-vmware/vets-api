@@ -36,8 +36,8 @@
                 ],
                 "confinements": [
                     {
-                        "approximateBeginDate": "8349-11-06",
-                        "approximateEndDate": "2884-12-09"
+                        "approximateBeginDate": "2021-11-06",
+                        "approximateEndDate": "2023-12-09"
                     }
                 ],
                 "reservesNationalGuardService": {
@@ -46,6 +46,7 @@
                         "endDate":"8502-11-17"
                     },
                     "unitName": "''c'5'l'#l#2z",
+                    "unitAddress": "1243 pine court",
                     "component": "Active",
                     "title10Activation": {
                         "anticipatedSeparationDate": "6705-10-03",

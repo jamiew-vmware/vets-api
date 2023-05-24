@@ -182,9 +182,9 @@ module ClaimsApi
       end
 
       def service_info
-        symbolize_ser_info
-        most_recent_ser_per
-        array_of_remaining_serv_date_objects
+        symbolize_service_info
+        most_recent_service_period
+        array_of_remaining_service_date_objects
         confinements
         national_guard
         service_info_other_names
@@ -193,7 +193,7 @@ module ClaimsApi
         @pdf_data
       end
 
-      def symbolize_ser_info
+      def symbolize_service_info
         @pdf_data[:data][:attributes][:serviceInformation].merge!(
           @auto_claim['serviceInformation'].deep_symbolize_keys
         )
@@ -201,7 +201,7 @@ module ClaimsApi
         @pdf_data
       end
 
-      def most_recent_ser_per
+      def most_recent_service_period
         @pdf_data[:data][:attributes][:serviceInformation][:mostRecentActiveService] = {}
         most_recent_period = @pdf_data[:data][:attributes][:serviceInformation][:servicePeriods].max_by do |sp|
           sp[:activeDutyEndDate]
@@ -219,7 +219,7 @@ module ClaimsApi
         @pdf_data
       end
 
-      def array_of_remaining_serv_date_objects
+      def array_of_remaining_service_date_objects
         arr = []
         @pdf_data[:data][:attributes][:serviceInformation][:servicePeriods].each do |sp|
           arr.push({ startDate: sp[:activeDutyBeginDate], endDate: sp[:activeDutyEndDate] })
