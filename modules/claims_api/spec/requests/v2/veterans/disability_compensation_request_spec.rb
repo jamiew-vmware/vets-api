@@ -1152,6 +1152,190 @@ RSpec.describe 'Disability Claims', type: :request do
           end
         end
       end
+
+      describe 'Validation of direct deposit elements' do
+        context 'when direct deposit information does not include the account type' do
+          let(:direct_deposit) do
+            {
+              accountType: '',
+              accountNumber: '123123123123',
+              routingNumber: '123123123',
+              financialInstitutionName: 'Global Bank',
+              noAccount: false
+            }
+          end
+
+          it 'returns a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json = JSON.parse data
+                  json['data']['attributes']['directDeposit'] = direct_deposit
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                end
+              end
+            end
+          end
+        end
+
+        context 'when direct deposit information does not include a valid account type' do
+          let(:direct_deposit) do
+            {
+              accountType: 'Personal',
+              accountNumber: '123123123123',
+              routingNumber: '123123123',
+              financialInstitutionName: 'Global Bank',
+              noAccount: false
+            }
+          end
+
+          it 'returns a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json = JSON.parse data
+                  json['data']['attributes']['directDeposit'] = direct_deposit
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                end
+              end
+            end
+          end
+        end
+
+        context 'when direct deposit information does not include the account number' do
+          let(:direct_deposit) do
+            {
+              accountType: 'CHECKING',
+              accountNumber: '',
+              routingNumber: '123123123',
+              financialInstitutionName: 'Global Bank',
+              noAccount: false
+            }
+          end
+
+          it 'returns a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json = JSON.parse data
+                  json['data']['attributes']['directDeposit'] = direct_deposit
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                end
+              end
+            end
+          end
+        end
+
+        context 'when direct deposit information does not include the routing number' do
+          let(:direct_deposit) do
+            {
+              accountType: 'CHECKING',
+              accountNumber: '123123123123',
+              routingNumber: '',
+              financialInstitutionName: 'Global Bank',
+              noAccount: false
+            }
+          end
+
+          it 'returns a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json = JSON.parse data
+                  json['data']['attributes']['directDeposit'] = direct_deposit
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                end
+              end
+            end
+          end
+        end
+
+        context 'when direct deposit information does not include a valid routing number' do
+          let(:direct_deposit) do
+            {
+              accountType: 'CHECKING',
+              accountNumber: '123123123123',
+              routingNumber: '1234567891011121314',
+              financialInstitutionName: 'Global Bank',
+              noAccount: false
+            }
+          end
+
+          it 'returns a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json = JSON.parse data
+                  json['data']['attributes']['directDeposit'] = direct_deposit
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                end
+              end
+            end
+          end
+        end
+
+        context 'if no account is selected but other values are entered' do
+          let(:direct_deposit) do
+            {
+              accountType: 'CHECKING',
+              accountNumber: '123123123123',
+              routingNumber: '123123123',
+              financialInstitutionName: 'Global Bank',
+              noAccount: true
+            }
+          end
+
+          it 'returns a 422' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json = JSON.parse data
+                  json['data']['attributes']['directDeposit'] = direct_deposit
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:unprocessable_entity)
+                end
+              end
+            end
+          end
+        end
+
+        context 'if no account is selected and no other values are entered' do
+          let(:direct_deposit) do
+            {
+              accountType: 'NONE',
+              accountNumber: '',
+              routingNumber: '',
+              financialInstitutionName: '',
+              noAccount: true
+            }
+          end
+
+          it 'returns a 200' do
+            with_okta_user(scopes) do |auth_header|
+              VCR.use_cassette('evss/claims/claims') do
+                VCR.use_cassette('brd/countries') do
+                  json = JSON.parse data
+                  json['data']['attributes']['directDeposit'] = direct_deposit
+                  data = json.to_json
+                  post path, params: data, headers: headers.merge(auth_header)
+                  expect(response).to have_http_status(:ok)
+                end
+              end
+            end
+          end
+        end
+      end
     end
 
     context 'validate' do

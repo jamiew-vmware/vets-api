@@ -16,6 +16,8 @@ module ClaimsApi
         validate_form_526_veteran_homelessness!
         # ensure treament centers information is valid
         validate_form_526_treatments!
+        # ensure direct deposit information is valid
+        validate_form_526_direct_deposit!
       end
 
       def validate_form_526_submission_claim_date!
@@ -164,6 +166,24 @@ module ClaimsApi
           end
         end
         names
+      end
+
+      def validate_form_526_direct_deposit!
+        direct_deposit = form_attributes['directDeposit']
+        return if direct_deposit.blank?
+
+        direct_deposit['noAccount'] == true ? validate_no_account! : validate_account_values!
+      end
+
+      def validate_no_account!
+        direct_deposit_account_vals = form_attributes['directDeposit']
+        account_type, account_number, routing_number, bank, no_account = direct_deposit_account_vals
+
+        if (account_type.present? && account_type != 'NONE') || account_number.present? || routing_number.present? || bank.present?
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'If the claimant has no account the other fields must be left blank.'
+          )
+        end
       end
     end
   end
