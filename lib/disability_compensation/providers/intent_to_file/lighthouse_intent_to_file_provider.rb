@@ -8,9 +8,8 @@ class LighthouseIntentToFileProvider
   include IntentToFileProvider
 
   def initialize(current_user)
-    icn = current_user.icn
-    ssn = current_user.ssn
-    @service = BenefitsClaims::Service.new(icn, ssn)
+    @current_user = current_user
+    @service = BenefitsClaims::Service.new(current_user.icn)
   end
 
   def get_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path)
@@ -19,7 +18,7 @@ class LighthouseIntentToFileProvider
   end
 
   def create_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path)
-    data = @service.create_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path)['data']
+    data = @service.create_intent_to_file(type, @current_user.ssn, lighthouse_client_id, lighthouse_rsa_key_path)['data']
     transform(data)
   end
 

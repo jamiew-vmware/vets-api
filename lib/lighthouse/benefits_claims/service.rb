@@ -10,11 +10,9 @@ module BenefitsClaims
     configuration BenefitsClaims::Configuration
     STATSD_KEY_PREFIX = 'api.benefits_claims'
 
-    def initialize(icn, ssn)
+    def initialize(icn)
       @icn = icn
-      @ssn = ssn
       raise ArgumentError, 'no ICN passed in for LH API request.' if icn.blank?
-      raise ArgumentError, 'no SSN passed in for LH API request.' if ssn.blank?
     end
 
     def get_claims(lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
@@ -40,7 +38,8 @@ module BenefitsClaims
     # For type "survivor", the request must include claimantSsn and be made by a valid Veteran Representative.
     # If the Representative is not a Veteran or a VA employee, this method is currently not available to them,
     # and they should use the Benefits Intake API as an alternative.
-    def create_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
+    def create_intent_to_file(type, claimantSsn = '', lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
+      raise ArgumentError, 'BenefitsClaims::Service: No SSN provided for survivor type create request.' if claimantSsn.blank? && type == 'survivor'
       endpoint = 'benefits_claims/intent_to_file'
       path = "#{@icn}/intent-to-file"
       config.post(
@@ -50,7 +49,7 @@ module BenefitsClaims
             type: 'intent_to_file',
             attributes: {
               type:,
-              claimantSsn: @ssn
+              claimantSsn:
             }
           }
         },

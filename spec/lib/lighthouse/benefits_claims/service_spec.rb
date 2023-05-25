@@ -5,7 +5,7 @@ require 'lighthouse/benefits_claims/service'
 
 RSpec.describe BenefitsClaims::Service do
   before(:all) do
-    @service = BenefitsClaims::Service.new('123498767V234859', '011223344')
+    @service = BenefitsClaims::Service.new('123498767V234859')
   end
 
   describe 'making requests' do
@@ -31,7 +31,7 @@ RSpec.describe BenefitsClaims::Service do
 
         it 'creates intent to file with the survivor type' do
           VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/create_survivor_200_response') do
-            response = @service.create_intent_to_file('survivor', '', '')
+            response = @service.create_intent_to_file('survivor', '011223344', '', '')
             expect(response['data']['type']).to eq('survivor')
           end
         end
