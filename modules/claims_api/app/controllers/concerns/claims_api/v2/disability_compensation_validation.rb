@@ -180,7 +180,7 @@ module ClaimsApi
 
         if acc_vals['accountType'] != 'NONE'
           raise ::Common::Exceptions::UnprocessableEntity.new(
-            detail: 'If the claimant has no account the account type must be NONE.'
+            detail: 'If the claimant has no account the account type must be left unchecked.'
           )
         end
 
