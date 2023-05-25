@@ -1243,7 +1243,6 @@ RSpec.describe 'Disability Claims', type: :request do
                       active_duty_end_date
                     data = json.to_json
                     post path, params: data, headers: headers.merge(auth_header)
-                    puts "RESP #{response.pretty_inspect}"
                     expect(response).to have_http_status(:ok)
                   end
                 end
