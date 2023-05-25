@@ -43,7 +43,7 @@ module BenefitsClaims
     def create_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path, options = {})
       endpoint = 'benefits_claims/intent_to_file'
       path = "#{@icn}/intent-to-file"
-      response = config.post(
+      config.post(
         path,
         {
           data: {

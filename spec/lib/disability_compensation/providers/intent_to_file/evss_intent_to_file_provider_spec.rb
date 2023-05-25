@@ -33,7 +33,6 @@ RSpec.describe EvssIntentToFileProvider do
     end
   end
 
-  # bundle exec rspec spec/lib/disability_compensation/providers/intent_to_file/evss_intent_to_file_provider_spec.rb
   it 'creates intent to file from the EVSS API' do
     VCR.use_cassette('evss/intent_to_file/create_compensation') do
       provider = EvssIntentToFileProvider.new(nil, auth_headers)

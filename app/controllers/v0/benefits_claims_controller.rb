@@ -25,9 +25,5 @@ module V0
     def settings
       @settings ||= Settings.lighthouse.benefits_claims
     end
-
-    def settings
-      @settings ||= Settings.lighthouse.benefits_claims
-    end
   end
 end
