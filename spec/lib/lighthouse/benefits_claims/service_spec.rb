@@ -15,6 +15,8 @@ RSpec.describe BenefitsClaims::Service do
       end
 
       describe 'when requesting intent_to_file' do
+        # TODO-BDEX: Down the line, revisit re-generating cassettes using some local test credentials
+        # and actual interaction with LH
         it 'retrieves a intent to file from the Lighthouse API' do
           VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/200_response') do
             response = @service.get_intent_to_file('compensation', '', '')
