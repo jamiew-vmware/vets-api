@@ -25,12 +25,21 @@ module Login
         TestUserDashboard::UpdateUser.new(current_user).call(Time.current)
         TestUserDashboard::AccountMetrics.new(current_user).checkout
       end
+
+      send_reactivation_email?
     end
 
     private
 
     def login_type
       @login_type ||= current_user.identity.sign_in[:service_name]
+    end
+
+    def send_reactivation_email?
+      availability = AcceptableVerifiedCredentialAdoptionService.new(@current_user).perform
+      if availability[:reactivation_email]
+        VANotifyReactivationEmailJob.perform_async
+      end
     end
 
     def id_mismatch_validations

@@ -14,6 +14,7 @@ class AcceptableVerifiedCredentialAdoptionService
 
   def perform
     display_organic_modal_for_logingov_conversion
+    send_reactivation_email
   end
 
   private
@@ -24,6 +25,11 @@ class AcceptableVerifiedCredentialAdoptionService
 
   def credential_type
     @credential_type ||= user.identity.sign_in[:service_name]
+  end
+
+  def send_reactivation_email
+    result[:reactivation_email] = user_qualifies_for_reactivation_email?
+    result
   end
 
   def display_organic_modal_for_logingov_conversion
@@ -38,6 +44,10 @@ class AcceptableVerifiedCredentialAdoptionService
     (logged_in_with_dsl? || logged_in_with_mhv?) && !verified_credential_at?
   end
 
+  def user_qualifies_for_reactivation_email?
+    logged_in_with_dsl? && verified_credential_at?
+  end
+
   def logged_in_with_dsl?
     credential_type == SAML::User::DSLOGON_CSID
   end
@@ -48,7 +58,7 @@ class AcceptableVerifiedCredentialAdoptionService
 
   def verified_credential_at?
     user_avc = UserAcceptableVerifiedCredential.find_by(user_account: user.user_account)
-    user_avc&.acceptable_verified_credential_at || user_avc&.idme_verified_credential_at
+    user_avc&.acceptable_verified_credential_at.present? || user_avc&.idme_verified_credential_at.present?
   end
 
   def log_results(conversion_type)
