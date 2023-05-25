@@ -2,15 +2,17 @@
 
 FactoryBot.define do
   UPLOADED_PDF_PROPS = {
-    source: nil, doc_type: 'Unknown', total_documents: 2, total_pages: 2,
+    source: nil, total_documents: 2, total_pages: 2,
     content: {
       page_count: 1,
       dimensions: { height: 11.0, width: 8.5, oversized_pdf: false },
+      file_size: 12_040,
       sha256_checksum: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
       attachments: [
         {
           page_count: 1,
           dimensions: { height: 11.0, width: 8.5, oversized_pdf: false },
+          file_size: 12_040,
           sha256_checksum: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
         }
       ]

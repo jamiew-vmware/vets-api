@@ -46,13 +46,16 @@ RSpec.shared_examples 'claims and appeals overview' do |lighthouse_flag|
             # check a couple entries to make sure the data is correct
             parsed_response_contents = response.parsed_body['data']
             if lighthouse_flag
-              expect(parsed_response_contents.length).to eq(10)
+              expect(parsed_response_contents.length).to eq(11)
               expect(response.parsed_body.dig('meta', 'pagination', 'totalPages')).to eq(1)
               open_claim = parsed_response_contents.select { |entry| entry['id'] == '600383363' }[0]
               closed_claim = parsed_response_contents.select { |entry| entry['id'] == '600229968' }[0]
               decision_letter_sent_claim = parsed_response_contents.select { |entry| entry['id'] == '600323434' }[0]
+              nil_dates_claim = parsed_response_contents.last
               expect(open_claim.dig('attributes', 'updatedAt')).to eq('2022-09-30')
               expect(closed_claim.dig('attributes', 'updatedAt')).to eq('2021-03-22')
+              expect(nil_dates_claim.dig('attributes', 'updatedAt')).to eq(nil)
+              expect(nil_dates_claim.dig('attributes', 'dateFiled')).to eq(nil)
             else
               expect(parsed_response_contents.length).to eq(60)
               expect(response.parsed_body.dig('meta', 'pagination', 'totalPages')).to eq(3)
@@ -164,28 +167,9 @@ RSpec.shared_examples 'claims and appeals overview' do |lighthouse_flag|
     describe '#index is polled' do
       let(:params) { { useCache: false } }
 
-      before { allow(Rails.logger).to receive(:error) }
-
       it 'and claims service fails, but appeals succeeds' do
         VCR.use_cassette(error_claims_response_vcr_path) do
           VCR.use_cassette('appeals/appeals') do
-            claim_error_detail = if lighthouse_flag
-                                   [{ 'code' => '404',
-                                      'detail' => 'Resource not found',
-                                      'status' => '404',
-                                      'title' => 'Resource not found' }]
-                                 else
-                                   [{
-                                     'key' => 'EVSS_7022',
-                                     'severity' => 'ERROR',
-                                     'text' => "Please define your custom text for this error in \
-claims-webparts/ErrorCodeMessages.properties. [Unique ID: 1522946240935]"
-                                   }]
-                                 end
-            expect(Rails.logger).to receive(:error).with(
-              'Mobile Claims and Appeals: error received from claims service',
-              { error_details: claim_error_detail }
-            )
             get('/mobile/v0/claims-and-appeals-overview', headers: iam_headers, params:)
 
             parsed_response_contents = response.parsed_body['data']
@@ -210,14 +194,6 @@ claims-webparts/ErrorCodeMessages.properties. [Unique ID: 1522946240935]"
       it 'and appeals service fails, but claims succeeds' do
         VCR.use_cassette(good_claims_response_vcr_path) do
           VCR.use_cassette('appeals/server_error') do
-            expect(Rails.logger).to receive(:error).with(
-              'Mobile Claims and Appeals: error received from appeals service',
-              { error_details: [{ 'title' => 'Bad Gateway',
-                                  'detail' => 'Received a 500 response from the upstream server',
-                                  'code' => 'CASEFLOWSTATUS500',
-                                  'source' => 'No method error',
-                                  'status' => '502' }] }
-            )
             get('/mobile/v0/claims-and-appeals-overview', headers: iam_headers, params:)
             expect(response).to have_http_status(:multi_status)
             parsed_response_contents = response.parsed_body['data']
@@ -244,31 +220,6 @@ claims-webparts/ErrorCodeMessages.properties. [Unique ID: 1522946240935]"
       it 'both fail in upstream service' do
         VCR.use_cassette(error_claims_response_vcr_path) do
           VCR.use_cassette('appeals/server_error') do
-            claim_error_detail = if lighthouse_flag
-                                   [{ 'code' => '404',
-                                      'detail' => 'Resource not found',
-                                      'status' => '404',
-                                      'title' => 'Resource not found' }]
-                                 else
-                                   [{
-                                     'key' => 'EVSS_7022',
-                                     'severity' => 'ERROR',
-                                     'text' => "Please define your custom text for this error in \
-claims-webparts/ErrorCodeMessages.properties. [Unique ID: 1522946240935]"
-                                   }]
-                                 end
-            expect(Rails.logger).to receive(:error).with(
-              'Mobile Claims and Appeals: error received from claims service',
-              { error_details: claim_error_detail }
-            )
-            expect(Rails.logger).to receive(:error).with(
-              'Mobile Claims and Appeals: error received from appeals service',
-              { error_details: [{ 'title' => 'Bad Gateway',
-                                  'detail' => 'Received a 500 response from the upstream server',
-                                  'code' => 'CASEFLOWSTATUS500',
-                                  'source' => 'No method error',
-                                  'status' => '502' }] }
-            )
             get('/mobile/v0/claims-and-appeals-overview', headers: iam_headers, params:)
             expect(response).to have_http_status(:bad_gateway)
             expect(response.parsed_body.dig('meta', 'errors').length).to eq(2)
@@ -289,9 +240,6 @@ claims-webparts/ErrorCodeMessages.properties. [Unique ID: 1522946240935]"
         end
         VCR.use_cassette(good_claims_response_vcr_path) do
           VCR.use_cassette('appeals/appeals') do
-            expect(Rails.logger).to receive(:error).with(
-              'Mobile Claims and Appeals: error received from claims service', { error_details: 'NoMethodError' }
-            )
             get('/mobile/v0/claims-and-appeals-overview', headers: iam_headers, params:)
 
             expect(response.parsed_body['data'].size).to eq(

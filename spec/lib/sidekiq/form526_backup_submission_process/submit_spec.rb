@@ -3,6 +3,7 @@
 require 'rails_helper'
 
 require 'evss/disability_compensation_auth_headers' # required to build a Form526Submission
+require 'sidekiq/form526_backup_submission_process/submit'
 
 RSpec.describe Sidekiq::Form526BackupSubmissionProcess::Submit, type: :job do
   subject { described_class }
@@ -58,9 +59,9 @@ RSpec.describe Sidekiq::Form526BackupSubmissionProcess::Submit, type: :job do
         end
 
         it 'submits' do
-          VCR.use_cassette('form526_backup/200_lighthouse_intake_upload_location') do
+          VCR.use_cassette('lighthouse/benefits_intake/200_lighthouse_intake_upload_location') do
             VCR.use_cassette('form526_backup/200_evss_get_pdf') do
-              VCR.use_cassette('form526_backup/200_lighthouse_intake_upload') do
+              VCR.use_cassette('lighthouse/benefits_intake/200_lighthouse_intake_upload') do
                 jid = subject.perform_async(submission.id)
                 last = subject.jobs.last
                 jid_from_jobs = last['jid']
@@ -142,9 +143,9 @@ RSpec.describe Sidekiq::Form526BackupSubmissionProcess::Submit, type: :job do
       end
 
       it 'converts and submits' do
-        VCR.use_cassette('form526_backup/200_lighthouse_intake_upload_location') do
+        VCR.use_cassette('lighthouse/benefits_intake/200_lighthouse_intake_upload_location') do
           VCR.use_cassette('form526_backup/200_evss_get_pdf') do
-            VCR.use_cassette('form526_backup/200_lighthouse_intake_upload') do
+            VCR.use_cassette('lighthouse/benefits_intake/200_lighthouse_intake_upload') do
               jid = subject.perform_async(submission.id)
               last = subject.jobs.last
               jid_from_jobs = last['jid']

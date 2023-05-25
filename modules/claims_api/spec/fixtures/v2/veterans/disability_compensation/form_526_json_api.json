@@ -10,10 +10,10 @@
                     "city": "Portland",
                     "country": "USA",
                     "zipFirstFive": "41726",
-                    "zipLastFour": "",
+                    "zipLastFour": "1234",
                     "state": "OR"
                 },
-                "serviceNumber": "ABCDEFGH",
+                "serviceNumber": "123456789",
                 "emailAddress": {
                     "email": "valid@somedomain.com",
                     "agreeToEmailRelatedToClaim": true
@@ -22,14 +22,14 @@
                     "telephone": "1234567890",
                     "internationalTelephone": "1234567890"
                 },
-                "vaFileNumber": "ABCDEF"
+                "vaFileNumber": "AB123CDEF"
             },
             "serviceInformation": {
                 "servicePeriods": [
                     {
                         "serviceBranch": "Public Health Service",
-                        "activeDutyBeginDate": "0815-11-14",
-                        "activeDutyEndDate": "2343-11-30",
+                        "activeDutyBeginDate": "1980-11-14",
+                        "activeDutyEndDate": "1991-11-30",
                         "serviceComponent": "Active",
                         "separationLocationCode": "ABCDEFGHIJKLMN"
                     }
@@ -39,8 +39,10 @@
                     "approximateEndDate": "2884-12-09"
                 },
                 "reservesNationalGuardService": {
-                    "obligationTermOfServiceFromDate": "3995-11-24",
-                    "obligationTermOfServiceToDate": "8502-11-17",
+                    "obligationTermsOfService": {
+                        "startDate":"3995-11-24",
+                        "endDate":"8502-11-17"
+                    },
                     "unitName": "''c'5'l'#l#2z",
                     "component": "Active",
                     "title10Activation": {
@@ -54,18 +56,14 @@
                     "receivingInactiveDutyTrainingPay": true
                 },
                 "alternateNames": [
-                    {
-                        "firstName": "W-' 8o- ",
-                        "lastName": "w",
-                        "middleName": "5/-9'hi-2'ab'"
-                    }
+                    "john jacob", "johnny smith"
                 ],
                 "servedInActiveCombatSince911": false
             },
             "disabilities": [
                 {
                     "disabilityActionType": "REOPEN",
-                    "name": "ABCDEFGHIJKLMNOPQ",
+                    "name": "PTSD (post traumatic stress disorder)",
                     "classificationCode": "ABCDEFGHIJ",
                     "serviceRelevance": "ABCDEFG",
                     "approximateDate": "4592-11-04",
@@ -83,6 +81,27 @@
                     ],
                     "isRelatedToToxicExposure": true,
                     "exposureOrEventOrInjury": "EXPOSURE"
+                },
+                {
+                    "disabilityActionType": "REOPEN",
+                    "name": "Trauma",
+                    "classificationCode": "ABCDEFGHIJ",
+                    "serviceRelevance": "ABCDEFG",
+                    "approximateDate": "4592-11-04",
+                    "ratedDisabilityId": "ABCDEFGHIJKLMNOPQRSTUVWX",
+                    "diagnosticCode": 0,
+                    "secondaryDisabilities": [
+                        {
+                            "name": "GHIJKLM",
+                            "disabilityActionType": "SECONDARY",
+                            "serviceRelevance": "ABCDEFGHIJKLMNOPQ",
+                            "classificationCode": "ABCDEFGHIJKLMNO",
+                            "approximateDate": "9904-01-03",
+                            "exposureOrEventOrInjury": "EXPOSURE"
+                        }
+                    ],
+                    "isRelatedToToxicExposure": true,
+                    "exposureOrEventOrInjury": "EXPOSURE"
                 }
             ],
             "claimantCertification": true,
@@ -90,8 +109,8 @@
             "claimDate": "2023-02-18",
             "changeOfAddress": {
                 "dates": {
-                    "beginningDate": "7455-11-31",
-                    "endingDate": "9963-10-11"
+                    "beginningDate": "2012-11-31",
+                    "endingDate": "2013-10-11"
                   },
                   "typeOfAddressChange": "TEMPORARY",
                   "numberAndStreet": "10 Peach St",
@@ -103,19 +122,18 @@
                   "country": "USA"
             },
             "homeless": {
-                "pointOfContact": "hw86h63-v",
-                "pointOfContactNumber": 0,
+                "pointOfContact": "john stewart",
+                "pointOfContactNumber": {
+                    "telephone": "7028901212",
+                    "internationalTelephone": "1234567890"
+                },
                 "currentlyHomeless": {
                     "homelessSituationOptions": "FLEEING_CURRENT_RESIDENCE",
                     "otherDescription": "ABCDEFGHIJKLM"
-                },
-                "riskOfBecomingHomeless": {
-                    "livingSituationOptions": "other",
-                    "otherDescription": "ABCDEFGHIJKLMNOP"
                 }
             },
             "toxicExposure": {
-                "gulfWarHazard": {
+                "gulfWarHazardService": {
                     "servedInGulfWarHazardLocations": true,
                     "serviceDates": {
                         "startDate": "2523-07-21",
@@ -131,8 +149,8 @@
                     }
                 },
                 "additionalHazardExposures": {
-                    "additionalExposures": "ASBESTOS",
-                    "specifiyOtherExposures": "ABCD",
+                    "additionalExposures": ["ASBESTOS", "SHAD"],
+                    "specifyOtherExposures": "ABCD",
                     "exposureDates": {
                         "startDate": "4520-07-30",
                         "endDate": "3405-10-03"
@@ -149,22 +167,22 @@
             },
             "treatments": [
                 {
-                    "treatedDisabilityName": "PTSD (post traumatic stress disorder)",
+                    "treatedDisabilityNames": ["PTSD (post traumatic stress disorder)", "Trauma"],
                     "center": {
                         "name": "Center One",
                         "state": "GA",
                         "city": "Decatur"
                     },
-                    "startDate": "1985-03-07"
+                    "startDate": "03-1985"
                 },
                 {
-                    "treatedDisabilityName": "Trauma",
+                    "treatedDisabilityNames": ["Trauma"],
                     "center": {
                         "name": "Center One",
                         "state": "GA",
                         "city": "Decatur"
                     },
-                    "startDate": "1985-03-07"
+                    "startDate": "03-1985"
                 }
             ],
             "servicePay": {
@@ -194,4 +212,4 @@
             }
         }
     }
-  }
+}

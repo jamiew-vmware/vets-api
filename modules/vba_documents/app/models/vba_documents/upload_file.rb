@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require_dependency 'vba_documents/multipart_parser'
+require 'vba_documents/multipart_parser'
+
 module VBADocuments
   class UploadFile < UploadSubmission
     has_one_attached  :multipart_file

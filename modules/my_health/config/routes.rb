@@ -7,6 +7,8 @@ MyHealth::Engine.routes.draw do
         get :pdf, on: :collection
       end
       resources :allergies, only: %i[index show], defaults: { format: :json }
+      resources :clinical_notes, only: %i[index show], defaults: { format: :json }
+      resources :labs_and_tests, only: %i[index show], defaults: { format: :json }
     end
 
     scope :messaging do

@@ -27,10 +27,13 @@ RSpec.describe 'vaos v2 appointments', type: :request do
   end
 
   let(:mock_facility) do
+    known_ids = %w[983 984 442 508 983GC 983GB 688 516 984GA 983GD 984GD 438 620GB 984GB 442GB 442GC 442GD 983QA 984GC
+                   983QE 983HK 999AA]
     mock_facility = { id: '983',
                       name: 'Cheyenne VA Medical Center',
-                      time_zone: {
-                        time_zone_id: 'America/Denver'
+                      timezone: {
+                        time_zone_id: 'America/Denver',
+                        abbreviation: 'MDT'
                       },
                       physical_address: { type: 'physical',
                                           line: ['2360 East Pershing Boulevard'],
@@ -44,6 +47,13 @@ RSpec.describe 'vaos v2 appointments', type: :request do
                       code: nil }
 
     allow_any_instance_of(Mobile::V2::Appointments::Proxy).to receive(:get_facility).and_return(mock_facility)
+
+    known_ids.each do |facility_id|
+      allow(Rails.cache).to receive(:fetch).with("vaos_facility_#{facility_id}",
+                                                 {
+                                                   expires_in: 12.hours
+                                                 }).and_return(mock_facility.merge(id: facility_id))
+    end
   end
 
   after(:all) { VCR.configure { |c| c.cassette_library_dir = @original_cassette_dir } }
@@ -75,22 +85,25 @@ RSpec.describe 'vaos v2 appointments', type: :request do
         expect(location).to eq({ 'id' => '983',
                                  'name' => 'Cheyenne VA Medical Center',
                                  'address' =>
-                                 { 'street' => '2360 East Pershing Boulevard',
-                                   'city' => 'Cheyenne',
-                                   'state' => 'WY',
-                                   'zipCode' => '82001-5356' },
+                                   { 'street' => '2360 East Pershing Boulevard',
+                                     'city' => 'Cheyenne',
+                                     'state' => 'WY',
+                                     'zipCode' => '82001-5356' },
                                  'lat' => 39.744507,
                                  'long' => -104.830956,
                                  'phone' =>
-                                 { 'areaCode' => '307', 'number' => '778-7550',
-                                   'extension' => nil },
+                                   { 'areaCode' => '307', 'number' => '778-7550',
+                                     'extension' => nil },
                                  'url' => nil,
                                  'code' => nil })
       end
     end
 
     context 'backfill facility service returns in error' do
-      before { mock_clinic }
+      before do
+        mock_clinic
+        mock_facility
+      end
 
       it 'location is nil' do
         VCR.use_cassette('appointments/VAOS_v2/get_facility_500', match_requests_on: %i[method uri]) do
@@ -267,9 +280,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
           expect(appointment['attributes']['healthcareProvider']).to eq('DEHGHAN, AMIR')
         end
 
-        it 'logs error and falls back to nil when provider does not return provider data' do
-          expect(Rails.logger).to receive(:error).with('Mobile appointments provider not found', '1407938061')
-
+        it 'falls back to nil when provider does not return provider data' do
           VCR.use_cassette('appointments/VAOS_v2/get_appointments_with_mixed_provider_types',
                            match_requests_on: %i[method uri]) do
             VCR.use_cassette('providers/get_provider_400', match_requests_on: %i[method uri], tag: :force_utf8) do
@@ -280,7 +291,7 @@ RSpec.describe 'vaos v2 appointments', type: :request do
           expect(appointment['attributes']['healthcareProvider']).to be_nil
         end
 
-        it 'logs error and falls back to nil when provider service returns 500' do
+        it 'falls back to nil when provider service returns 500' do
           VCR.use_cassette('appointments/VAOS_v2/get_appointments_with_mixed_provider_types',
                            match_requests_on: %i[method uri]) do
             VCR.use_cassette('providers/get_provider_500', match_requests_on: %i[method uri], tag: :force_utf8) do

@@ -13,7 +13,6 @@ module VBADocuments
     attr_accessor :file, :pdf_data, :parts
 
     module Constants
-      DOC_TYPE_KEY = :doc_type
       SOURCE_KEY = :source
     end
     include Constants
@@ -45,9 +44,8 @@ module VBADocuments
     def inspect_pdf(add_file_key)
       parts_metadata = JSON.parse(@parts['metadata'])
 
-      # instantiate the data hash and set the source and doc_type
-      data = { SOURCE_KEY => parts_metadata['source'], DOC_TYPE_KEY => parts_metadata['docType'] || 'Unknown',
-               total_documents: 0, total_pages: 0, content: {} }
+      # instantiate the data hash and set the source
+      data = { SOURCE_KEY => parts_metadata['source'], total_documents: 0, total_pages: 0, content: {} }
 
       # read the PDF content
       data[:content].merge!(pdf_metadata(@parts['content']))
@@ -95,6 +93,7 @@ module VBADocuments
           width: dimensions[:width].round(2),
           oversized_pdf: dimensions[:height] > max_height || dimensions[:width] > max_width
         },
+        file_size: metadata.file_size,
         sha256_checksum: Digest::SHA256.file(pdf).hexdigest
       }
     end

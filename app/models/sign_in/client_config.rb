@@ -23,6 +23,12 @@ module SignIn
       find_by(client_id:).present?
     end
 
+    def client_assertion_public_keys
+      @client_assertion_public_keys ||= certificates.compact.map do |certificate|
+        OpenSSL::X509::Certificate.new(certificate).public_key
+      end
+    end
+
     def cookie_auth?
       authentication == Constants::Auth::COOKIE
     end

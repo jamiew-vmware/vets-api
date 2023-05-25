@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require_dependency 'common/exceptions'
-require_dependency 'vba_documents/pdf_inspector'
+require 'vba_documents/pdf_inspector'
 
 module VBADocuments
   class UploadSerializer < ActiveModel::Serializer
@@ -14,7 +13,6 @@ module VBADocuments
     module ClassMethods
       include PDFInspector::Constants
       def scrub_unnecessary_keys(pdf_hash)
-        pdf_hash.delete(DOC_TYPE_KEY.to_s)
         pdf_hash.delete(SOURCE_KEY.to_s)
         pdf_hash.delete('submitted_line_of_business')
 

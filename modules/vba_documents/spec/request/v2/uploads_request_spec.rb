@@ -2,10 +2,9 @@
 
 require 'rails_helper'
 require './lib/webhooks/utilities'
+require 'vba_documents/payload_manager'
 require_relative '../../support/vba_document_fixtures'
-require_dependency 'vba_documents/payload_manager'
-require_dependency 'vba_documents/object_store'
-require_dependency 'vba_documents/multipart_parser'
+require 'vba_documents/object_store'
 
 RSpec.describe 'VBA Document Uploads Endpoint', type: :request, retry: 3 do
   include VBADocuments::Fixtures
@@ -204,6 +203,7 @@ RSpec.describe 'VBA Document Uploads Endpoint', type: :request, retry: 3 do
         @upload_submission = VBADocuments::UploadSubmission.new
         @upload_submission.update(status: 'uploaded')
         allow_any_instance_of(VBADocuments::UploadProcessor).to receive(:cancelled?).and_return(false)
+        allow_any_instance_of(Tempfile).to receive(:size).and_return(1) # must be > 0 or submission will error w/DOC107
         allow(VBADocuments::MultipartParser).to receive(:parse) {
           { 'metadata' => @md.to_json, 'content' => valid_doc }
         }

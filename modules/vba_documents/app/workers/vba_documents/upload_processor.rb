@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require_dependency 'vba_documents/upload_validator'
-require_dependency 'vba_documents/payload_manager'
-require_dependency 'vba_documents/multipart_parser'
-
 require 'sidekiq'
 require 'vba_documents/object_store'
+require 'vba_documents/payload_manager'
+require 'vba_documents/pdf_inspector'
 require 'vba_documents/upload_error'
 require 'central_mail/utilities'
+require 'vba_documents/upload_validator'
 
 module VBADocuments
   class UploadProcessor
@@ -61,6 +60,8 @@ module VBADocuments
       begin
         @upload.update(metadata: @upload.metadata.merge(original_file_metadata(tempfile)))
 
+        validate_payload_size(tempfile)
+
         parts = VBADocuments::MultipartParser.parse(tempfile.path)
         inspector = VBADocuments::PDFInspector.new(pdf: parts)
         @upload.update(uploaded_pdf: inspector.pdf_data)
@@ -98,6 +99,12 @@ module VBADocuments
         'sha256_checksum' => Digest::SHA256.file(tempfile).hexdigest,
         'md5_checksum' => Digest::MD5.file(tempfile).hexdigest
       }
+    end
+
+    def validate_payload_size(tempfile)
+      unless tempfile.size.positive?
+        raise VBADocuments::UploadError.new(code: 'DOC107', detail: VBADocuments::UploadError::DOC107)
+      end
     end
 
     def handle_gateway_timeout(error)

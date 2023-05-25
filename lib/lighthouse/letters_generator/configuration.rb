@@ -9,6 +9,7 @@ module Lighthouse
   module LettersGenerator
     class Configuration < Common::Client::Configuration::REST
       SETTINGS = Settings.lighthouse.letters_generator
+      SCOPES = %w[letters.read].freeze
 
       def path_join(*paths)
         paths.reduce('') do |acc, p|
@@ -31,7 +32,6 @@ module Lighthouse
           faraday.use      Faraday::Response::RaiseError
 
           faraday.request :json
-          faraday.request :authorization, 'Bearer', get_access_token
 
           faraday.response :betamocks if use_mocks?
           faraday.response :json, { content_type: /\bjson/ }
@@ -46,12 +46,8 @@ module Lighthouse
         SETTINGS.use_mocks || false
       end
 
-      def get_access_token?
-        !use_mocks? || Settings.betamocks.recording
-      end
-
       def get_access_token
-        token_service.get_token if get_access_token?
+        use_mocks? ? '' : token_service.get_token
       end
 
       def token_service
@@ -59,7 +55,7 @@ module Lighthouse
         url = URI path_join(SETTINGS.url, token.path)
 
         @token_service ||= Auth::ClientCredentials::Service.new(
-          url, SETTINGS.api_scopes, token.client_id, token.aud_claim_url, token.rsa_key
+          url, SCOPES, token.client_id, token.aud_claim_url, token.rsa_key
         )
       end
     end
