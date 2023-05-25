@@ -4,6 +4,8 @@ require 'lighthouse/benefits_claims/service'
 
 module V0
   class BenefitsClaimsController < ApplicationController
+    before_action { authorize :lighthouse, :access? }
+
     def index
       claims = service.get_claims(settings.access_token.client_id, settings.access_token.rsa_key)
 

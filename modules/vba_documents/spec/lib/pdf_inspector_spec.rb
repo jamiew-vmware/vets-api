@@ -31,7 +31,7 @@ RSpec.describe VBADocuments::PDFInspector do
 
       it 'has all expected keys' do
         expected_keys = {
-          pdf_keys: [%i[source doc_type total_documents total_pages content], subject],
+          pdf_keys: [%i[source total_documents total_pages content], subject],
           content_keys: [%i[page_count dimensions sha256_checksum attachments], subject[:content]],
           content_dimension_keys: [%i[height width oversized_pdf], subject[:content][:dimensions]],
           attachment_keys: [%i[page_count dimensions sha256_checksum], subject[:content][:attachments][0]],
@@ -60,6 +60,7 @@ RSpec.describe VBADocuments::PDFInspector do
         expect(content_hash[:page_count]).to eq(1)
         expect(content_hash[:sha256_checksum]).to be_a(String)
         expect(content_hash[:sha256_checksum].length).to eq(sha256_char_length)
+        expect(content_hash[:file_size]).to eq(12_040)
       end
 
       it 'has the correct attachment data' do
@@ -75,6 +76,7 @@ RSpec.describe VBADocuments::PDFInspector do
         expect(attachment_hash[:page_count]).to eq(1)
         expect(attachment_hash[:sha256_checksum]).to be_a(String)
         expect(attachment_hash[:sha256_checksum].length).to eq(sha256_char_length)
+        expect(attachment_hash[:file_size]).to eq(12_040)
       end
     end
 

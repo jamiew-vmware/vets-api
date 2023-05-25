@@ -497,13 +497,6 @@ features:
       Toggle for the entire pre-entry covid 19 self-screener available at /covid19screener and to be used by visitors
       to VHA facilities in lieu of manual screening with a VHA employee.
       This toggle is owned by Patrick B. and the rest of the CTO Health Products team.
-  profile_email_specify_change:
-    actor_type: user
-    description: >
-      When enabled, if a user changes a phone number, the notification email will specify whether the home or mobile
-      phone was changed.  For an address change, the notification email will specify whether the residential or correspondence
-      address was changed.
-    enable_in_development: true
   profile_lighthouse_direct_deposit:
     actor_type: user
     description: When enabled, will request direct deposit data from lighthouse API.
@@ -771,9 +764,6 @@ features:
   va_view_dependents_access:
     actor_type: user
     description: Allows us to gate the View/ Modify dependents content in a progressive rollout
-  vba_documents_larger_page_size_limit:
-    actor_type: user
-    description: Allows Benefits Intake to accept PDFs up to 78x101 inches (instead of the default 21x21)
   yellow_ribbon_mvp_enhancement:
     actor_type: user
     description: Enhances Yellow Ribbon MVP.
@@ -862,9 +852,15 @@ features:
   disability_compensation_lighthouse_intent_to_file_provider:
     actor_type: user
     description: If enabled uses the lighthouse intent to file endpoint
+  virtual_agent_fetch_jwt_token:
+    actor_type: user
+    description: Enable the fetching of a JWT token to access MAP environment
   income_limits_new:
     actor_type: user
     description: If enabled, shows the newly designed income limits application
   drupal_footer:
     actor_type: user
     description: If enabled, pulls Drupal data to populate most of the global footer
+  hlr_disable_submit:
+    actor_type: user
+    description: If enabled, the HLR submit button will be disabled to prevent user testing submission in production
