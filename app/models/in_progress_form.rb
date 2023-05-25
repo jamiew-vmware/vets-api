@@ -28,7 +28,9 @@ class InProgressForm < ApplicationRecord
                                }
   # the double quotes in return_url are part of the value
   scope :return_url, ->(url) { where(%( #{RETURN_URL_SQL} = ? ), "\"#{url}\"") }
-
+  scope :is_fsr, -> { where(form_id: "5655") }
+  scope :not_submitted, -> { where.not("(metadata -> 'submission' ->> 'status')::boolean") }
+  scope :unsubmitted_fsr, -> { is_fsr.not_submitted }
   attribute :user_uuid, CleanUUID.new
   serialize :form_data, JsonMarshal::Marshaller
   has_kms_key
