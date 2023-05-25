@@ -19,7 +19,7 @@ module V0
     private
 
     def service
-      @service ||= BenefitsClaims::Service.new(@current_user.icn, @current_user.ssn)
+      @service ||= BenefitsClaims::Service.new(@current_user.icn)
     end
 
     def settings
