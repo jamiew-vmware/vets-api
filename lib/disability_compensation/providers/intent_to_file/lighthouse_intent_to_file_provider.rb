@@ -18,7 +18,8 @@ class LighthouseIntentToFileProvider
   end
 
   def create_intent_to_file(type, lighthouse_client_id, lighthouse_rsa_key_path)
-    data = @service.create_intent_to_file(type, @current_user.ssn, lighthouse_client_id, lighthouse_rsa_key_path)['data']
+    data = @service.create_intent_to_file(type, @current_user.ssn, lighthouse_client_id,
+                                          lighthouse_rsa_key_path)['data']
     transform(data)
   end
 

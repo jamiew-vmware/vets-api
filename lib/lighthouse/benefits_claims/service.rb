@@ -38,8 +38,12 @@ module BenefitsClaims
     # For type "survivor", the request must include claimantSsn and be made by a valid Veteran Representative.
     # If the Representative is not a Veteran or a VA employee, this method is currently not available to them,
     # and they should use the Benefits Intake API as an alternative.
-    def create_intent_to_file(type, claimantSsn = '', lighthouse_client_id = nil, lighthouse_rsa_key_path = nil, options = {})
-      raise ArgumentError, 'BenefitsClaims::Service: No SSN provided for survivor type create request.' if claimantSsn.blank? && type == 'survivor'
+    def create_intent_to_file(type, claimant_ssn, lighthouse_client_id = nil, lighthouse_rsa_key_path = nil,
+                              options = {})
+      if claimant_ssn.blank? && type == 'survivor'
+        raise ArgumentError, 'BenefitsClaims::Service: No SSN provided for survivor type create request.'
+      end
+
       endpoint = 'benefits_claims/intent_to_file'
       path = "#{@icn}/intent-to-file"
       config.post(
@@ -49,7 +53,7 @@ module BenefitsClaims
             type: 'intent_to_file',
             attributes: {
               type:,
-              claimantSsn:
+              claimantSsn: claimant_ssn
             }
           }
         },

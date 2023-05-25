@@ -28,7 +28,7 @@ RSpec.describe LighthouseIntentToFileProvider do
     end
   end
 
-  it 'creates intent to file using the Lighthouse API' do      
+  it 'creates intent to file using the Lighthouse API' do
     VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/create_compensation_200_response') do
       response = provider.create_intent_to_file('compensation', '', '')
       expect(response).to be_an_instance_of(DisabilityCompensation::ApiProvider::IntentToFilesResponse)
