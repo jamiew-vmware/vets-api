@@ -3,8 +3,8 @@
 class SavedClaim::EducationBenefits::VA1995 < SavedClaim::EducationBenefits
   add_form_and_validation('22-1995')
 
-  # Keys pulled from https://github.com/department-of-veterans-affairs/vets-website/src/applications/edu-benefits/utils/helpers.jsx#L100 &
-  # fixtures at https://github.com/department-of-veterans-affairs/vets-website/src/applications/edu-benefits/1995/tests/e2e/fixtures
+  # Pulled from https://github.com/department-of-veterans-affairs/vets-website/src/applications/edu-benefits/utils/helpers.jsx#L100
+  # & fixtures at https://github.com/department-of-veterans-affairs/vets-website/src/applications/edu-benefits/1995/tests/e2e/
   BENEFIT_TITLE_FOR_1995 = {
     'chapter30' => 'Montgomery GI Bill (MGIB or Chapter 30) Education Assistance Program',
     'chapter33Post911' => 'Post-9/11 GI Bill (Chapter 33)',
