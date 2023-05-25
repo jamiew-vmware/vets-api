@@ -176,12 +176,52 @@ module ClaimsApi
       end
 
       def validate_no_account!
+        acc_vals = form_attributes['directDeposit']
+
+        if acc_vals['accountType'] != 'NONE'
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'If the claimant has no account the account type must be NONE.'
+          )
+        end
+
+        if acc_vals['accountNumber'].present? || acc_vals['accountNumber'].present? || acc_vals['financialInstitutionName'].present?
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'If the claimant has no account the account number field must be left empty.'
+          )
+        end
+
+        if acc_vals['routingNumber'].present? || acc_vals['financialInstitutionName'].present?
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'If the claimant has no account the routing number field must be left empty.'
+          )
+        end
+
+        if acc_vals['financialInstitutionName'].present?
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'If the claimant has no account the financial institution field must be left empty.'
+          )
+        end
+      end
+
+      def validate_account_values!
         direct_deposit_account_vals = form_attributes['directDeposit']
         account_type, account_number, routing_number, bank, no_account = direct_deposit_account_vals
 
-        if (account_type.present? && account_type != 'NONE') || account_number.present? || routing_number.present? || bank.present?
+        if account_type.blank? && acount_type != 'NONE'
           raise ::Common::Exceptions::UnprocessableEntity.new(
-            detail: 'If the claimant has no account the other fields must be left blank.'
+            detail: 'The account type (CHECKING/SAVINGS) is required for direct deposit.'
+          )
+        end
+
+        if account_number.blank?
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'The account number is required for direct deposit.'
+          )
+        end
+
+        if routing_number.blank?
+          raise ::Common::Exceptions::UnprocessableEntity.new(
+            detail: 'The routing number is required for direct deposit.'
           )
         end
       end
