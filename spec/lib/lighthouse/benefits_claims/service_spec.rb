@@ -25,14 +25,14 @@ RSpec.describe BenefitsClaims::Service do
         it 'creates intent to file using the Lighthouse API' do
           VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/create_compensation_200_response') do
             response = @service.create_intent_to_file('compensation', '', '')
-            expect(response['data']['type']).to eq('compensation')
+            expect(response['data']['attributes']['type']).to eq('compensation')
           end
         end
 
         it 'creates intent to file with the survivor type' do
           VCR.use_cassette('lighthouse/benefits_claims/intent_to_file/create_survivor_200_response') do
             response = @service.create_intent_to_file('survivor', '011223344', '', '')
-            expect(response['data']['type']).to eq('survivor')
+            expect(response['data']['attributes']['type']).to eq('survivor')
           end
         end
       end
