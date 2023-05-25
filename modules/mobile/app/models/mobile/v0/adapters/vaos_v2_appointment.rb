@@ -110,8 +110,6 @@ module Mobile
           }
 
           StatsD.increment('mobile.appointments.type', tags: ["type:#{appointment_type}"])
-          Rails.logger.info('metric.mobile.appointment.type', type: appointment_type)
-          Rails.logger.info('metric.mobile.appointment.upstream_status', status: appointment[:status])
 
           Mobile::V0::Appointment.new(adapted_appointment)
         end
@@ -189,7 +187,7 @@ module Mobile
             date, time = if reason_code_contains_embedded_data?
                            period.split(' ')
                          else
-                           start_date = DateTime.parse(period[:start])
+                           start_date = time_to_datetime(period[:start])
                            date = start_date.strftime('%m/%d/%Y')
                            time = start_date.hour.zero? ? 'AM' : 'PM'
                            [date, time]
@@ -223,11 +221,11 @@ module Mobile
           @start_date_utc ||= begin
             start = appointment[:start]
             if start.nil?
-              sorted_dates = requested_periods.map { |period| DateTime.parse(period[:start]) }.sort
+              sorted_dates = requested_periods.map { |period| time_to_datetime(period[:start]) }.sort
               future_dates = sorted_dates.select { |period| period > DateTime.now }
               future_dates.any? ? future_dates.first : sorted_dates.first
             else
-              DateTime.parse(start)
+              time_to_datetime(start)
             end
           end
         end
@@ -345,19 +343,23 @@ module Mobile
           # and optional extension (until the end of the string) (?:\sx(\d*))?$
           phone_captures = phone&.match(/^\(?(\d{3})\)?.?(\d{3})-?(\d{4})(?:\sx(\d*))?$/)
 
-          if phone_captures.nil?
+          unless phone_captures.nil?
+            return {
+              area_code: phone_captures[1].presence,
+              number: "#{phone_captures[2].presence}-#{phone_captures[3].presence}",
+              extension: phone_captures[4].presence
+            }
+          end
+
+          unless phone.nil?
+            # this logging is intended to be temporary. Remove if it's not occurring
             Rails.logger.warn(
               'mobile appointments failed to parse VAOS V2 phone number',
               phone:
             )
-            return { area_code: nil, number: nil, extension: nil }
           end
 
-          {
-            area_code: phone_captures[1].presence,
-            number: "#{phone_captures[2].presence}-#{phone_captures[3].presence}",
-            extension: phone_captures[4].presence
-          }
+          { area_code: nil, number: nil, extension: nil }
         end
 
         def healthcare_service
@@ -423,6 +425,10 @@ module Mobile
           return nil unless match
 
           match[2].strip.presence
+        end
+
+        def time_to_datetime(time)
+          time.is_a?(DateTime) ? time : DateTime.parse(time)
         end
       end
     end

@@ -15,7 +15,23 @@ describe VAOS::V2::AppointmentsService do
   let(:id) { '202006031600983000030800000000000000' }
   let(:appointment_id) { 123 }
 
-  before { allow_any_instance_of(VAOS::UserService).to receive(:session).and_return('stubbed_token') }
+  mock_facility = {
+    test: 'test',
+    timezone: {
+      time_zone_id: 'America/New_York'
+    }
+  }
+
+  mock_facility2 = {
+    test: 'test',
+    timezone: {
+      time_zone_id: 'America/Denver'
+    }
+  }
+
+  before do
+    allow_any_instance_of(VAOS::UserService).to receive(:session).and_return('stubbed_token')
+  end
 
   describe '#post_appointment' do
     let(:va_proposed_clinic_request_body) do
@@ -52,8 +68,6 @@ describe VAOS::V2::AppointmentsService do
           allow(Rails.logger).to receive(:info).at_least(:once)
           response = subject.post_appointment(va_booked_request_body)
           expect(response[:id]).to be_a(String)
-          expect(Rails.logger).to have_received(:info).with('VAOS appointment service category and type',
-                                                            any_args).at_least(:once)
           expect(Rails.logger).to have_received(:info).with('VAOS telehealth atlas details',
                                                             any_args).at_least(:once)
         end
@@ -115,32 +129,30 @@ describe VAOS::V2::AppointmentsService do
   describe '#get_appointments' do
     context 'when requesting a list of appointments given a date range' do
       it 'returns a 200 status with list of appointments' do
-        VCR.use_cassette('vaos/v2/appointments/get_appointments_200_12082022', match_requests_on: %i[method path query],
-                                                                               tag: :force_utf8) do
+        VCR.use_cassette('vaos/v2/appointments/get_appointments_200_with_facilities_200',
+                         match_requests_on: %i[method path query], allow_playback_repeats: true, tag: :force_utf8) do
           response = subject.get_appointments(start_date2, end_date2)
-          expect(response[:data].size).to eq(395)
+          expect(response[:data].size).to eq(16)
         end
       end
 
-      it 'logs the service categories of the returned appointments' do
-        VCR.use_cassette('vaos/v2/appointments/get_appointments_200_and_log_data',
-                         match_requests_on: %i[method path query], tag: :force_utf8) do
+      it 'returns with list of appointments and appends local start time' do
+        allow_any_instance_of(VAOS::V2::AppointmentsService).to receive(:get_facility).and_return(mock_facility2)
+        VCR.use_cassette('vaos/v2/appointments/get_appointments_200_with_facilities_200',
+                         match_requests_on: %i[method path query], allow_playback_repeats: true, tag: :force_utf8) do
+          response = subject.get_appointments(start_date2, end_date2)
+          expect(response[:data][0][:local_start_time]).to eq('Thu, 02 Sep 2021 08:00:00 -0600')
+          expect(response[:data][6][:requested_periods][0][:local_start_time]).to eq('Wed, 08 Sep 2021 06:00:00 -0600')
+        end
+      end
+
+      it 'logs the VAOS telehealth atlas details of the returned appointments' do
+        VCR.use_cassette('vaos/v2/appointments/get_appointments_200_with_facilities_200_and_log_data',
+                         allow_playback_repeats: true, match_requests_on: %i[method path query], tag: :force_utf8) do
           allow(Rails.logger).to receive(:info).at_least(:once)
-
-          telehealth_log_body = '{"VAOSServiceTypesAndCategory":{"vaos_appointment_kind":"telehealth",' \
-                                '"vaos_service_type":"ServiceTypeNotFound","vaos_service_types":' \
-                                '"ServiceTypesNotFound","vaos_service_category":"ServiceCategoryNotFound"}}'
-
-          clinic_log_body = '{"VAOSServiceTypesAndCategory":{"vaos_appointment_kind":"clinic",' \
-                            '"vaos_service_type":"optometry","vaos_service_types":"optometry",' \
-                            '"vaos_service_category":"REGULAR"}}'
 
           response = subject.get_appointments(start_date3, end_date3)
           expect(response[:data].size).to eq(163)
-          expect(Rails.logger).to have_received(:info).with('VAOS appointment service category and type',
-                                                            telehealth_log_body).at_least(:once)
-          expect(Rails.logger).to have_received(:info).with('VAOS appointment service category and type',
-                                                            clinic_log_body).at_least(:once)
           expect(Rails.logger).to have_received(:info).with('VAOS telehealth atlas details',
                                                             any_args).at_least(:once)
         end
@@ -150,7 +162,7 @@ describe VAOS::V2::AppointmentsService do
     context 'when requesting a list of appointments given a date range and single status' do
       it 'returns a 200 status with list of appointments' do
         VCR.use_cassette('vaos/v2/appointments/get_appointments_single_status_200',
-                         match_requests_on: %i[method path query], tag: :force_utf8) do
+                         allow_playback_repeats: true, match_requests_on: %i[method path query], tag: :force_utf8) do
           response = subject.get_appointments(start_date2, end_date2, 'proposed')
           expect(response[:data].size).to eq(5)
           expect(response[:data][0][:status]).to eq('proposed')
@@ -158,15 +170,19 @@ describe VAOS::V2::AppointmentsService do
       end
     end
 
-    context 'when there are CnP appointments in the list' do
-      it 'changes the cancellable status to false for CnP appointments only' do
-        VCR.use_cassette('vaos/v2/appointments/get_appointments_single_status_200',
-                         match_requests_on: %i[method path query], tag: :force_utf8) do
+    context 'when there are CnP and covid appointments in the list' do
+      it 'changes the cancellable status to false for CnP and covid appointments only' do
+        VCR.use_cassette('vaos/v2/appointments/get_appointments_cnp_covid',
+                         allow_playback_repeats: true, match_requests_on: %i[method path query], tag: :force_utf8) do
           response = subject.get_appointments(start_date2, end_date2, 'proposed')
-          # non CnP appointment, cancellable left as is
+          # non CnP or covid appointment, cancellable left as is
           expect(response[:data][0][:cancellable]).to eq(true)
-          # CnP appointment, cancellable changed to false
+          # CnP appointments, cancellable changed to false
           expect(response[:data][4][:cancellable]).to eq(false)
+          # covid appointments, cancellable changed to false
+          expect(response[:data][5][:cancellable]).to eq(false)
+          expect(response[:data][6][:cancellable]).to eq(false)
+          expect(response[:data][7][:cancellable]).to eq(false)
         end
       end
     end
@@ -174,9 +190,9 @@ describe VAOS::V2::AppointmentsService do
     context 'when requesting a list of appointments given a date range and multiple statuses' do
       it 'returns a 200 status with list of appointments' do
         VCR.use_cassette('vaos/v2/appointments/get_appointments_multi_status_200',
-                         match_requests_on: %i[method path query], tag: :force_utf8) do
+                         allow_playback_repeats: true, match_requests_on: %i[method path query], tag: :force_utf8) do
           response = subject.get_appointments(start_date2, end_date2, 'proposed,booked')
-          expect(response[:data].size).to eq(4)
+          expect(response[:data].size).to eq(2)
           expect(response[:data][0][:status]).to eq('proposed')
           expect(response[:data][1][:status]).to eq('booked')
         end
@@ -225,6 +241,22 @@ describe VAOS::V2::AppointmentsService do
   end
 
   describe '#get_appointment' do
+    context 'with an appointment' do
+      context 'with Jacqueline Morgan' do
+        it 'returns a proposed appointment' do
+          allow_any_instance_of(VAOS::V2::AppointmentsService).to receive(:get_facility).and_return(mock_facility)
+          VCR.use_cassette('vaos/v2/appointments/get_appointment_200_with_facility_200',
+                           match_requests_on: %i[method path query]) do
+            response = subject.get_appointment('70060')
+            expect(response[:id]).to eq('70060')
+            expect(response[:kind]).to eq('clinic')
+            expect(response[:status]).to eq('proposed')
+            expect(response[:requested_periods][0][:local_start_time]).to eq('Sun, 19 Dec 2021 19:00:00 -0500')
+          end
+        end
+      end
+    end
+
     context 'when requesting a CnP appointment' do
       let(:user) { build(:user, :vaos) }
 
@@ -279,6 +311,96 @@ describe VAOS::V2::AppointmentsService do
             expect(error.status_code).to eq(502)
           end
         end
+      end
+    end
+  end
+
+  describe '#get_facility_timezone' do
+    let(:facility_location_id) { '983' }
+    let(:facility_error_msg) { 'Error fetching facility details' }
+
+    context 'with a facility location id' do
+      it 'returns the facility timezone' do
+        allow_any_instance_of(VAOS::V2::AppointmentsService).to receive(:get_facility).and_return(mock_facility)
+        timezone = subject.send(:get_facility_timezone, facility_location_id)
+        expect(timezone).to eq('America/New_York')
+      end
+    end
+
+    context 'with an internal server error from the facilities call' do
+      it 'returns nil for the timezone' do
+        allow_any_instance_of(VAOS::V2::AppointmentsService).to receive(:get_facility).and_return(facility_error_msg)
+        timezone = subject.send(:get_facility_timezone, facility_location_id)
+        expect(timezone).to eq(nil)
+      end
+    end
+  end
+
+  describe '#convert_utc_to_local_time' do
+    let(:start_datetime) { '2021-09-02T14:00:00Z'.to_datetime }
+
+    context 'with a date and timezone' do
+      it 'converts UTC to local time' do
+        local_time = subject.send(:convert_utc_to_local_time, start_datetime, 'America/New_York')
+        expect(local_time.to_s).to eq(start_datetime.to_time.utc.in_time_zone('America/New_York').to_datetime.to_s)
+      end
+    end
+
+    context 'with a date and no timezone' do
+      it 'returns warning message' do
+        local_time = subject.send(:convert_utc_to_local_time, start_datetime, nil)
+        expect(local_time.to_s).to eq('Unable to convert UTC to local time')
+      end
+    end
+
+    context 'with a nil date' do
+      it 'throws a ParameterMissing exception' do
+        expect do
+          subject.send(:convert_utc_to_local_time, nil, 'America/New_York')
+        end.to raise_error(Common::Exceptions::ParameterMissing)
+      end
+    end
+  end
+
+  describe '#codes' do
+    context 'when nil is passed in' do
+      it 'returns an empty array' do
+        expect(subject.send(:codes, nil)).to eq([])
+      end
+    end
+
+    context 'when no codable concept code is present' do
+      it 'returns an empty array' do
+        x = [{ coding: [{ system: 'http://www.va.gov/terminology/vistadefinedterms/409_1', display: 'REGULAR' }],
+               text: 'REGULAR' }]
+        expect(subject.send(:codes, x)).to eq([])
+      end
+    end
+
+    context 'when a codable concept code is present' do
+      it 'returns an array of codable concept codes' do
+        x = [{ coding: [{ system: 'http://www.va.gov/terminology/vistadefinedterms/409_1', code: 'REGULAR' }],
+               text: 'REGULAR' }]
+        expect(subject.send(:codes, x)).to eq(['REGULAR'])
+      end
+    end
+
+    context 'when multiple codable concept codes are present' do
+      it 'returns an array of codable concept codes' do
+        x = [{ coding: [{ system: 'http://www.va.gov/terminology/vistadefinedterms/409_1', code: 'REGULAR' },
+                        { system: 'http://www.va.gov/terminology/vistadefinedterms/409_1', code: 'TELEHEALTH' }],
+               text: 'REGULAR' }]
+        expect(subject.send(:codes, x)).to eq(%w[REGULAR TELEHEALTH])
+      end
+    end
+
+    context 'when multiple codable concepts with single codes are present' do
+      it 'returns an array of codable concept codes' do
+        x = [{ coding: [{ system: 'http://www.va.gov/terminology/vistadefinedterms/409_1', code: 'REGULAR' }],
+               text: 'REGULAR' },
+             { coding: [{ system: 'http://www.va.gov/terminology/vistadefinedterms/409_1', code: 'TELEHEALTH' }],
+               text: 'TELEHEALTH' }]
+        expect(subject.send(:codes, x)).to eq(%w[REGULAR TELEHEALTH])
       end
     end
   end
