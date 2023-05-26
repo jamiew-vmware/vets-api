@@ -33,11 +33,6 @@ module Login
       @login_type ||= current_user.identity.sign_in[:service_name]
     end
 
-    def send_reactivation_email?
-      availability = AcceptableVerifiedCredentialAdoptionService.new(@current_user).perform
-      VANotifyReactivationEmailJob.perform_async if availability[:reactivation_email]
-    end
-
     def id_mismatch_validations
       return unless current_user.loa3?
 
