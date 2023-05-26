@@ -175,22 +175,22 @@ module ClaimsApi
         direct_deposit['noAccount'] == true ? validate_no_account! : validate_account_values!
       end
 
-      def validate_no_account!
+      def validate_no_account! # rubocop:disable Metrics/MethodLength
         acc_vals = form_attributes['directDeposit']
 
-        if acc_vals['accountType'] != 'NONE'
+        if acc_vals['accountType'].present?
           raise ::Common::Exceptions::UnprocessableEntity.new(
             detail: 'If the claimant has no account the account type must be left unchecked.'
           )
         end
 
-        if acc_vals['accountNumber'].present? || acc_vals['accountNumber'].present? || acc_vals['financialInstitutionName'].present?
+        if acc_vals['accountNumber'].present?
           raise ::Common::Exceptions::UnprocessableEntity.new(
             detail: 'If the claimant has no account the account number field must be left empty.'
           )
         end
 
-        if acc_vals['routingNumber'].present? || acc_vals['financialInstitutionName'].present?
+        if acc_vals['routingNumber'].present?
           raise ::Common::Exceptions::UnprocessableEntity.new(
             detail: 'If the claimant has no account the routing number field must be left empty.'
           )
@@ -205,9 +205,12 @@ module ClaimsApi
 
       def validate_account_values!
         direct_deposit_account_vals = form_attributes['directDeposit']
-        account_type, account_number, routing_number, bank, no_account = direct_deposit_account_vals
+        valid_account_types = %w[CHECKING SAVINGS]
+        account_type = direct_deposit_account_vals['accountType']
+        account_number = direct_deposit_account_vals['accountNumber']
+        routing_number = direct_deposit_account_vals['routingNumber']
 
-        if account_type.blank? && acount_type != 'NONE'
+        if account_type.blank? || valid_account_types.exclude?(account_type)
           raise ::Common::Exceptions::UnprocessableEntity.new(
             detail: 'The account type (CHECKING/SAVINGS) is required for direct deposit.'
           )

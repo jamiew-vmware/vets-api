@@ -2506,32 +2506,41 @@
                         "description": "Financial Direct Deposit information for Veteran.",
                         "type": "object",
                         "additionalProperties": false,
-                        "required": [
-                          "accountType",
-                          "accountNumber",
-                          "routingNumber"
-                        ],
                         "properties": {
                           "accountType": {
-                            "description": "Veteran Account Type (value is case insensitive).",
+                            "description": "Account type for the direct deposit.",
                             "type": "string",
-                            "enum": [
-                              "CHECKING",
-                              "SAVINGS"
-                            ],
-                            "example": "CHECKING"
+                            "example": "CHECKING",
+                            "properties": {
+                              "result": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "CHECKING",
+                                      "SAVINGS"
+                                    ]
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      ""
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
                           },
                           "accountNumber": {
-                            "description": "Veteran Bank Account Number.",
-                            "minLength": 4,
-                            "maxLength": 17,
+                            "description": "Account number for the direct deposit.",
+                            "pattern": "^(?:\\d{4,17})?$",
                             "type": "string",
                             "example": "123123123123"
                           },
-                          "routngNumber": {
-                            "description": "Veteran Bank Routing Number.",
+                          "routingNumber": {
+                            "description": "Routing number for the direct deposit.",
                             "type": "string",
-                            "pattern": "^\\d{9}$",
+                            "pattern": "^(?:\\d{9})?$",
                             "example": "123123123"
                           },
                           "financialInstitutionName": {
@@ -2542,7 +2551,7 @@
                           },
                           "noAccount": {
                             "type": "boolean",
-                            "description": "Box 29 is checked if directDeposit is missing in the JSON request.",
+                            "description": "Claimant certifies that they do not have an account with a financial institution or certified payment agent.",
                             "default": false
                           }
                         }
@@ -3658,11 +3667,6 @@
                           "directDeposit": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": [
-                              "accountType",
-                              "accountNumber",
-                              "routingNumber"
-                            ],
                             "properties": {
                               "accountType": {
                                 "description": "Account type for the direct deposit.",
@@ -3671,19 +3675,37 @@
                                   "CHECKING",
                                   "SAVINGS"
                                 ],
-                                "example": "CHECKING"
+                                "example": "CHECKING",
+                                "properties": {
+                                  "result": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "CHECKING",
+                                          "SAVINGS"
+                                        ]
+                                      },
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          ""
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                }
                               },
                               "accountNumber": {
                                 "description": "Account number for the direct deposit.",
-                                "minLength": 4,
-                                "maxLength": 17,
+                                "pattern": "^(?:\\d{4,17})?$",
                                 "type": "string",
                                 "example": "123123123123"
                               },
                               "routingNumber": {
                                 "description": "Routing number for the direct deposit.",
                                 "type": "string",
-                                "pattern": "^\\d{9}$",
+                                "pattern": "^(?:\\d{9})?$",
                                 "example": "123123123"
                               },
                               "financialInstitutionName": {
@@ -3816,7 +3838,7 @@
                               "exposureOrEventOrInjury": ""
                             }
                           ],
-                          "isRelatedToToxicExposure": true,
+                          "isRelatedToToxicExposure": false,
                           "exposureOrEventOrInjury": ""
                         }
                       ],
@@ -3903,7 +3925,7 @@
                       },
                       "directDeposit": {
                         "accountType": "CHECKING",
-                        "accountNumber": "123456789",
+                        "accountNumber": "123123123123",
                         "routingNumber": "123456789",
                         "financialInstituteName": "Chase",
                         "noAccount": false
@@ -4547,8 +4569,8 @@
                     "id": "1",
                     "type": "intent_to_file",
                     "attributes": {
-                      "creationDate": "2023-05-22",
-                      "expirationDate": "2024-05-22",
+                      "creationDate": "2023-05-26",
+                      "expirationDate": "2024-05-26",
                       "type": "compensation",
                       "status": "active"
                     }

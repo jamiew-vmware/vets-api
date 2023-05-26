@@ -205,7 +205,7 @@
             },
             "directDeposit": {
                 "accountType": "CHECKING",
-                "accountNumber": "ABCDEF",
+                "accountNumber": "123123123123",
                 "routingNumber": "123123123",
                 "financialInstitutionName": "Some Bank",
                 "noAccount": false

@@ -1042,8 +1042,21 @@
                 "accountType": {
                     "description": "Account type for the direct deposit.",
                     "type": "string",
-                    "enum": ["CHECKING", "SAVINGS","NONE"],
-                    "example": "CHECKING"
+                    "example": "CHECKING",
+                    "properties": {
+                        "result": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": ["CHECKING", "SAVINGS"]
+                                },
+                                {
+                                    "type": "string",
+                                    "enum": [""]
+                                }
+                            ]
+                        }
+                    }
                 },
                 "accountNumber": {
                     "description": "Account number for the direct deposit.",

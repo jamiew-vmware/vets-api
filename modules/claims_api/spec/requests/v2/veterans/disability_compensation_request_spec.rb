@@ -1313,7 +1313,7 @@ RSpec.describe 'Disability Claims', type: :request do
         context 'if no account is selected and no other values are entered' do
           let(:direct_deposit) do
             {
-              accountType: 'NONE',
+              accountType: '',
               accountNumber: '',
               routingNumber: '',
               financialInstitutionName: '',
