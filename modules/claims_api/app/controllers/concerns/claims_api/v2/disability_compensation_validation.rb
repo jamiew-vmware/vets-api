@@ -122,7 +122,7 @@ module ClaimsApi
       def validate_form_526_service_pay!
         validate_form_526_military_retired_pay!
         validate_form_526_future_military_retired_pay!
-        validate_form_526_separation_pay!
+        validate_form_526_separation_pay_received_date!
       end
 
       def validate_form_526_military_retired_pay!
@@ -150,10 +150,6 @@ module ClaimsApi
                     "'servicePay.futureMilitaryRetiredPayExplanation' is required"
           )
         end
-      end
-
-      def validate_form_526_separation_pay!
-        validate_form_526_separation_pay_received_date!
       end
 
       def validate_form_526_separation_pay_received_date!
