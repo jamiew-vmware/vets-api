@@ -874,6 +874,7 @@ search_click_tracking:
 flipper:
   mute_logs: false
   admin_user_emails:
+    - wang3806@umn.edu #VMWare Consultant investigating onboarding optimization
     - aditya.sharma@thoughtworks.com # Virtual Agent
     - adrian.rollett@va.gov
     - alexander.schmidt.garcia@gmail.com # Alexander Garcia (Clarity), Identity, Frontend Engineer
