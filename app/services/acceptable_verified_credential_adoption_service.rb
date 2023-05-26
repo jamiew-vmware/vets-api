@@ -8,13 +8,19 @@
 class AcceptableVerifiedCredentialAdoptionService
   attr_accessor :user
 
+  STATS_KEY = 'api.user_transition_availability'
+
   def initialize(user)
     @user = user
   end
 
   def perform
     display_organic_modal_for_logingov_conversion
-    send_reactivation_email
+    send_email_for_reactivation
+
+    result[:credential_type] = credential_type
+
+    result
   end
 
   private
@@ -27,25 +33,21 @@ class AcceptableVerifiedCredentialAdoptionService
     @credential_type ||= user.identity.sign_in[:service_name]
   end
 
-  def send_reactivation_email
-    result[:reactivation_email] = user_qualifies_for_reactivation_email?
-    result
+  def send_email_for_reactivation
+    result[:reactivation_email] = user_qualifies_for_reactivation?
   end
 
   def display_organic_modal_for_logingov_conversion
-    result[:organic_modal] =
-      Flipper.enabled?(:organic_conversion_experiment, user) && user_qualifies_for_conversion?
-    result[:credential_type] = credential_type
+    result[:organic_modal] = Flipper.enabled?(:organic_conversion_experiment, user) && user_qualifies_for_conversion?
     log_results('organic_modal') if result[:organic_modal] == true
-    result
   end
 
   def user_qualifies_for_conversion?
     (logged_in_with_dsl? || logged_in_with_mhv?) && !verified_credential_at?
   end
 
-  def user_qualifies_for_reactivation_email?
-    logged_in_with_dsl? && verified_credential_at?
+  def user_qualifies_for_reactivation?
+    (logged_in_with_dsl? || logged_in_with_mhv?) && verified_credential_at?
   end
 
   def logged_in_with_dsl?
@@ -62,10 +64,6 @@ class AcceptableVerifiedCredentialAdoptionService
   end
 
   def log_results(conversion_type)
-    StatsD.increment("#{stats_key}.#{conversion_type}.#{credential_type}")
-  end
-
-  def stats_key
-    'api.user_transition_availability'
+    StatsD.increment("#{STATS_KEY}.#{conversion_type}.#{credential_type}")
   end
 end

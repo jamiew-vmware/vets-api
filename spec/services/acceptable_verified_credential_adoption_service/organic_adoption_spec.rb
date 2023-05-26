@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AcceptableVerifiedCredentialAdoptionService do
+RSpec.describe AcceptableVerifiedCredentialAdoptionService, '.organic_adoption' do
   let(:service) { AcceptableVerifiedCredentialAdoptionService.new(user) }
   let(:user) { create(:user, :dslogon) }
   let(:user_verification) { create(:dslogon_user_verification, dslogon_uuid: user.edipi) }
@@ -11,7 +11,7 @@ RSpec.describe AcceptableVerifiedCredentialAdoptionService do
 
   before { allow(StatsD).to receive(:increment) }
 
-  describe '.perform' do
+  describe 'Organic Adoption Qualification' do
     context 'when Flipper organic_conversion_experiment is enabled' do
       context 'User is dslogon authenticated' do
         context 'When user has avc' do
@@ -194,38 +194,6 @@ RSpec.describe AcceptableVerifiedCredentialAdoptionService do
       it 'does not log attempt' do
         service.perform
         expect(StatsD).to have_received(:increment).exactly(0).times
-      end
-
-      context 'User is dslogon authenticated' do
-        context 'When user has avc' do
-          let!(:user_acceptable_verified_credential) do
-            create(:user_acceptable_verified_credential, :with_avc, user_account:)
-          end
-
-          it 'reactivation emal is true' do
-            expect(service.perform).to include(reactivation_email: true)
-          end
-        end
-
-        context 'When user has ivc' do
-          let!(:user_acceptable_verified_credential) do
-            create(:user_acceptable_verified_credential, :with_ivc, user_account:)
-          end
-
-          it 'reactivation emal is true' do
-            expect(service.perform).to include(reactivation_email: true)
-          end
-        end
-
-        context 'When user does not have avc or ivc' do
-          let!(:user_acceptable_verified_credential) do
-            create(:user_acceptable_verified_credential, :without_avc_ivc, user_account:)
-          end
-
-          it 'reactivation email is false' do
-            expect(service.perform).to include(reactivation_email: false)
-          end
-        end
       end
     end
   end

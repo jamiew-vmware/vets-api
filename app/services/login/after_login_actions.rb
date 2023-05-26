@@ -25,8 +25,6 @@ module Login
         TestUserDashboard::UpdateUser.new(current_user).call(Time.current)
         TestUserDashboard::AccountMetrics.new(current_user).checkout
       end
-
-      send_reactivation_email?
     end
 
     private
@@ -37,9 +35,7 @@ module Login
 
     def send_reactivation_email?
       availability = AcceptableVerifiedCredentialAdoptionService.new(@current_user).perform
-      if availability[:reactivation_email]
-        VANotifyReactivationEmailJob.perform_async
-      end
+      VANotifyReactivationEmailJob.perform_async if availability[:reactivation_email]
     end
 
     def id_mismatch_validations
