@@ -290,8 +290,10 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
         addtl_end = serv_info[:additionalPeriodsOfService][0][:endDate]
         last_sep = serv_info[:placeOfLastOrAnticipatedSeparation]
         pow = serv_info[:confinedAsPrisonerOfWar]
-        pow_start = serv_info[:prisonerOfWarConfinement][:confinementDates][:startDate]
-        pow_end = serv_info[:prisonerOfWarConfinement][:confinementDates][:endDate]
+        pow_start = serv_info[:prisonerOfWarConfinement][:confinementDates][0][:startDate]
+        pow_end = serv_info[:prisonerOfWarConfinement][:confinementDates][0][:endDate]
+        pow_start_two = serv_info[:prisonerOfWarConfinement][:confinementDates][1][:startDate]
+        pow_end_two = serv_info[:prisonerOfWarConfinement][:confinementDates][1][:endDate]
         natl_guard = serv_info[:servedInReservesOrNationalGuard]
         natl_guard_comp = serv_info[:reservesNationalGuardService][:component]
         obl_start = serv_info[:reservesNationalGuardService][:obligationTermsOfService][:startDate]
@@ -317,6 +319,8 @@ describe ClaimsApi::V2::DisabilityCompensationPdfMapper do
         expect(pow).to eq(true)
         expect(pow_start).to eq('2021-11-06')
         expect(pow_end).to eq('2023-12-09')
+        expect(pow_start_two).to eq('2001-01-06')
+        expect(pow_end_two).to eq('2018-06-09')
         expect(natl_guard).to eq(true)
         expect(natl_guard_comp).to eq('Active')
         expect(obl_start).to eq('3995-11-24')

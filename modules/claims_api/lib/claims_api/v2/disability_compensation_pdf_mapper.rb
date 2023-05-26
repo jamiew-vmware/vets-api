@@ -232,19 +232,19 @@ module ClaimsApi
       end
 
       def confinements
-        si = {}
+        si = []
+        @pdf_data[:data][:attributes][:serviceInformation][:prisonerOfWarConfinement] = { confinementDates: [] }
         @pdf_data[:data][:attributes][:serviceInformation][:confinements].map do |confinement|
           start = confinement[:approximateBeginDate]
           end_date = confinement[:approximateEndDate]
-          si[:prisonerOfWarConfinement] = { confinementDates: {} }
-          si[:prisonerOfWarConfinement][:confinementDates][:startDate] = start
-          si[:prisonerOfWarConfinement][:confinementDates][:endDate] = end_date
-          si[:confinedAsPrisonerOfWar] = true if start
+          si.push({
+                    startDate: start, endDate: end_date
+                  })
           si
         end
-        @pdf_data[:data][:attributes][:serviceInformation].merge!(si)
-        @pdf_data[:data][:attributes][:serviceInformation].delete(:confinements)
-
+        pow = si.present?
+        @pdf_data[:data][:attributes][:serviceInformation][:prisonerOfWarConfinement][:confinementDates] = si
+        @pdf_data[:data][:attributes][:serviceInformation][:confinedAsPrisonerOfWar] = pow
         @pdf_data
       end
 
