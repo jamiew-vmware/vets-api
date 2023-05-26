@@ -622,11 +622,11 @@ RSpec.describe 'Disability Claims', type: :request do
                   json_data = JSON.parse data
                   params = json_data
                   params['data']['attributes']['homeless']['currentlyHomeless'] = {
-                    homelessSituationOptions: 'FLEEING_CURRENT_RESIDENCE',
+                    homelessSituationOptions: 'LIVING_IN_A_HOMELESS_SHELTER',
                     otherDescription: 'community help center'
                   }
                   params['data']['attributes']['homeless']['riskOfBecomingHomeless'] = {
-                    livingSituationOptions: 'losingHousing',
+                    livingSituationOptions: 'HOUSING_WILL_BE_LOST_IN_30_DAYS',
                     otherDescription: 'community help center'
                   }
                   post path, params: params.to_json, headers: headers.merge(auth_header)

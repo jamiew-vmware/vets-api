@@ -284,14 +284,14 @@
                             "description": "Primary phone of Point of Contact.",
                             "type": "string",
                             "pattern": "^\\d{10}?$",
-                            "example": "1231234",
+                            "example": "5555555555",
                             "maxLength": 10
                             },
                         "internationalTelephone": {
                             "description": "international phone of Point of Contact.",
                             "type": "string",
                             "pattern": "^\\d{10}?$",
-                            "example": "1231234",
+                            "example": "5555555555",
                             "maxLength": 10   
                         }
                     }
@@ -327,14 +327,14 @@
                     "properties": {
                         "livingSituationOptions": {
                         "type": "string",
-                        "default": "other",
-                        "enum": ["losingHousing", "leavingShelter", "other"]
+                        "default": "OTHER",
+                        "enum": ["HOUSING_WILL_BE_LOST_IN_30_DAYS", "LEAVING_PUBLICLY_FUNDED_SYSTEM_OF_CARE", "OTHER"]
                         },
                         "otherDescription": {
                         "description": "For a 'livingSituationOptions' of value 'other', please provide additional comments on the living situation.",
                         "type": "string",
                         "maxLength": 500,
-                        "example": "other living situation"
+                        "example": "OTHER"
                         }
                     }
                 }
@@ -430,7 +430,8 @@
                         "specifyOtherExposures": {
                             "type": "string",
                             "pattern": "^([-a-zA-Z0-9'.,&#]([-a-zA-Z0-9'.,&# ])?)+$",
-                            "description": "Other exposure incidents."
+                            "description": "Other exposure incidents.",
+                            "example": "Other exposure details"
                         },
                         "exposureDates": {
                             "type": "object",
@@ -852,7 +853,8 @@
                           },
                           "unitName": {
                             "type": "string",
-                            "pattern": "([a-zA-Z0-9\\-'.,# ][a-zA-Z0-9\\-'.,# ]?)*$"
+                            "pattern": "([a-zA-Z0-9\\-'.,# ][a-zA-Z0-9\\-'.,# ]?)*$",
+                            "example": "National Guard Unit Name"
                           },
                           "unitPhone": {
                             "type": "object",
@@ -974,7 +976,8 @@
                         "RETIRED", 
                         "TEMPORARY_DISABILITY_RETIRED_LIST", 
                         "PERMANENT_DISABILITY_RETIRED_LIST"
-                    ]
+                    ],
+                    "example": "PERMANENT_DISABILITY_RETIRED_LIST"
                 },
                 "receivedSeparationOrSeverancePay": {
                     "description": "Has the Veteran ever received separation pay, disability severance pay, or any other lump sum payment from their branch of service?",
@@ -1063,7 +1066,7 @@
                     "description": "Provide the name of the financial institution where the Veteran wants the direct deposit.",
                     "maxLength": 35,
                     "type": "string",
-                    "example": "Some Bank"
+                    "example": "Chase"
                 },
                 "noAccount": {
                     "type": "boolean",

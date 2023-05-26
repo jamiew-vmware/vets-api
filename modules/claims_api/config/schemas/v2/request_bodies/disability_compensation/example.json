@@ -8,14 +8,14 @@
       "veteranIdentification": {
           "mailingAddress": {
             "numberAndStreet": "1234 Couch Street",
-            "apartmentOrUnitNumber": "Apt. 22",
+            "apartmentOrUnitNumber": "22",
             "city": "Portland",
             "country": "USA",
             "zipFirstFive": "12345",
             "zipLastFour": "6789",
             "state": "OR"
           },
-          "currentlyVAEmployee": false,
+          "currentlyVaEmployee": false,
           "serviceNumber": "123456789",
           "emailAddress": {
               "email": "claimant@example.com",
@@ -23,21 +23,20 @@
           },
           "veteranNumber": {
               "telephone": "555-5555",
-              "internationalTelephone": "555-5555"
+              "internationalTelephone": "5555555"
           },
           "vaFileNumber": "12345678"
       },
       "changeOfAddress": {
           "country": "USA",
-          "type": "INTERNATIONAL",
-          "addressLine1": "1234 Couch Street",
+          "type": "TEMPORARY",
           "dates": {
             "beginningDate": "2018-11-31",
             "endingDate": "2019-07-11"
           },
-          "typeOfAddressChange": "Permanent",
+          "typeOfAddressChange": "PERMANENT",
           "numberAndStreet": "1234 Couch Street",
-          "apartmentOrUnitNumber": "Apt. 22",
+          "apartmentOrUnitNumber": "22",
           "city": "Portland",
           "zipFirstFive": "12345",
           "zipLastFour": "1234",
@@ -45,13 +44,13 @@
       },
       "homeless": {
         "pointOfContact": "Jane Doe",
-        "pointOfContactNumber": "123-456-7890",
+        "pointOfContactNumber": "5555555555",
         "currentlyHomeless": {
           "homelessSituationOptions": "FLEEING_CURRENT_RESIDENCE",
           "otherDescription": ""
         },
         "riskOfBecomingHomeless": {
-          "livingSituationOptions": "other living situation",
+          "livingSituationOptions": "OTHER",
           "otherDescription": ""
         }
       },
@@ -73,7 +72,7 @@
           },
           "additionalHazardExposures": {
               "additionalExposures": ["ASBESTOS","SHAD"],
-              "specifiyOtherExposures": "",
+              "specifyOtherExposures": "Other exposure details",
               "exposureDates": {
                   "startDate": "2011-07-30",
                   "endDate": "2013-10-03"
@@ -150,15 +149,15 @@
                 "startDate":"2016-11-24",
                 "endDate":"2017-11-17"
               },
-              "unitName": "DonkeyPants",
+              "unitName": "National Guard Unit Name",
               "component": "National Guard",
               "title10Activation": {
                   "anticipatedSeparationDate": "2017-10-03",
                   "title10ActivationDate": "2018-02-11"
               },
               "unitPhone": {
-                  "areaCode": "123",
-                  "phoneNumber": "456-7890"
+                  "areaCode": "555",
+                  "phoneNumber": "5555555"
               },
               "receivingInactiveDutyTrainingPay": true
           },
@@ -177,7 +176,7 @@
             "branchOfService": "Army",
             "monthlyAmount": 840.75
         },
-        "retiredStatus": [],
+        "retiredStatus": "PERMANENT_DISABILITY_RETIRED_LIST",
         "receivedSeparationOrSeverancePay": false,
         "separationSeverancePay": {
           "datePaymentReceived": "2018-07-31",
@@ -189,7 +188,7 @@
         "accountType": "CHECKING",
         "accountNumber": "123456789",
         "routingNumber": "123456789",
-        "financialInstituteName": "Chase",
+        "financialInstitutionName": "Chase",
         "noAccount": false
       }
     }
